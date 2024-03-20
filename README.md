@@ -1,0 +1,1 @@
+# Keycloak Adaptive Authentication Extension
