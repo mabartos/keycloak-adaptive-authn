@@ -1,4 +1,4 @@
-package org.keycloak.adaptive;
+package org.keycloak.adaptive.level;
 
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.level.RiskLevelsFactory;
