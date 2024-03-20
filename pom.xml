@@ -9,10 +9,12 @@
     <version>999.0.0-SNAPSHOT</version>
 
     <name>Keycloak Adaptive Authentication Extension</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <keycloak.version>${project.version}</keycloak.version>
+        <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
+        <maven.plugins.jar.version>3.3.0</maven.plugins.jar.version>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -47,4 +49,19 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.plugins.compiler.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.plugins.jar.version}</version>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>
