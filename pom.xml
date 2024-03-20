@@ -15,6 +15,9 @@
         <keycloak.version>${project.version}</keycloak.version>
         <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
         <maven.plugins.jar.version>3.3.0</maven.plugins.jar.version>
+        <maven.plugins.exec.version>3.2.0</maven.plugins.exec.version>
+
+        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}</keycloak.distribution.path>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -96,9 +99,30 @@
                                     <version>${project.version}</version>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/unpacked/keycloak-${keycloak.version}/providers</outputDirectory>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.plugins.exec.version}</version>
+                <executions>
+                    <execution>
+                        <id>start-server</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
+                                <argument>start-dev</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
