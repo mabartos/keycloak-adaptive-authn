@@ -50,6 +50,11 @@
             <artifactId>keycloak-server-spi</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-quarkus-server</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

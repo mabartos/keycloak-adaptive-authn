@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.spi.factor;
 
+import org.keycloak.adaptive.spi.policy.UserContextRule;
 import org.keycloak.provider.Provider;
 
 import java.util.function.Predicate;
