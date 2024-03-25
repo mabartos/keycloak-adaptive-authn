@@ -14,6 +14,10 @@ public class UserContextRule<T> implements Map.Entry<String, UserContextRule<T>>
         this.condition = condition;
     }
 
+    public UserContextRule(DefaultRuleKeys.RuleKey ruleKey, BiPredicate<T, String> condition) {
+        this(ruleKey.symbol(), ruleKey.text(), condition);
+    }
+
     public String getText() {
         return text;
     }

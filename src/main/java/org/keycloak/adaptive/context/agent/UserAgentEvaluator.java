@@ -7,6 +7,7 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class UserAgentEvaluator implements RiskFactorEvaluator<UserAgentContext> {
     private final KeycloakSession session;
@@ -30,7 +31,9 @@ public class UserAgentEvaluator implements RiskFactorEvaluator<UserAgentContext>
 
     @Override
     public void evaluate() {
-        if (userAgentContext.matchesCondition(DefaultUserAgents.KNOWN_AGENTS::contains)) {
+        var agents = DefaultUserAgents.KNOWN_AGENTS.stream().map(UserAgent::getName).collect(Collectors.joining(","));
+        var anyOfKnownAgents = UserAgentRulesFactory.RULE_ANY_OF.match(userAgentContext, agents);
+        if (anyOfKnownAgents) {
             this.riskValue = RiskConfidence.VERY_CONFIDENT;
         } else {
             this.riskValue = RiskConfidence.SMALL;

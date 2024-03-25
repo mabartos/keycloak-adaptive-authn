@@ -1,6 +1,7 @@
 package org.keycloak.adaptive.context.agent;
 
 import org.keycloak.Config;
+import org.keycloak.adaptive.spi.policy.DefaultRuleKeys;
 import org.keycloak.adaptive.spi.policy.UserContextRule;
 import org.keycloak.adaptive.spi.policy.UserContextRules;
 import org.keycloak.adaptive.spi.policy.UserContextRulesFactory;
@@ -15,6 +16,15 @@ public class UserAgentRulesFactory implements UserContextRulesFactory<UserAgentC
     public static final String PROVIDER_ID = "default-user-agent-rules-factory";
     private Map<String, UserContextRule<UserAgentContext>> rules;
 
+    static UserContextRule<UserAgentContext> RULE_EQ = new UserContextRule<>(DefaultRuleKeys.EQ,
+            (ua, val) -> ua.getData().getName().equals(val));
+    static UserContextRule<UserAgentContext> RULE_NEQ = new UserContextRule<>(DefaultRuleKeys.NEQ,
+            (ua, val) -> ua.getData().getName().equals(val));
+    static UserContextRule<UserAgentContext> RULE_ANY_OF = new UserContextRule<>(DefaultRuleKeys.ANY_OF,
+            (ua, val) -> List.of(val.split(",")).contains(ua.getData().getName()));
+    static UserContextRule<UserAgentContext> RULE_NONE_OF = new UserContextRule<>(DefaultRuleKeys.NONE_OF,
+            (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getName()));
+
     @Override
     public UserContextRules<UserAgentContext, String> create(KeycloakSession session) {
         return new UserAgentRules(session, rules);
@@ -22,16 +32,7 @@ public class UserAgentRulesFactory implements UserContextRulesFactory<UserAgentC
 
     @Override
     public void init(Config.Scope config) {
-        this.rules = Map.ofEntries(
-                new UserContextRule<>("EQ", "is equal to",
-                        (ua, val) -> ua.getData().getName().equals(val)),
-                new UserContextRule<>("NEQ", "is equal to",
-                        (ua, val) -> ua.getData().getName().equals(val)),
-                new UserContextRule<>("AO", "is any of",
-                        (ua, val) -> List.of(val.split(",")).contains(ua.getData().getName())),
-                new UserContextRule<>("NO", "is none of",
-                        (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getName()))
-        );
+        this.rules = Map.ofEntries(RULE_EQ, RULE_NEQ, RULE_ANY_OF, RULE_NONE_OF);
     }
 
     @Override
