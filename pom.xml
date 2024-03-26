@@ -91,8 +91,8 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-testsuite-providers</id>
-                        <phase>generate-resources</phase>
+                        <id>copy-extension-provider</id>
+                        <phase>install</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
