@@ -3,7 +3,7 @@ package org.keycloak.adaptive.context.agent;
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.policy.Operation;
-import org.keycloak.adaptive.spi.policy.UserContextRuleFactory;
+import org.keycloak.adaptive.spi.policy.UserContextConditionFactory;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -15,7 +15,7 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import java.util.List;
 import java.util.Set;
 
-public class UserAgentRuleFactory implements UserContextRuleFactory<UserAgentContext> {
+public class UserAgentConditionFactory implements UserContextConditionFactory<UserAgentContext> {
     public static final String PROVIDER_ID = "conditional-user-agent-authenticator";
     public static final String OPERATION_CONFIG = "operation";
     public static final String USER_AGENT_CONFIG = "user-agent-config";
@@ -31,7 +31,7 @@ public class UserAgentRuleFactory implements UserContextRuleFactory<UserAgentCon
     static Operation<UserAgentContext> RULE_NONE_OF = new Operation<>(DefaultOperation.NONE_OF,
             (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getName()));
 
-    public UserAgentRuleFactory() {
+    public UserAgentConditionFactory() {
     }
 
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -41,7 +41,7 @@ public class UserAgentRuleFactory implements UserContextRuleFactory<UserAgentCon
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new UserAgentRule(session, rules);
+        return new UserAgentCondition(session, rules);
     }
 
     @Override

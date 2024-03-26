@@ -3,4 +3,4 @@ org.keycloak.adaptive.spi.factor.UserContextSpi
 org.keycloak.adaptive.spi.factor.RiskFactorEvaluatorSpi
 org.keycloak.adaptive.spi.level.RiskLevelsSpi
 org.keycloak.adaptive.spi.engine.RiskEngineSpi
-org.keycloak.adaptive.spi.policy.UserContextRuleSpi
+org.keycloak.adaptive.spi.policy.UserContextConditionSpi

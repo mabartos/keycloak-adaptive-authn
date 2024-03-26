@@ -4,8 +4,8 @@ import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
-public class UserContextRuleSpi implements Spi {
-    public static final String SPI_NAME = "user-context-rules-spi";
+public class UserContextConditionSpi implements Spi {
+    public static final String SPI_NAME = "user-context-condition-spi";
 
     @Override
     public boolean isInternal() {
@@ -19,11 +19,11 @@ public class UserContextRuleSpi implements Spi {
 
     @Override
     public Class<? extends Provider> getProviderClass() {
-        return UserContextRule.class;
+        return UserContextCondition.class;
     }
 
     @Override
     public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return UserContextRuleFactory.class;
+        return UserContextConditionFactory.class;
     }
 }

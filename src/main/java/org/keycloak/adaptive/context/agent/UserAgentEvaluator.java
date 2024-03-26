@@ -32,7 +32,7 @@ public class UserAgentEvaluator implements RiskFactorEvaluator<UserAgentContext>
     @Override
     public void evaluate() {
         var agents = DefaultUserAgents.KNOWN_AGENTS.stream().map(UserAgent::getName).collect(Collectors.joining(","));
-        var anyOfKnownAgents = UserAgentRuleFactory.RULE_ANY_OF.match(userAgentContext, agents);
+        var anyOfKnownAgents = UserAgentConditionFactory.RULE_ANY_OF.match(userAgentContext, agents);
         if (anyOfKnownAgents) {
             this.riskValue = RiskConfidence.VERY_CONFIDENT;
         } else {

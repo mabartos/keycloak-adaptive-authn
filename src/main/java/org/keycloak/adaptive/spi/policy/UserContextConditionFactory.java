@@ -5,7 +5,7 @@ import org.keycloak.authentication.authenticators.conditional.ConditionalAuthent
 
 import java.util.Set;
 
-public interface UserContextRuleFactory<T extends UserContext<?>> extends ConditionalAuthenticatorFactory {
+public interface UserContextConditionFactory<T extends UserContext<?>> extends ConditionalAuthenticatorFactory {
 
     Set<Operation<T>> getRules();
 
