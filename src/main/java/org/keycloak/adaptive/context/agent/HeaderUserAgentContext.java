@@ -10,6 +10,7 @@ public class HeaderUserAgentContext implements UserAgentContext {
 
     public HeaderUserAgentContext(KeycloakSession session) {
         this.session = session;
+        initData();
     }
 
     @Override

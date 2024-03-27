@@ -89,7 +89,8 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<Us
                 .name(USER_AGENT_CONFIG)
                 .label(USER_AGENT_CONFIG)
                 .helpText(USER_AGENT_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.LIST_TYPE)
+                .type(ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
+                .defaultValue("")
                 .options(DefaultUserAgents.KNOWN_AGENTS.stream().map(UserAgent::getName).toList())
                 .add()
                 .build();

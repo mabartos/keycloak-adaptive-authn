@@ -18,6 +18,7 @@ public class KcUserRoleContext implements UserRoleContext {
 
     public KcUserRoleContext(KeycloakSession session) {
         this.session = session;
+        initData();
     }
 
     @Override
