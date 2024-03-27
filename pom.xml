@@ -124,6 +124,10 @@
                         </goals>
                         <configuration>
                             <executable>bash</executable>
+                            <environmentVariables>
+                                <KEYCLOAK_ADMIN>admin</KEYCLOAK_ADMIN>
+                                <KEYCLOAK_ADMIN_PASSWORD>admin</KEYCLOAK_ADMIN_PASSWORD>
+                            </environmentVariables>
                             <arguments>
                                 <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                 <argument>start-dev</argument>
