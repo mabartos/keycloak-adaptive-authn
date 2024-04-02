@@ -2,6 +2,7 @@ package org.keycloak.adaptive.services;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -45,8 +46,11 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
 
     @Path("/{policyId}")
     public AuthnPolicyResource forwardToPolicyResource(@PathParam("policyId") String policyId) {
-        // TODO if not exists, throw NotFoundException
-        return new AuthnPolicyResource(session, policyId);
+        var policy = realm.getAuthenticationFlowById(policyId);
+        if (policy == null) {
+            throw new NotFoundException("Could not find policy by id");
+        }
+        return new AuthnPolicyResource(session, policy);
     }
 
     @Override
