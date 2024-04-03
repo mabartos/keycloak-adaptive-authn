@@ -1,6 +1,6 @@
 package org.keycloak.adaptive.models;
 
-import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.AuthenticationExecutionModel;
 
-public class AuthnPolicyConditionModel extends AuthenticatorConfigModel {
+public class AuthnPolicyConditionModel extends AuthenticationExecutionModel {
 }
