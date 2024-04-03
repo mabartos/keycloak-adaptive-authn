@@ -1,21 +1,23 @@
 package org.keycloak.adaptive.services;
 
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.keycloak.adaptive.models.AuthnPolicyConditionRepresentation;
 import org.keycloak.adaptive.models.AuthnPolicyRepresentation;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-
-import java.util.List;
+import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.models.utils.ModelToRepresentation;
+import org.keycloak.models.utils.RepresentationToModel;
+import org.keycloak.services.ErrorResponse;
+import org.keycloak.utils.ReservedCharValidator;
+import org.keycloak.utils.StringUtil;
 
 public class AuthnPolicyResource {
     private final KeycloakSession session;
@@ -30,78 +32,35 @@ public class AuthnPolicyResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getPolicy() {
-        return "POLICY " + policy;
+    public AuthnPolicyRepresentation getPolicy() {
+        return (AuthnPolicyRepresentation) ModelToRepresentation.toRepresentation(session, realm, policy);
     }
 
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updatePolicy(AuthnPolicyRepresentation policy) {
-        return Response.ok().build();
+    public Response updatePolicy(AuthnPolicyRepresentation update) {
+        if (StringUtil.isBlank(update.getAlias())) {
+            throw ErrorResponse.exists("Failed to update policy with empty alias name");
+        }
+
+        ReservedCharValidator.validate(update.getAlias());
+
+        update.setId(policy.getId());
+        realm.updateAuthenticationFlow(RepresentationToModel.toModel(update));
+
+        return Response.accepted(update).build();
     }
 
     @DELETE
     public void removePolicy() {
-
-    }
-
-    @GET
-    @Path("/conditions")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<AuthnPolicyConditionRepresentation> getConditions() {
-        return null;
-        /* return ModelToRepresentation.toRepresentation(session, realm, policy)
-                .getAuthenticationExecutions()
-                .stream()
-                .map(f->f.getAuthenticatorConfig());*/
-    }
-
-    @POST
-    @Path("/conditions")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response addCondition(AuthnPolicyConditionRepresentation condition) {
-        return Response.created(null).build();// TODO
-    }
-
-    @DELETE
-    @Path("/conditions")
-    public Response removeCondition() {
-        return Response.noContent().build();
-    }
-
-    @PATCH
-    @Path("/conditions")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public AuthnPolicyConditionRepresentation updateCondition(AuthnPolicyConditionRepresentation condition) {
-        return null;
-    }
-
-    @GET
-    @Path("/actions")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Object> getActions() {
-        return null;
-    }
-
-    @POST
-    @Path("/actions")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response addAction() {
-        return Response.created(null).build();
-    }
-
-    @DELETE
-    @Path("/conditions")
-    public Response removeAction() {
-        return Response.noContent().build();
-    }
-
-    @PATCH
-    @Path("/conditions")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Object updateAction() {
-        return null;
+        KeycloakModelUtils.deepDeleteAuthenticationFlow(session, realm, policy,
+                () -> {
+                }, // allow deleting even with missing references
+                () -> {
+                    throw new BadRequestException("Cannot delete policy");
+                }
+        );
     }
 
 }
