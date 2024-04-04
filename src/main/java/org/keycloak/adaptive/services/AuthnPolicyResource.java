@@ -5,6 +5,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -63,4 +64,13 @@ public class AuthnPolicyResource {
         );
     }
 
+    @Path("/conditions")
+    public AuthnPolicyConditionResources forwardToPolicyConditionResources() {
+        return new AuthnPolicyConditionResources(session, policy);
+    }
+
+    @Path("/actions")
+    public AuthnPolicyActionResources forwardToPolicyActionResources() {
+        return new AuthnPolicyActionResources(session, policy);
+    }
 }

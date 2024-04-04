@@ -10,6 +10,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+import org.keycloak.adaptive.models.AuthnPolicyModel;
 import org.keycloak.adaptive.models.AuthnPolicyRepresentation;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
@@ -85,5 +86,10 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
     @Override
     public void close() {
 
+    }
+
+    public static int getNextPriority(RealmModel realm, AuthnPolicyModel parentPolicy) {
+        var conditions = realm.getAuthenticationExecutionsStream(parentPolicy.getId()).toList();
+        return conditions.isEmpty() ? 0 : conditions.get(conditions.size() - 1).getPriority() + 1;
     }
 }

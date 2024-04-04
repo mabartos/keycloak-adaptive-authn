@@ -11,9 +11,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.models.AuthnPolicyConditionBasic;
+import org.keycloak.adaptive.models.AuthnPolicyActionBasic;
+import org.keycloak.adaptive.models.AuthnPolicyActionModel;
+import org.keycloak.adaptive.models.AuthnPolicyActionRepresentation;
 import org.keycloak.adaptive.models.AuthnPolicyConditionModel;
-import org.keycloak.adaptive.models.AuthnPolicyConditionRepresentation;
 import org.keycloak.adaptive.models.AuthnPolicyModel;
 import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
 import org.keycloak.deployment.DeployedConfigurationsManager;
@@ -30,14 +31,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.keycloak.adaptive.services.AuthnPoliciesResource.getNextPriority;
 
-public class AuthnPolicyConditionResources {
-    private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResources.class);
+public class AuthnPolicyActionResources {
+    private static final Logger logger = Logger.getLogger(AuthnPolicyResource.class);
 
     private final KeycloakSession session;
     private final RealmModel realm;
     private final AuthenticationFlowModel policy;
 
-    public AuthnPolicyConditionResources(KeycloakSession session, AuthenticationFlowModel policy) {
+    public AuthnPolicyActionResources(KeycloakSession session, AuthenticationFlowModel policy) {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.policy = policy;
@@ -45,12 +46,11 @@ public class AuthnPolicyConditionResources {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    // TODO should accept only ConditionAuthenticators
-    public List<AuthnPolicyConditionRepresentation> getConditions() {
+    public List<AuthnPolicyActionRepresentation> getActions() {
         AtomicInteger index = new AtomicInteger(0);
 
         return realm.getAuthenticationExecutionsStream(policy.getId()).map(condition -> {
-            AuthnPolicyConditionRepresentation rep = new AuthnPolicyConditionRepresentation();
+            AuthnPolicyActionRepresentation rep = new AuthnPolicyActionRepresentation();
             rep.setLevel(0);
             rep.setIndex(index.getAndIncrement());
             rep.setRequirementChoices(List.of(AuthenticationExecutionModel.Requirement.REQUIRED.name()));
@@ -64,7 +64,7 @@ public class AuthnPolicyConditionResources {
             rep.setDisplayName(factory.getDisplayType());
             rep.setConfigurable(factory.isConfigurable());
             rep.setId(policy.getId());
-            rep.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED.name());
+            rep.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL.name());
 
             if (factory.isConfigurable()) {
                 String authenticatorConfigId = condition.getAuthenticatorConfig();
@@ -85,9 +85,10 @@ public class AuthnPolicyConditionResources {
     }
 
     @POST
+    @Path("/actions")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addCondition(AuthnPolicyConditionBasic condition) {
-        AuthnPolicyConditionModel model = (AuthnPolicyConditionModel) RepresentationToModel.toModel(session, realm, condition);
+    public Response addAction(AuthnPolicyActionBasic action) {
+        AuthnPolicyActionModel model = (AuthnPolicyActionModel) RepresentationToModel.toModel(session, realm, action);
 
         AuthnPolicyModel parentPolicy = (AuthnPolicyModel) realm.getAuthenticationFlowById(model.getParentFlow());
         if (parentPolicy == null) {
@@ -95,19 +96,17 @@ public class AuthnPolicyConditionResources {
         }
 
         model.setPriority(getNextPriority(realm, parentPolicy));
-        model = (AuthnPolicyConditionModel) realm.addAuthenticatorExecution(model);
+        model = (AuthnPolicyActionModel) realm.addAuthenticatorExecution(model);
         return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
     }
 
-    @Path("/{conditionId}")
-    public AuthnPolicyConditionResource forwardToPolicyCondition(@PathParam("conditionId") String conditionId) {
-        AuthnPolicyConditionModel model = (AuthnPolicyConditionModel) realm.getAuthenticationExecutionById(conditionId);
+    @Path("/{actionId}")
+    public AuthnPolicyActionResource forwardToPolicyCondition(@PathParam("actionId") String actionId) {
+        AuthnPolicyActionModel model = (AuthnPolicyActionModel) realm.getAuthenticationExecutionById(actionId);
         if (model == null) {
-            logger.debugf("Cannot find execution with id: %s", conditionId);
-            throw new NotFoundException("Cannot find condition");
+            logger.debugf("Cannot find execution with id: %s", actionId);
+            throw new NotFoundException("Cannot find action");
         }
-        return new AuthnPolicyConditionResource(session, policy, model);
+        return new AuthnPolicyActionResource(session, policy, model);
     }
-
-
 }
