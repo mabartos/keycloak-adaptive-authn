@@ -16,7 +16,9 @@ import org.keycloak.adaptive.models.AuthnPolicyActionModel;
 import org.keycloak.adaptive.models.AuthnPolicyActionRepresentation;
 import org.keycloak.adaptive.models.AuthnPolicyConditionModel;
 import org.keycloak.adaptive.models.AuthnPolicyModel;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
+import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.deployment.DeployedConfigurationsManager;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
@@ -36,9 +38,9 @@ public class AuthnPolicyActionResources {
 
     private final KeycloakSession session;
     private final RealmModel realm;
-    private final AuthenticationFlowModel policy;
+    private final AuthnPolicyModel policy;
 
-    public AuthnPolicyActionResources(KeycloakSession session, AuthenticationFlowModel policy) {
+    public AuthnPolicyActionResources(KeycloakSession session, AuthnPolicyModel policy) {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.policy = policy;
@@ -90,12 +92,14 @@ public class AuthnPolicyActionResources {
     public Response addAction(AuthnPolicyActionBasic action) {
         AuthnPolicyActionModel model = (AuthnPolicyActionModel) RepresentationToModel.toModel(session, realm, action);
 
-        AuthnPolicyModel parentPolicy = (AuthnPolicyModel) realm.getAuthenticationFlowById(model.getParentFlow());
-        if (parentPolicy == null) {
-            throw new BadRequestException("condition parent policy does not exist");
+        var authenticator = session.getProvider(Authenticator.class, model.getAuthenticator());
+        if (!(authenticator instanceof ConditionalAuthenticator)) {
+            throw new BadRequestException("Condition must implement ConditionalAuthenticator interface");
         }
 
-        model.setPriority(getNextPriority(realm, parentPolicy));
+        model.setParentFlow(policy.getId());
+
+        model.setPriority(getNextPriority(realm, policy));
         model = (AuthnPolicyActionModel) realm.addAuthenticatorExecution(model);
         return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
     }

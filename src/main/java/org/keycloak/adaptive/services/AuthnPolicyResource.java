@@ -9,6 +9,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.adaptive.models.AuthnPolicyModel;
 import org.keycloak.adaptive.models.AuthnPolicyRepresentation;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
@@ -23,9 +24,9 @@ import org.keycloak.utils.StringUtil;
 public class AuthnPolicyResource {
     private final KeycloakSession session;
     private final RealmModel realm;
-    private final AuthenticationFlowModel policy;
+    private final AuthnPolicyModel policy;
 
-    public AuthnPolicyResource(KeycloakSession session, AuthenticationFlowModel policy) {
+    public AuthnPolicyResource(KeycloakSession session, AuthnPolicyModel policy) {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.policy = policy;

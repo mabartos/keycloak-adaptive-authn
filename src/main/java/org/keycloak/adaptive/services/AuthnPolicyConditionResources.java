@@ -15,10 +15,11 @@ import org.keycloak.adaptive.models.AuthnPolicyConditionBasic;
 import org.keycloak.adaptive.models.AuthnPolicyConditionModel;
 import org.keycloak.adaptive.models.AuthnPolicyConditionRepresentation;
 import org.keycloak.adaptive.models.AuthnPolicyModel;
+import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
+import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.deployment.DeployedConfigurationsManager;
 import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -26,6 +27,7 @@ import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.utils.CredentialHelper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.keycloak.adaptive.services.AuthnPoliciesResource.getNextPriority;
@@ -35,9 +37,9 @@ public class AuthnPolicyConditionResources {
 
     private final KeycloakSession session;
     private final RealmModel realm;
-    private final AuthenticationFlowModel policy;
+    private final AuthnPolicyModel policy;
 
-    public AuthnPolicyConditionResources(KeycloakSession session, AuthenticationFlowModel policy) {
+    public AuthnPolicyConditionResources(KeycloakSession session, AuthnPolicyModel policy) {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.policy = policy;
@@ -89,12 +91,17 @@ public class AuthnPolicyConditionResources {
     public Response addCondition(AuthnPolicyConditionBasic condition) {
         AuthnPolicyConditionModel model = (AuthnPolicyConditionModel) RepresentationToModel.toModel(session, realm, condition);
 
-        AuthnPolicyModel parentPolicy = (AuthnPolicyModel) realm.getAuthenticationFlowById(model.getParentFlow());
-        if (parentPolicy == null) {
-            throw new BadRequestException("condition parent policy does not exist");
+        if (!Objects.equals(model.getParentFlow(), policy.getId())) {
+            throw new BadRequestException("provided parent id does not match with the specified in path");
         }
 
-        model.setPriority(getNextPriority(realm, parentPolicy));
+        var authenticator = session.getProvider(Authenticator.class, model.getAuthenticator());
+        if (!(authenticator instanceof ConditionalAuthenticator)) {
+            throw new BadRequestException("Condition must implement ConditionalAuthenticator interface");
+        }
+
+        model.setParentFlow(policy.getId());
+        model.setPriority(getNextPriority(realm, policy));
         model = (AuthnPolicyConditionModel) realm.addAuthenticatorExecution(model);
         return Response.created(session.getContext().getUri().getAbsolutePathBuilder().path(model.getId()).build()).build();
     }

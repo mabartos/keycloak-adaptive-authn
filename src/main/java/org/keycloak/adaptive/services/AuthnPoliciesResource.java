@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.services;
 
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -62,6 +63,12 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
             policy.setDescription("");
         }
 
+        policy.setDescription("POLICY - " + policy.getDescription());
+
+        if (!policy.isTopLevel()) {
+            throw new BadRequestException("Authentication policy must be top level flow");
+        }
+
         ReservedCharValidator.validate(policy.getAlias());
 
         AuthenticationFlowModel createdModel = realm.addAuthenticationFlow(RepresentationToModel.toModel(policy));
@@ -71,7 +78,7 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
 
     @Path("/{policyId}")
     public AuthnPolicyResource forwardToPolicyResource(@PathParam("policyId") String policyId) {
-        var policy = realm.getAuthenticationFlowById(policyId);
+        var policy = (AuthnPolicyModel) realm.getAuthenticationFlowById(policyId);
         if (policy == null) {
             throw new NotFoundException("Could not find policy by id");
         }

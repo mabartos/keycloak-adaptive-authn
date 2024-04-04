@@ -33,7 +33,7 @@ public class AuthnPolicyConditionResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public AuthnPolicyConditionModel getConditions() {
+    public AuthnPolicyConditionModel getCondition() {
         return condition;
     }
 
