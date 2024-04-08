@@ -1,1 +1,2 @@
 org.keycloak.adaptive.context.agent.UserAgentConditionFactory
+org.keycloak.adaptive.spi.policy.AuthPolicyAuthenticatorFactory

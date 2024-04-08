@@ -72,6 +72,8 @@ public class AuthenticationPolicyFlow extends DefaultAuthenticationFlow implemen
     @Override
     public Response processFlow() {
         Map<AuthenticationExecutionModel, ConditionalAuthenticator> conditions = new HashMap<>();
+        Map<AuthenticationExecutionModel, Authenticator> actions = new HashMap<>();
+
         executions.stream()
                 .filter(Objects::nonNull)
                 .forEach(f -> {
@@ -80,6 +82,8 @@ public class AuthenticationPolicyFlow extends DefaultAuthenticationFlow implemen
                         var authenticator = authFactory.create(processor.getSession());
                         if (authenticator instanceof ConditionalAuthenticator conditionalAuthenticator) {
                             conditions.put(f, conditionalAuthenticator);
+                        } else {
+                            actions.put(f, authenticator);
                         }
                     }
                 });
@@ -94,12 +98,7 @@ public class AuthenticationPolicyFlow extends DefaultAuthenticationFlow implemen
         if (isOk) {
             boolean requiredElementsSuccessful = true;
 
-            var actions = executions.stream()
-                    .filter(Objects::nonNull)
-                    .filter(f -> !conditions.containsKey(f))
-                    .toList();
-
-            for (var action : actions) {
+            for (var action : actions.keySet()) {
                 var response = processAction(action);
                 if (response != null) return response;
                 requiredElementsSuccessful &= processor.isSuccessful(action);
