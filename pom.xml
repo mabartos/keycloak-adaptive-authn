@@ -115,6 +115,12 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>${maven.plugins.exec.version}</version>
+                <configuration>
+                    <environmentVariables>
+                        <KEYCLOAK_ADMIN>admin</KEYCLOAK_ADMIN>
+                        <KEYCLOAK_ADMIN_PASSWORD>admin</KEYCLOAK_ADMIN_PASSWORD>
+                    </environmentVariables>
+                </configuration>
                 <executions>
                     <execution>
                         <id>import-realm</id>
@@ -124,15 +130,27 @@
                         </goals>
                         <configuration>
                             <executable>bash</executable>
-                            <environmentVariables>
-                                <KEYCLOAK_ADMIN>admin</KEYCLOAK_ADMIN>
-                                <KEYCLOAK_ADMIN_PASSWORD>admin</KEYCLOAK_ADMIN_PASSWORD>
-                            </environmentVariables>
                             <arguments>
                                 <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                 <argument>import</argument>
-                                <argument>--file=${project.basedir}/realm-adaptive.json</argument>
-                                <argument>--override=true</argument>
+                                <argument>--file=${project.basedir}/data/adaptive-realm.json</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>export-realm</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
+                                <argument>export</argument>
+                                <argument>--dir=${project.basedir}/data</argument>
+                                <argument>--users=realm_file</argument>
+                                <argument>--realm=adaptive</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -144,10 +162,6 @@
                         </goals>
                         <configuration>
                             <executable>bash</executable>
-                            <environmentVariables>
-                                <KEYCLOAK_ADMIN>admin</KEYCLOAK_ADMIN>
-                                <KEYCLOAK_ADMIN_PASSWORD>admin</KEYCLOAK_ADMIN_PASSWORD>
-                            </environmentVariables>
                             <arguments>
                                 <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                 <argument>--debug</argument>

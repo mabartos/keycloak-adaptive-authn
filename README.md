@@ -6,6 +6,12 @@
 mvn clean install -DskipTests
 ```
 
+### Start Keycloak server with the extension
+
+```shell
+mvn exec:exec@start-server
+```
+
 ### Import Keycloak Adaptive realm
 
 It will import realm with data for the adaptive authentication
@@ -14,10 +20,12 @@ It will import realm with data for the adaptive authentication
 mvn exec:exec@import-realm
 ```
 
-### Start Keycloak server with the extension
+### Export Keycloak Adaptive realm
+
+It will export realm with data for the adaptive authentication
 
 ```shell
-mvn exec:exec@start-server
+mvn exec:exec@export-realm
 ```
 
 ### Common process of full execution
