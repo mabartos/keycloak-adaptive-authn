@@ -1,18 +1,32 @@
 package org.keycloak.adaptive.spi.policy;
 
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.services.AuthnPolicyConditionResource;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
+import org.keycloak.authentication.AuthenticationSelectionOption;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.authentication.FlowStatus;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
+import org.keycloak.common.ClientConnection;
+import org.keycloak.events.EventBuilder;
+import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.http.HttpRequest;
 import org.keycloak.models.AuthenticationExecutionModel;
+import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.utils.FormMessage;
+import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,7 +38,7 @@ public class AuthPolicyAuthenticator implements Authenticator {
         RealmModel realm = context.getRealm();
         KeycloakSession session = context.getSession();
         var authPolicies = realm.getAuthenticationFlowsStream()
-                .filter(f -> f.getDescription().equals("POLICY -")) // TODO have better approach how to determine it's auth policy flow
+                .filter(f -> f.getDescription().startsWith("POLICY -")) // TODO have better approach how to determine it's auth policy flow
                 .toList();
 
         boolean isSuccessful = true;
@@ -49,7 +63,10 @@ public class AuthPolicyAuthenticator implements Authenticator {
 
             var allConditionsMatch = conditions.entrySet()
                     .stream()
-                    .allMatch((entry) -> entry.getValue().matchCondition(context));
+                    .allMatch((entry) -> {
+                        var finalContext = new AuthenticationFlowContextWrapper(realm, context, entry.getKey().getAuthenticatorConfig()); // TODO not very good
+                        return entry.getValue().matchCondition(finalContext);
+                    });
 
             if (allConditionsMatch) {
                 actions.values().forEach(f -> f.authenticate(context));
