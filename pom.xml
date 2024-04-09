@@ -117,6 +117,26 @@
                 <version>${maven.plugins.exec.version}</version>
                 <executions>
                     <execution>
+                        <id>import-realm</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <environmentVariables>
+                                <KEYCLOAK_ADMIN>admin</KEYCLOAK_ADMIN>
+                                <KEYCLOAK_ADMIN_PASSWORD>admin</KEYCLOAK_ADMIN_PASSWORD>
+                            </environmentVariables>
+                            <arguments>
+                                <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
+                                <argument>import</argument>
+                                <argument>--file=${project.basedir}/realm-adaptive.json</argument>
+                                <argument>--override=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>start-server</id>
                         <phase>none</phase>
                         <goals>
@@ -130,6 +150,7 @@
                             </environmentVariables>
                             <arguments>
                                 <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
+                                <argument>--debug</argument>
                                 <argument>start-dev</argument>
                                 <argument>--log-level=org.keycloak.adaptive:debug</argument>
                             </arguments>
