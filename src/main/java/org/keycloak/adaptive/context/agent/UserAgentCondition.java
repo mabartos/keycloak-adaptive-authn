@@ -14,10 +14,12 @@ import java.util.Set;
 
 public class UserAgentCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
+    private final UserAgentContext userContext;
     private final Set<Operation<UserAgentContext>> rules;
 
-    public UserAgentCondition(KeycloakSession session, Set<Operation<UserAgentContext>> rules) {
+    public UserAgentCondition(KeycloakSession session, UserAgentContext userContext, Set<Operation<UserAgentContext>> rules) {
         this.session = session;
+        this.userContext = userContext;
         this.rules = rules;
     }
 
@@ -33,10 +35,9 @@ public class UserAgentCondition implements UserContextCondition, ConditionalAuth
             var userAgent = authConfig.getConfig().get(UserAgentConditionFactory.USER_AGENT_CONFIG);
 
             if (StringUtil.isBlank(operation) || StringUtil.isBlank(userAgent)) return false;
-            var uac = session.getProvider(UserAgentContext.class);
             return rules.stream()
                     .filter(f -> f.getText().equals(operation))
-                    .allMatch(f -> f.match(uac, userAgent));
+                    .allMatch(f -> f.match(userContext, userAgent));
         }
         return false;
     }

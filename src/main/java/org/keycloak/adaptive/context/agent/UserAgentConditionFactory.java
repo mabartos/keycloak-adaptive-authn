@@ -1,6 +1,8 @@
 package org.keycloak.adaptive.context.agent;
 
 import org.keycloak.Config;
+import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.factor.UserContextFactory;
 import org.keycloak.adaptive.spi.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.UserContextConditionFactory;
@@ -41,7 +43,13 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<Us
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new UserAgentCondition(session, rules);
+        final var context = session.getKeycloakSessionFactory()
+                .getProviderFactory(UserContext.class, HeaderUserAgentContextFactory.PROVIDER_ID);
+
+        if (context == null) {
+            throw new RuntimeException("Cannot find UserAgentContext provider factory");
+        }
+        return new UserAgentCondition(session, (UserAgentContext) context.create(session), rules);
     }
 
     @Override
