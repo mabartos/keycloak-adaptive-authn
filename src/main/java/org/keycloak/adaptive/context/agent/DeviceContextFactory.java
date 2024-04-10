@@ -5,12 +5,12 @@ import org.keycloak.adaptive.spi.factor.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
-public class HeaderUserAgentContextFactory implements UserContextFactory<UserAgentContext> {
+public class DeviceContextFactory implements UserContextFactory<DeviceContext> {
     public static final String PROVIDER_ID = "default-user-agent-risk-factor";
 
     @Override
-    public UserAgentContext create(KeycloakSession session) {
-        return new HeaderUserAgentContext(session);
+    public DeviceContext create(KeycloakSession session) {
+        return new DeviceContextProvider(session);
     }
 
     @Override

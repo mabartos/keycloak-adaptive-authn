@@ -7,16 +7,15 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class UserAgentEvaluator implements RiskFactorEvaluator<UserAgentContext> {
+public class UserAgentEvaluator implements RiskFactorEvaluator<DeviceContext> {
     private final KeycloakSession session;
-    private final UserAgentContext userAgentContext;
+    private final DeviceContext userAgentContext;
     private Double riskValue;
 
     public UserAgentEvaluator(KeycloakSession session) {
         this.session = session;
-        this.userAgentContext = (UserAgentContext) session.getProvider(UserContext.class, HeaderUserAgentContextFactory.PROVIDER_ID);
+        this.userAgentContext = (DeviceContext) session.getProvider(UserContext.class, DeviceContextFactory.PROVIDER_ID);
     }
 
     @Override
@@ -25,7 +24,7 @@ public class UserAgentEvaluator implements RiskFactorEvaluator<UserAgentContext>
     }
 
     @Override
-    public Collection<UserAgentContext> getUserContexts() {
+    public Collection<DeviceContext> getUserContexts() {
         return Set.of(userAgentContext);
     }
 

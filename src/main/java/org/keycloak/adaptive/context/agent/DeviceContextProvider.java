@@ -4,12 +4,12 @@ import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
 
-public class HeaderUserAgentContext implements UserAgentContext {
+public class DeviceContextProvider implements DeviceContext {
     private final KeycloakSession session;
     private boolean isInitialized;
     private DeviceRepresentation data;
 
-    public HeaderUserAgentContext(KeycloakSession session) {
+    public DeviceContextProvider(KeycloakSession session) {
         this.session = session;
         initData();
     }

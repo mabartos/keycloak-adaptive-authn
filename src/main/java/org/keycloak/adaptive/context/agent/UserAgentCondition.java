@@ -14,10 +14,10 @@ import java.util.Set;
 
 public class UserAgentCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
-    private final UserAgentContext userContext;
-    private final Set<Operation<UserAgentContext>> rules;
+    private final DeviceContext userContext;
+    private final Set<Operation<DeviceContext>> rules;
 
-    public UserAgentCondition(KeycloakSession session, UserAgentContext userContext, Set<Operation<UserAgentContext>> rules) {
+    public UserAgentCondition(KeycloakSession session, DeviceContext userContext, Set<Operation<DeviceContext>> rules) {
         this.session = session;
         this.userContext = userContext;
         this.rules = rules;

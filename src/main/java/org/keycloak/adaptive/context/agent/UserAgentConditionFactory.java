@@ -2,7 +2,6 @@ package org.keycloak.adaptive.context.agent;
 
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.factor.UserContext;
-import org.keycloak.adaptive.spi.factor.UserContextFactory;
 import org.keycloak.adaptive.spi.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.UserContextConditionFactory;
@@ -17,20 +16,20 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import java.util.List;
 import java.util.Set;
 
-public class UserAgentConditionFactory implements UserContextConditionFactory<UserAgentContext> {
+public class UserAgentConditionFactory implements UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-user-agent-authenticator";
     public static final String OPERATION_CONFIG = "operation";
     public static final String USER_AGENT_CONFIG = "user-agent-config";
 
-    private Set<Operation<UserAgentContext>> rules;
+    private Set<Operation<DeviceContext>> rules;
 
-    static Operation<UserAgentContext> RULE_EQ = new Operation<>(DefaultOperation.EQ,
+    static Operation<DeviceContext> RULE_EQ = new Operation<>(DefaultOperation.EQ,
             (ua, val) -> ua.getData().getBrowser().startsWith(val));
-    static Operation<UserAgentContext> RULE_NEQ = new Operation<>(DefaultOperation.NEQ,
+    static Operation<DeviceContext> RULE_NEQ = new Operation<>(DefaultOperation.NEQ,
             (ua, val) -> !ua.getData().getBrowser().startsWith(val));
-    static Operation<UserAgentContext> RULE_ANY_OF = new Operation<>(DefaultOperation.ANY_OF,
+    static Operation<DeviceContext> RULE_ANY_OF = new Operation<>(DefaultOperation.ANY_OF,
             (ua, val) -> List.of(val.split(",")).contains(ua.getData().getBrowser()));
-    static Operation<UserAgentContext> RULE_NONE_OF = new Operation<>(DefaultOperation.NONE_OF,
+    static Operation<DeviceContext> RULE_NONE_OF = new Operation<>(DefaultOperation.NONE_OF,
             (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getBrowser()));
 
     public UserAgentConditionFactory() {
@@ -44,12 +43,12 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<Us
     @Override
     public Authenticator create(KeycloakSession session) {
         final var context = session.getKeycloakSessionFactory()
-                .getProviderFactory(UserContext.class, HeaderUserAgentContextFactory.PROVIDER_ID);
+                .getProviderFactory(UserContext.class, DeviceContextFactory.PROVIDER_ID);
 
         if (context == null) {
             throw new RuntimeException("Cannot find UserAgentContext provider factory");
         }
-        return new UserAgentCondition(session, (UserAgentContext) context.create(session), rules);
+        return new UserAgentCondition(session, (DeviceContext) context.create(session), rules);
     }
 
     @Override
@@ -130,7 +129,7 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<Us
     }
 
     @Override
-    public Set<Operation<UserAgentContext>> getRules() {
+    public Set<Operation<DeviceContext>> getRules() {
         return rules;
     }
 

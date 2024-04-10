@@ -6,12 +6,12 @@ import org.keycloak.adaptive.spi.factor.RiskFactorEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
-public class UserAgentEvaluatorFactory implements RiskFactorEvaluatorFactory<UserAgentContext> {
+public class UserAgentEvaluatorFactory implements RiskFactorEvaluatorFactory<DeviceContext> {
 
     public static final String PROVIDER_ID = "default-user-agent-risk-factor-evaluator";
 
     @Override
-    public RiskFactorEvaluator<UserAgentContext> create(KeycloakSession session) {
+    public RiskFactorEvaluator<DeviceContext> create(KeycloakSession session) {
         return new UserAgentEvaluator(session);
     }
 
