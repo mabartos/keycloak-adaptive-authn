@@ -11,12 +11,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class KcUserRoleContext implements UserRoleContext {
+public class UserRoleContextProvider implements UserRoleContext {
     private final KeycloakSession session;
     private Set<RoleModel> data;
     private boolean isInitialized;
 
-    public KcUserRoleContext(KeycloakSession session) {
+    public UserRoleContextProvider(KeycloakSession session) {
         this.session = session;
         initData();
     }

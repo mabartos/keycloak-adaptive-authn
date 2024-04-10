@@ -1,2 +1,2 @@
 org.keycloak.adaptive.context.DeviceContextFactory
-org.keycloak.adaptive.context.role.KcUserRoleContextFactory
+org.keycloak.adaptive.context.role.UserRoleContextFactory
