@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-address-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1364,6 +1364,30 @@
       "userSetupAllowed" : false
     } ]
   }, {
+    "id" : "29297fd0-8fa9-47d1-930c-0609c7b9e01e",
+    "alias" : "POLICY - NO PHONE",
+    "description" : "POLICY - NO PHONE",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "NO PHONE",
+      "authenticator" : "conditional-mobile-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorConfig" : "NO PHONE",
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
     "id" : "627233a7-add2-44f4-a7a6-4db97bc4b6d3",
     "alias" : "POLICY - basic policy",
     "description" : "POLICY - basic policy",
@@ -1408,6 +1432,13 @@
       "priority" : 0,
       "autheticatorFlow" : true,
       "flowAlias" : "POLICY - basic policy",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 1,
+      "autheticatorFlow" : true,
+      "flowAlias" : "POLICY - NO PHONE",
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1783,6 +1814,18 @@
     "config" : {
       "operation" : "is equal to",
       "browser-config" : "Firefox"
+    }
+  }, {
+    "id" : "b867a55a-39a6-49f5-9d6b-feb8224e2ceb",
+    "alias" : "NO PHONE",
+    "config" : {
+      "is-mobile" : "true"
+    }
+  }, {
+    "id" : "a6a16a95-d0f8-43b5-a34b-8b6c9797ee96",
+    "alias" : "NO PHONE",
+    "config" : {
+      "denyErrorMessage" : "You cannot access application on your mobile phone"
     }
   }, {
     "id" : "572e175f-fb4c-404c-8a3d-c2110facdd7a",
