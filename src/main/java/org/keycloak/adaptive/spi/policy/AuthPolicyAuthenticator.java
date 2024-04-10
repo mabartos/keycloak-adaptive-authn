@@ -1,34 +1,22 @@
 package org.keycloak.adaptive.spi.policy;
 
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.services.AuthnPolicyConditionResource;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
-import org.keycloak.authentication.AuthenticationSelectionOption;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.authentication.FlowStatus;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
-import org.keycloak.common.ClientConnection;
-import org.keycloak.events.EventBuilder;
-import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.http.HttpRequest;
 import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
-import org.keycloak.models.utils.FormMessage;
-import org.keycloak.services.managers.BruteForceProtector;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AuthPolicyAuthenticator implements Authenticator {
     private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
@@ -38,8 +26,8 @@ public class AuthPolicyAuthenticator implements Authenticator {
         RealmModel realm = context.getRealm();
         KeycloakSession session = context.getSession();
         var authPolicies = realm.getAuthenticationFlowsStream()
-                .filter(f -> f.getDescription().startsWith("POLICY -")) // TODO have better approach how to determine it's auth policy flow
-                .toList();
+                .filter(f -> f.getAlias().startsWith("POLICY -")) // TODO have better approach how to determine it's auth policy flow
+                .collect(Collectors.toSet());
 
         boolean isSuccessful = true;
 
@@ -49,6 +37,8 @@ public class AuthPolicyAuthenticator implements Authenticator {
 
             realm.getAuthenticationExecutionsStream(policy.getId())
                     .filter(Objects::nonNull)
+                    .filter(f -> !f.isDisabled())
+                    .flatMap(f -> f.isAuthenticatorFlow() ? realm.getAuthenticationExecutionsStream(f.getFlowId()) : Stream.of(f))
                     .forEach(f -> {
                         var authFactory = context.getSession().getKeycloakSessionFactory().getProviderFactory(Authenticator.class, f.getAuthenticator());
                         if (authFactory != null) {
@@ -81,7 +71,6 @@ public class AuthPolicyAuthenticator implements Authenticator {
             context.success();
         } else {
             logger.debug("Auth policies evaluated to false");
-            context.failure(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
         }
     }
 

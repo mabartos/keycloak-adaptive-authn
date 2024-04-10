@@ -24,9 +24,9 @@ public class OperationsBuilder<T> {
     }
 
     public class OperationBuilder<U> {
-        private String symbol;
-        private String text;
-        private BiPredicate<T, String> condition;
+        private String symbol = "";
+        private String text = "";
+        private BiPredicate<T, String> condition = (k, v) -> false;
 
         private OperationBuilder() {
         }
