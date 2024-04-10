@@ -4,7 +4,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
-import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.AuthenticationSelectionOption;
 import org.keycloak.authentication.FlowStatus;
 import org.keycloak.common.ClientConnection;
@@ -25,12 +24,10 @@ import java.net.URI;
 import java.util.List;
 
 public class AuthenticationFlowContextWrapper implements AuthenticationFlowContext {
-    private final RealmModel realm;
     private final AuthenticationFlowContext delegate;
     private final AuthenticatorConfigModel configModel;
 
     public AuthenticationFlowContextWrapper(RealmModel realm, AuthenticationFlowContext delegate, String authenticatorConfigId) {
-        this.realm = realm;
         this.delegate = delegate;
         this.configModel = realm.getAuthenticatorConfigById(authenticatorConfigId);
     }
@@ -41,7 +38,6 @@ public class AuthenticationFlowContextWrapper implements AuthenticationFlowConte
     }
 
     // DELEGATED
-
     @Override
     public UserModel getUser() {
         return delegate.getUser();
@@ -149,126 +145,126 @@ public class AuthenticationFlowContextWrapper implements AuthenticationFlowConte
 
     @Override
     public AuthenticationExecutionModel getExecution() {
-        return null;
+        return delegate.getExecution();
     }
 
     @Override
     public RealmModel getRealm() {
-        return null;
+        return delegate.getRealm();
     }
 
     @Override
     public ClientConnection getConnection() {
-        return null;
+        return delegate.getConnection();
     }
 
     @Override
     public UriInfo getUriInfo() {
-        return null;
+        return delegate.getUriInfo();
     }
 
     @Override
     public KeycloakSession getSession() {
-        return null;
+        return delegate.getSession();
     }
 
     @Override
     public HttpRequest getHttpRequest() {
-        return null;
+        return delegate.getHttpRequest();
     }
 
     @Override
     public BruteForceProtector getProtector() {
-        return null;
+        return delegate.getProtector();
     }
 
     @Override
     public FormMessage getForwardedErrorMessage() {
-        return null;
+        return delegate.getForwardedErrorMessage();
     }
 
     @Override
     public FormMessage getForwardedSuccessMessage() {
-        return null;
+        return delegate.getForwardedSuccessMessage();
     }
 
     @Override
     public FormMessage getForwardedInfoMessage() {
-        return null;
+        return delegate.getForwardedInfoMessage();
     }
 
     @Override
     public void setForwardedInfoMessage(String message, Object... parameters) {
-
+        delegate.setForwardedInfoMessage(message, parameters);
     }
 
     @Override
     public String generateAccessCode() {
-        return null;
+        return delegate.generateAccessCode();
     }
 
     @Override
     public AuthenticationExecutionModel.Requirement getCategoryRequirementFromCurrentFlow(String authenticatorCategory) {
-        return null;
+        return delegate.getCategoryRequirementFromCurrentFlow(authenticatorCategory);
     }
 
     @Override
     public void success() {
-
+        delegate.success();
     }
 
     @Override
     public void failure(AuthenticationFlowError error) {
-
+        delegate.failure(error);
     }
 
     @Override
     public void failure(AuthenticationFlowError error, Response response) {
-
+        delegate.failure(error, response);
     }
 
     @Override
     public void failure(AuthenticationFlowError error, Response response, String eventDetails, String userErrorMessage) {
-
+        delegate.failure(error, response, eventDetails, userErrorMessage);
     }
 
     @Override
     public void challenge(Response challenge) {
-
+        delegate.challenge(challenge);
     }
 
     @Override
     public void forceChallenge(Response challenge) {
-
+        delegate.forceChallenge(challenge);
     }
 
     @Override
     public void failureChallenge(AuthenticationFlowError error, Response challenge) {
-
+        delegate.failureChallenge(error, challenge);
     }
 
     @Override
     public void attempted() {
-
+        delegate.attempted();
     }
 
     @Override
     public FlowStatus getStatus() {
-        return null;
+        return delegate.getStatus();
     }
 
     @Override
     public AuthenticationFlowError getError() {
-        return null;
+        return delegate.getError();
     }
 
     @Override
     public String getEventDetails() {
-        return null;
+        return delegate.getEventDetails();
     }
 
     @Override
     public String getUserErrorMessage() {
-        return null;
+        return delegate.getUserErrorMessage();
     }
 }
