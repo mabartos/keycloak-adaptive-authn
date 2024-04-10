@@ -1,12 +1,13 @@
 package org.keycloak.adaptive.context.agent;
 
-import jakarta.ws.rs.core.HttpHeaders;
+import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.representations.account.DeviceRepresentation;
 
 public class HeaderUserAgentContext implements UserAgentContext {
     private final KeycloakSession session;
     private boolean isInitialized;
-    private UserAgent data;
+    private DeviceRepresentation data;
 
     public HeaderUserAgentContext(KeycloakSession session) {
         this.session = session;
@@ -20,21 +21,12 @@ public class HeaderUserAgentContext implements UserAgentContext {
 
     @Override
     public void initData() {
-        final String agent = session.getContext()
-                .getRequestHeaders()
-                .getHeaderString(HttpHeaders.USER_AGENT);
-
-        this.data = DefaultUserAgents.KNOWN_AGENTS
-                .stream()
-                .filter(f -> f.getName().contains(agent))
-                .findAny()
-                .orElse(() -> agent);
-
+        this.data = session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation();
         this.isInitialized = true;
     }
 
     @Override
-    public UserAgent getData() {
+    public DeviceRepresentation getData() {
         return data;
     }
 }

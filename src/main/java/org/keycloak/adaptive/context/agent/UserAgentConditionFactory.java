@@ -25,13 +25,13 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<Us
     private Set<Operation<UserAgentContext>> rules;
 
     static Operation<UserAgentContext> RULE_EQ = new Operation<>(DefaultOperation.EQ,
-            (ua, val) -> ua.getData().getName().equals(val));
+            (ua, val) -> ua.getData().getBrowser().startsWith(val));
     static Operation<UserAgentContext> RULE_NEQ = new Operation<>(DefaultOperation.NEQ,
-            (ua, val) -> ua.getData().getName().equals(val));
+            (ua, val) -> !ua.getData().getBrowser().startsWith(val));
     static Operation<UserAgentContext> RULE_ANY_OF = new Operation<>(DefaultOperation.ANY_OF,
-            (ua, val) -> List.of(val.split(",")).contains(ua.getData().getName()));
+            (ua, val) -> List.of(val.split(",")).contains(ua.getData().getBrowser()));
     static Operation<UserAgentContext> RULE_NONE_OF = new Operation<>(DefaultOperation.NONE_OF,
-            (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getName()));
+            (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getBrowser()));
 
     public UserAgentConditionFactory() {
     }
@@ -99,7 +99,7 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<Us
                 .helpText(USER_AGENT_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
                 .defaultValue("")
-                .options(DefaultUserAgents.KNOWN_AGENTS.stream().map(UserAgent::getName).toList())
+                .options(DefaultUserAgents.KNOWN_AGENTS.stream().toList())
                 .add()
                 .build();
     }

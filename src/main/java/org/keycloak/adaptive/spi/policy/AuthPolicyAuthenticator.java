@@ -70,11 +70,10 @@ public class AuthPolicyAuthenticator implements Authenticator {
 
             if (allConditionsMatch) {
                 actions.values().forEach(f -> f.authenticate(context));
-                isSuccessful &= actions.keySet().stream().allMatch(f -> isSuccessful(context.getAuthenticationSession(), f));
+                isSuccessful = actions.keySet().stream().allMatch(f -> isSuccessful(context.getAuthenticationSession(), f));
             } else {
-                context.failure(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
+                isSuccessful = true;
                 logger.warn("Flow is not OK");
-                break;
             }
         }
 
