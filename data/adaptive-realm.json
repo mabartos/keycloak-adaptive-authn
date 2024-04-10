@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-address-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1371,7 +1371,7 @@
     "topLevel" : false,
     "builtIn" : false,
     "authenticationExecutions" : [ {
-      "authenticatorConfig" : "IS MOZILLA",
+      "authenticatorConfig" : "NO FIREFOX",
       "authenticator" : "conditional-user-agent-authenticator",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
@@ -1379,11 +1379,19 @@
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     }, {
-      "authenticatorConfig" : "NO MOZILLA ALLOWED",
-      "authenticator" : "deny-access-authenticator",
+      "authenticatorConfig" : "NO WINDOWS",
+      "authenticator" : "conditional-os-authenticator",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorConfig" : "DENY_FIREFOX_WINDOWS",
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 2,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
@@ -1764,17 +1772,24 @@
     } ]
   } ],
   "authenticatorConfig" : [ {
-    "id" : "e0ff37c0-340a-494c-948f-6268ab716694",
-    "alias" : "IS MOZILLA",
+    "id" : "72c1f172-2cb9-4a6a-a1ae-bb8a50f6396b",
+    "alias" : "DENY_FIREFOX_WINDOWS",
     "config" : {
-      "operation" : "is equal to",
-      "user-agent-config" : "Firefox"
+      "denyErrorMessage" : "You cannot use Firefox on Windows"
     }
   }, {
-    "id" : "5aeb9b8c-fab3-459d-b3d0-ff07e8606dc8",
-    "alias" : "NO MOZILLA ALLOWED",
+    "id" : "de71eaa8-73f9-4f0b-8ef3-c15fecb17080",
+    "alias" : "NO FIREFOX",
     "config" : {
-      "denyErrorMessage" : "You cannot use Mozilla"
+      "operation" : "is equal to",
+      "browser-config" : "Firefox"
+    }
+  }, {
+    "id" : "572e175f-fb4c-404c-8a3d-c2110facdd7a",
+    "alias" : "NO WINDOWS",
+    "config" : {
+      "os-config" : "Windows",
+      "operation" : "is equal to"
     }
   }, {
     "id" : "2d5e3cb5-a7dc-44a2-a82c-f8460e827448",

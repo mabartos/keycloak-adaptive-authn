@@ -1,1 +1,2 @@
 org.keycloak.adaptive.context.browser.BrowserConditionFactory
+org.keycloak.adaptive.context.os.OperatingSystemConditionFactory
