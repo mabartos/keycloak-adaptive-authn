@@ -6,6 +6,12 @@
 ./mvnw clean install -DskipTests
 ```
 
+or
+
+```shell
+./mvnw exec:exec@compile
+```
+
 ### Start Keycloak server with the extension
 
 ```shell
@@ -31,7 +37,7 @@ It will export realm with data for the adaptive authentication
 ### Common process of full execution
 
 ```shell
-./mvnw clean install -DskipTests && ./mvnw exec:exec@import-realm exec:exec@start-server
+./mvnw exec:exec@compile exec:exec@import-realm exec:exec@start-server
 ```
 
 #### Execute with specific version of Keycloak (f.e with 24.0.1)
