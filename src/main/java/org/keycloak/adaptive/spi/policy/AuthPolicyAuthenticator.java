@@ -3,7 +3,6 @@ package org.keycloak.adaptive.spi.policy;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.services.AuthnPolicyConditionResource;
 import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -28,8 +27,6 @@ public class AuthPolicyAuthenticator implements Authenticator {
         var authPolicies = realm.getAuthenticationFlowsStream()
                 .filter(f -> f.getAlias().startsWith("POLICY -")) // TODO have better approach how to determine it's auth policy flow
                 .collect(Collectors.toSet());
-
-        boolean isSuccessful = true;
 
         for (var policy : authPolicies) {
             Map<AuthenticationExecutionModel, ConditionalAuthenticator> conditions = new HashMap<>();
@@ -60,24 +57,14 @@ public class AuthPolicyAuthenticator implements Authenticator {
 
             if (allConditionsMatch) {
                 actions.values().forEach(f -> f.authenticate(context));
-                isSuccessful = actions.keySet().stream().allMatch(f -> isSuccessful(context.getAuthenticationSession(), f));
             } else {
-                isSuccessful = true;
                 logger.warn("Flow is not OK");
             }
         }
 
-        if (isSuccessful) {
+        if (context.getStatus() == null) {
             context.success();
-        } else {
-            logger.debug("Auth policies evaluated to false");
         }
-    }
-
-    public static boolean isSuccessful(AuthenticationSessionModel session, AuthenticationExecutionModel model) {
-        AuthenticationSessionModel.ExecutionStatus status = session.getExecutionStatus().get(model.getId());
-        if (status == null) return false;
-        return status == AuthenticationSessionModel.ExecutionStatus.SUCCESS;
     }
 
     @Override
