@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.context.agent;
+package org.keycloak.adaptive.context;
 
 import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;

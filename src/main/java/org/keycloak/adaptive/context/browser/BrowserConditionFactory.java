@@ -1,6 +1,8 @@
-package org.keycloak.adaptive.context.agent;
+package org.keycloak.adaptive.context.browser;
 
 import org.keycloak.Config;
+import org.keycloak.adaptive.context.DeviceContext;
+import org.keycloak.adaptive.context.DeviceContextFactory;
 import org.keycloak.adaptive.spi.factor.UserContext;
 import org.keycloak.adaptive.spi.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.policy.Operation;
@@ -16,10 +18,10 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import java.util.List;
 import java.util.Set;
 
-public class UserAgentConditionFactory implements UserContextConditionFactory<DeviceContext> {
+public class BrowserConditionFactory implements UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-user-agent-authenticator";
     public static final String OPERATION_CONFIG = "operation";
-    public static final String USER_AGENT_CONFIG = "user-agent-config";
+    public static final String BROWSER_CONFIG = "browser-config";
 
     private Set<Operation<DeviceContext>> rules;
 
@@ -32,7 +34,7 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<De
     static Operation<DeviceContext> RULE_NONE_OF = new Operation<>(DefaultOperation.NONE_OF,
             (ua, val) -> !List.of(val.split(",")).contains(ua.getData().getBrowser()));
 
-    public UserAgentConditionFactory() {
+    public BrowserConditionFactory() {
     }
 
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -46,9 +48,9 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<De
                 .getProviderFactory(UserContext.class, DeviceContextFactory.PROVIDER_ID);
 
         if (context == null) {
-            throw new RuntimeException("Cannot find UserAgentContext provider factory");
+            throw new RuntimeException("Cannot find DeviceContext provider factory");
         }
-        return new UserAgentCondition(session, (DeviceContext) context.create(session), rules);
+        return new BrowserCondition(session, (DeviceContext) context.create(session), rules);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<De
 
     @Override
     public String getHelpText() {
-        return "Condition matching user agent";
+        return "Condition matching browser";
     }
 
     @Override
@@ -93,19 +95,19 @@ public class UserAgentConditionFactory implements UserContextConditionFactory<De
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .add()
                 .property()
-                .name(USER_AGENT_CONFIG)
-                .label(USER_AGENT_CONFIG)
-                .helpText(USER_AGENT_CONFIG + ".tooltip")
+                .name(BROWSER_CONFIG)
+                .label(BROWSER_CONFIG)
+                .helpText(BROWSER_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
                 .defaultValue("")
-                .options(DefaultUserAgents.KNOWN_AGENTS.stream().toList())
+                .options(DefaultBrowsers.DEFAULT_BROWSERS.stream().toList())
                 .add()
                 .build();
     }
 
     @Override
     public String getDisplayType() {
-        return "Condition - User Agent";
+        return "Condition - Browser";
     }
 
     @Override

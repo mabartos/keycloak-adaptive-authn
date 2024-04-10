@@ -1,5 +1,6 @@
-package org.keycloak.adaptive.context.agent;
+package org.keycloak.adaptive.context.browser;
 
+import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -12,14 +13,14 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Set;
 
-public class UserAgentCondition implements UserContextCondition, ConditionalAuthenticator {
+public class BrowserCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
-    private final DeviceContext userContext;
+    private final DeviceContext deviceContext;
     private final Set<Operation<DeviceContext>> rules;
 
-    public UserAgentCondition(KeycloakSession session, DeviceContext userContext, Set<Operation<DeviceContext>> rules) {
+    public BrowserCondition(KeycloakSession session, DeviceContext deviceContext, Set<Operation<DeviceContext>> rules) {
         this.session = session;
-        this.userContext = userContext;
+        this.deviceContext = deviceContext;
         this.rules = rules;
     }
 
@@ -31,13 +32,13 @@ public class UserAgentCondition implements UserContextCondition, ConditionalAuth
     public boolean matchCondition(AuthenticationFlowContext context) {
         AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
         if (authConfig != null) {
-            var operation = authConfig.getConfig().get(UserAgentConditionFactory.OPERATION_CONFIG);
-            var userAgent = authConfig.getConfig().get(UserAgentConditionFactory.USER_AGENT_CONFIG);
+            var operation = authConfig.getConfig().get(BrowserConditionFactory.OPERATION_CONFIG);
+            var browser = authConfig.getConfig().get(BrowserConditionFactory.BROWSER_CONFIG);
 
-            if (StringUtil.isBlank(operation) || StringUtil.isBlank(userAgent)) return false;
+            if (StringUtil.isBlank(operation) || StringUtil.isBlank(browser)) return false;
             return rules.stream()
                     .filter(f -> f.getText().equals(operation))
-                    .allMatch(f -> f.match(userContext, userAgent));
+                    .allMatch(f -> f.match(deviceContext, browser));
         }
         return false;
     }

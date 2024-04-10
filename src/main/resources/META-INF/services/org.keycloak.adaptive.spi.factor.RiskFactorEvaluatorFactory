@@ -1,2 +1,2 @@
- org.keycloak.adaptive.context.agent.UserAgentEvaluatorFactory
+ org.keycloak.adaptive.context.browser.BrowserRiskEvaluatorFactory
  org.keycloak.adaptive.context.role.DefaultUserRoleEvaluatorFactory

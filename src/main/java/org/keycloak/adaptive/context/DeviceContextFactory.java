@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.context.agent;
+package org.keycloak.adaptive.context;
 
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.factor.UserContextFactory;
