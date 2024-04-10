@@ -33,11 +33,11 @@ public class BrowserRiskEvaluator implements RiskFactorEvaluator<DeviceContext> 
     @Override
     public void evaluate() {
         var agents = String.join(",", DefaultBrowsers.DEFAULT_BROWSERS);
-        var anyOfKnownAgents = BrowserConditionFactory.RULE_ANY_OF.match(userAgentContext, agents);
+        /*var anyOfKnownAgents = BrowserConditionFactory.RULE_ANY_OF.match(userAgentContext, agents);
         if (anyOfKnownAgents) {
             this.riskValue = RiskConfidence.VERY_CONFIDENT;
         } else {
             this.riskValue = RiskConfidence.SMALL;
-        }
+        }*/
     }
 }
