@@ -134,6 +134,7 @@
                                 <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                 <argument>import</argument>
                                 <argument>--file=${project.basedir}/data/adaptive-realm.json</argument>
+                                <argument>--optimized</argument>
                             </arguments>
                         </configuration>
                     </execution>
