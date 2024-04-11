@@ -1,0 +1,1 @@
+JS files for the Keycloak application
