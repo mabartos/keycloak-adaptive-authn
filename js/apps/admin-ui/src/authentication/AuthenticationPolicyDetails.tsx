@@ -32,12 +32,10 @@ import { BindFlowDialog } from "./BindFlowDialog";
 import { BuildInLabel } from "./BuildInLabel";
 import { DuplicateFlowModal } from "./DuplicateFlowModal";
 import { EditFlowModal } from "./EditFlowModal";
-import { EmptyExecutionState } from "./EmptyExecutionState";
 import { FlowDiagram } from "./components/FlowDiagram";
 import { FlowHeader } from "./components/FlowHeader";
 import { FlowRow } from "./components/FlowRow";
 import { AddStepModal } from "./components/modals/AddStepModal";
-import { AddSubFlowModal, Flow } from "./components/modals/AddSubFlowModal";
 import {
     ExecutionList,
     ExpandableExecution,
@@ -46,6 +44,9 @@ import {
 } from "./execution-model";
 import { toAuthentication } from "./routes/Authentication";
 import { toFlow, type FlowParams } from "./routes/Flow";
+import {EmptyAuthenticationPolicy} from "./EmptyAuthenticationPolicy";
+import {AddSubPolicyModal, Policy} from "./components/modals/AddSubPolicyModal";
+import {Flow} from "./components/modals/AddSubFlowModal";
 
 export const providerConditionFilter = (
     value: AuthenticationProviderRepresentation,
@@ -61,8 +62,8 @@ export default function AuthenticationPolicyDetails() {
     const refresh = () => setKey(new Date().getTime());
 
     const [tableView, setTableView] = useState(true);
-    const [flow, setFlow] = useState<AuthenticationFlowRepresentation>();
-    const [executionList, setExecutionList] = useState<ExecutionList>();
+    const [policy, setPolicy] = useState<AuthenticationFlowRepresentation>();
+    const [conditionList, setConditionList] = useState<ExecutionList>();
     const [liveText, setLiveText] = useState("");
 
     const [showAddExecutionDialog, setShowAddExecutionDialog] =
@@ -86,11 +87,11 @@ export default function AuthenticationPolicyDetails() {
                 await adminClient.authenticationManagement.getExecutions({
                     flow: flow.alias!,
                 });
-            return { flow, executions };
+            return { flow, executions};
         },
         ({ flow, executions }) => {
-            setFlow(flow);
-            setExecutionList(new ExecutionList(executions));
+            setPolicy(flow);
+            setConditionList(new ExecutionList(executions));
         },
         [key],
     );
@@ -118,7 +119,7 @@ export default function AuthenticationPolicyDetails() {
                     const executionFlow = ex as ExpandableExecution;
                     const result =
                         await adminClient.authenticationManagement.addFlowToFlow({
-                            flow: change.parent?.displayName! || flow?.alias!,
+                            flow: change.parent?.displayName! || policy?.alias!,
                             alias: executionFlow.displayName!,
                             description: executionFlow.description!,
                             provider: ex.providerId!,
@@ -135,7 +136,7 @@ export default function AuthenticationPolicyDetails() {
                 } else {
                     const result =
                         await adminClient.authenticationManagement.addExecutionToFlow({
-                            flow: change.parent?.displayName! || flow?.alias!,
+                            flow: change.parent?.displayName! || policy?.alias!,
                             provider: ex.providerId!,
                         });
 
@@ -175,7 +176,7 @@ export default function AuthenticationPolicyDetails() {
         const { executionList, isCollapsed, ...ex } = execution;
         try {
             await adminClient.authenticationManagement.updateExecution(
-                { flow: flow?.alias! },
+                {flow: policy?.alias!},
                 ex,
             );
             refresh();
@@ -192,7 +193,7 @@ export default function AuthenticationPolicyDetails() {
         try {
             await adminClient.authenticationManagement.addExecutionToFlow({
                 flow: name,
-                provider: type.id!,
+                provider: type.id!
             });
             refresh();
             addAlert(t("updateFlowSuccess"), AlertVariant.success);
@@ -201,9 +202,9 @@ export default function AuthenticationPolicyDetails() {
         }
     };
 
-    const addFlow = async (
+    const addPolicy = async (
         flow: string,
-        { name, description = "", type, provider }: Flow,
+        { name, description = "", type, provider }: Policy,
     ) => {
         try {
             await adminClient.authenticationManagement.addFlowToFlow({
@@ -248,7 +249,7 @@ export default function AuthenticationPolicyDetails() {
         children: (
             <Trans i18nKey="deleteConfirmFlowMessage">
                 {" "}
-                <strong>{{ flow: flow?.alias || "" }}</strong>.
+                <strong>{{flow: policy?.alias || ""}}</strong>.
             </Trans>
         ),
         continueButtonLabel: "delete",
@@ -256,7 +257,7 @@ export default function AuthenticationPolicyDetails() {
         onConfirm: async () => {
             try {
                 await adminClient.authenticationManagement.deleteFlow({
-                    flowId: flow!.id!,
+                    flowId: policy!.id!,
                 });
                 navigate(toAuthentication({ realm }));
                 addAlert(t("deleteFlowSuccess"), AlertVariant.success);
@@ -266,48 +267,34 @@ export default function AuthenticationPolicyDetails() {
         },
     });
 
-    const hasExecutions = executionList?.expandableList.length !== 0;
+    const hasExecutions = conditionList?.expandableList.length !== 0;
 
     const dropdownItems = [
-        ...(usedBy !== "DEFAULT"
-            ? [
-                <DropdownItem
-                    data-testid="set-as-default"
-                    key="default"
-                    onClick={toggleBindFlow}
-                >
-                    {t("bindFlow")}
-                </DropdownItem>,
-            ]
-            : []),
         <DropdownItem key="duplicate" onClick={() => setOpen(true)}>
             {t("duplicate")}
         </DropdownItem>,
-        ...(!builtIn
-            ? [
-                <DropdownItem
-                    data-testid="edit-flow"
-                    key="edit"
-                    onClick={() => setEdit(true)}
-                >
-                    {t("editInfo")}
-                </DropdownItem>,
-                <DropdownItem
-                    data-testid="delete-flow"
-                    key="delete"
-                    onClick={() => toggleDeleteFlow()}
-                >
-                    {t("delete")}
-                </DropdownItem>,
-            ]
-            : []),
+
+        <DropdownItem
+            data-testid="edit-flow"
+            key="edit"
+            onClick={() => setEdit(true)}
+        >
+            {t("editInfo")}
+        </DropdownItem>,
+        <DropdownItem
+            data-testid="delete-flow"
+            key="delete"
+            onClick={() => toggleDeleteFlow()}
+        >
+            {t("delete")}
+        </DropdownItem>,
     ];
 
     return (
         <>
             {bindFlowOpen && (
                 <BindFlowDialog
-                    flowAlias={flow?.alias!}
+                    flowAlias={policy?.alias!}
                     onClose={(usedBy) => {
                         toggleBindFlow();
                         navigate(
@@ -323,8 +310,8 @@ export default function AuthenticationPolicyDetails() {
             )}
             {open && (
                 <DuplicateFlowModal
-                    name={flow?.alias!}
-                    description={flow?.description!}
+                    name={policy?.alias!}
+                    description={policy?.description!}
                     toggleDialog={toggleOpen}
                     onComplete={() => {
                         refresh();
@@ -334,7 +321,7 @@ export default function AuthenticationPolicyDetails() {
             )}
             {edit && (
                 <EditFlowModal
-                    flow={flow!}
+                    flow={policy!}
                     toggleDialog={() => {
                         setEdit(!edit);
                         refresh();
@@ -344,7 +331,7 @@ export default function AuthenticationPolicyDetails() {
             <DeleteFlowConfirm />
 
             <ViewHeader
-                titleKey={flow?.alias || ""}
+                titleKey={policy?.alias || ""}
                 badges={[
                     { text: <Label>{t(`used.${usedBy}`)}</Label> },
                     builtIn
@@ -357,7 +344,7 @@ export default function AuthenticationPolicyDetails() {
                 dropdownItems={dropdownItems}
             />
             <PageSection variant="light">
-                {executionList && hasExecutions && (
+                {conditionList && hasExecutions && (
                     <>
                         <Toolbar id="toolbar">
                             <ToolbarContent>
@@ -403,29 +390,29 @@ export default function AuthenticationPolicyDetails() {
                         {tableView && (
                             <DragDrop
                                 onDrag={({ index }) => {
-                                    const item = executionList.findExecution(index)!;
+                                    const item = conditionList.findExecution(index)!;
                                     setLiveText(t("onDragStart", { item: item.displayName }));
                                     if (!item.isCollapsed) {
                                         item.isCollapsed = true;
-                                        setExecutionList(executionList.clone());
+                                        setConditionList(conditionList.clone());
                                     }
                                     return true;
                                 }}
                                 onDragMove={({ index }) => {
-                                    const dragged = executionList.findExecution(index);
+                                    const dragged = conditionList.findExecution(index);
                                     setLiveText(t("onDragMove", { item: dragged?.displayName }));
                                 }}
                                 onDrop={(source, dest) => {
                                     if (dest) {
-                                        const dragged = executionList.findExecution(source.index)!;
-                                        const order = executionList.order().map((ex) => ex.id!);
+                                        const dragged = conditionList.findExecution(source.index)!;
+                                        const order = conditionList.order().map((ex) => ex.id!);
                                         setLiveText(
                                             t("onDragFinish", { list: dragged.displayName }),
                                         );
 
                                         const [removed] = order.splice(source.index, 1);
                                         order.splice(dest.index, 0, removed);
-                                        const change = executionList.getChange(dragged, order);
+                                        const change = conditionList.getChange(dragged, order);
                                         executeChange(dragged, change);
                                         return true;
                                     } else {
@@ -438,21 +425,21 @@ export default function AuthenticationPolicyDetails() {
                                     <DataList aria-label={t("flows")}>
                                         <FlowHeader />
                                         <>
-                                            {executionList.expandableList.map((execution) => (
+                                            {conditionList.expandableList.map((execution) => (
                                                 <FlowRow
                                                     builtIn={!!builtIn}
                                                     key={execution.id}
                                                     execution={execution}
                                                     onRowClick={(execution) => {
                                                         execution.isCollapsed = !execution.isCollapsed;
-                                                        setExecutionList(executionList.clone());
+                                                        setConditionList(conditionList.clone());
                                                     }}
                                                     onRowChange={update}
                                                     onAddExecution={(execution, type) =>
                                                         addExecution(execution.displayName!, type)
                                                     }
                                                     onAddFlow={(execution, flow) =>
-                                                        addFlow(execution.displayName!, flow)
+                                                        addPolicy(execution.displayName!, flow as Policy)
                                                     }
                                                     onDelete={(execution) => {
                                                         setSelectedExecution(execution);
@@ -465,28 +452,26 @@ export default function AuthenticationPolicyDetails() {
                                 </Droppable>
                             </DragDrop>
                         )}
-                        {flow && (
+                        {policy && (
                             <>
                                 {showAddExecutionDialog && (
                                     <AddStepModal
-                                        name={flow.alias!}
-                                        type={
-                                            flow.providerId === "client-flow" ? "client" : "basic"
-                                        }
+                                        name={policy.alias!}
+                                        type={"condition"}
                                         onSelect={(type) => {
                                             if (type) {
-                                                addExecution(flow.alias!, type);
+                                                addExecution(policy.alias!, type);
                                             }
                                             setShowAddExecutionDialog(false);
                                         }}
                                     />
                                 )}
                                 {showAddSubFlowDialog && (
-                                    <AddSubFlowModal
-                                        name={flow.alias!}
+                                    <AddSubPolicyModal
+                                        name={policy.alias!}
                                         onCancel={() => setShowSubFlowDialog(false)}
                                         onConfirm={(newFlow) => {
-                                            addFlow(flow.alias!, newFlow);
+                                            addPolicy(policy.alias!, newFlow);
                                             setShowSubFlowDialog(false);
                                         }}
                                     />
@@ -498,15 +483,15 @@ export default function AuthenticationPolicyDetails() {
                         </div>
                     </>
                 )}
-                {!tableView && executionList?.expandableList && (
-                    <FlowDiagram executionList={executionList} />
+                {!tableView && conditionList?.expandableList && (
+                    <FlowDiagram executionList={conditionList}/>
                 )}
-                {!executionList?.expandableList ||
-                    (flow && !hasExecutions && (
-                        <EmptyExecutionState
-                            flow={flow}
-                            onAddExecution={(type) => addExecution(flow.alias!, type)}
-                            onAddFlow={(newFlow) => addFlow(flow.alias!, newFlow)}
+                {!conditionList?.expandableList ||
+                    (policy && !hasExecutions && (
+                        <EmptyAuthenticationPolicy
+                            policy={policy}
+                            onAddCondition={(type) => addExecution(policy.alias!, type)}
+                            onAddSubPolicy={(newFlow) => addPolicy(policy.alias!, newFlow)}
                         />
                     ))}
             </PageSection>

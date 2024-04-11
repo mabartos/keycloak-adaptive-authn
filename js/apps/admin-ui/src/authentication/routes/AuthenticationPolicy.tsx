@@ -13,7 +13,7 @@ const AuthenticationPolicyDetails = lazy(() => import("../AuthenticationPolicyDe
 export const AuthenticationPolicyRoute: AppRouteObject = {
     path: "/:realm/authentication/authn-policy/:id/",
     element: <AuthenticationPolicyDetails/>,
-    breadcrumb: (t) => t("flowDetails"),
+    breadcrumb: (t) => t("authPolicyDetails"),
     handle: {
         access: "view-authorization",
     },
