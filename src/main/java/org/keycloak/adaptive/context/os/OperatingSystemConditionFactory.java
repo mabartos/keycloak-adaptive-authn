@@ -84,9 +84,4 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .add()
                 .build();
     }
-
-    public List<String> getRulesTexts() {
-        return getRules().stream().map(Operation::getText).toList();
-    }
 }
-

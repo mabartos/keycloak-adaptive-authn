@@ -1,3 +1,4 @@
 org.keycloak.adaptive.context.browser.BrowserConditionFactory
 org.keycloak.adaptive.context.os.OperatingSystemConditionFactory
 org.keycloak.adaptive.context.os.PhoneConditionFactory
+org.keycloak.adaptive.context.ip.IpAddressConditionFactory

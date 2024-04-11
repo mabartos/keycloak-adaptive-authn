@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1361,6 +1361,44 @@
       "priority" : 20,
       "autheticatorFlow" : true,
       "flowAlias" : "Account verification options",
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "3fc7778f-818f-42a8-bf7f-f16a77598dc7",
+    "alias" : "POLICY - IP Addr",
+    "description" : "Policy IP Address",
+    "providerId" : "basic-flow",
+    "topLevel" : true,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 0,
+      "autheticatorFlow" : true,
+      "flowAlias" : "POLICY - IP Address",
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "7b9ffa19-4f3e-496f-93de-f90ca5b5c047",
+    "alias" : "POLICY - IP Address",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "Is Local IP",
+      "authenticator" : "conditional-ip-address-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1838,6 +1876,13 @@
     "alias" : "DENY_FIREFOX_WINDOWS",
     "config" : {
       "denyErrorMessage" : "You cannot use Firefox on Windows"
+    }
+  }, {
+    "id" : "206cc137-b45a-4908-ad45-87f44a7622ba",
+    "alias" : "Is Local IP",
+    "config" : {
+      "ip-address-config" : "192.168.0.0-192.168.0.255",
+      "operation" : "is in range"
     }
   }, {
     "id" : "c394890a-f4ff-4b18-9030-b5f0ba3301f6",

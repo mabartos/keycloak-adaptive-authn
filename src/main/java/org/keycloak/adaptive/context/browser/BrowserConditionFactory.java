@@ -85,8 +85,4 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
     public String getDisplayType() {
         return "Condition - Browser";
     }
-
-    public List<String> getRulesTexts() {
-        return getRules().stream().map(Operation::getText).toList();
-    }
 }

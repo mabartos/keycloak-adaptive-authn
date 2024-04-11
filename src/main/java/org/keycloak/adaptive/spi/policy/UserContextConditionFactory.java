@@ -9,6 +9,7 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
+import java.util.List;
 import java.util.Set;
 
 public abstract class UserContextConditionFactory<T extends UserContext<?>> implements ConditionalAuthenticatorFactory {
@@ -39,6 +40,10 @@ public abstract class UserContextConditionFactory<T extends UserContext<?>> impl
 
     public Set<Operation<T>> getRules() {
         return rules;
+    }
+
+    public List<String> getRulesTexts() {
+        return getRules().stream().map(Operation::getText).toList();
     }
 
     @Override
