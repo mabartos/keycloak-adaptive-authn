@@ -3,14 +3,13 @@ package org.keycloak.adaptive.context.os;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.spi.factor.UserContext;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
 
 import java.util.Set;
 
@@ -26,7 +25,8 @@ public class PhoneCondition implements UserContextCondition, ConditionalAuthenti
     }
 
     @Override
-    public void close() {
+    public Set<UserContext<?>> getUserContexts() {
+        return Set.of(deviceContext);
     }
 
     @Override
@@ -37,20 +37,5 @@ public class PhoneCondition implements UserContextCondition, ConditionalAuthenti
             return rules.stream().allMatch(f -> f.match(deviceContext, Boolean.toString(isMobile)));
         }
         return false;
-    }
-
-    @Override
-    public void action(AuthenticationFlowContext context) {
-
-    }
-
-    @Override
-    public boolean requiresUser() {
-        return true;
-    }
-
-    @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-
     }
 }

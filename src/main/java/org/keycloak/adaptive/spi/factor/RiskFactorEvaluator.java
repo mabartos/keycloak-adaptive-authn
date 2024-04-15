@@ -2,13 +2,13 @@ package org.keycloak.adaptive.spi.factor;
 
 import org.keycloak.provider.Provider;
 
-import java.util.Collection;
+import java.util.Set;
 
-public interface RiskFactorEvaluator<T> extends Provider {
+public interface RiskFactorEvaluator extends Provider {
 
     Double getRiskValue();
 
-    Collection<T> getUserContexts();
+    Set<UserContext<?>> getUserContexts();
 
     void evaluate();
 

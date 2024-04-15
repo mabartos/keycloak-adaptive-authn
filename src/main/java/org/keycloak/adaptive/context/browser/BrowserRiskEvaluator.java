@@ -1,23 +1,21 @@
 package org.keycloak.adaptive.context.browser;
 
-import org.keycloak.adaptive.RiskConfidence;
-import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.RiskLevel;
+import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
 import org.keycloak.adaptive.spi.factor.UserContext;
 import org.keycloak.models.KeycloakSession;
 
-import java.util.Collection;
 import java.util.Set;
 
-public class BrowserRiskEvaluator implements RiskFactorEvaluator<DeviceContext> {
+public class BrowserRiskEvaluator implements RiskFactorEvaluator {
     private final KeycloakSession session;
-    private final DeviceContext userAgentContext;
+    private final BrowserCondition browserCondition;
     private Double riskValue;
 
     public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.userAgentContext = (DeviceContext) session.getProvider(UserContext.class, DeviceContextFactory.PROVIDER_ID);
+        this.browserCondition = ContextUtils.getContextCondition(session, BrowserCondition.class, BrowserConditionFactory.PROVIDER_ID);
     }
 
     @Override
@@ -26,18 +24,18 @@ public class BrowserRiskEvaluator implements RiskFactorEvaluator<DeviceContext> 
     }
 
     @Override
-    public Collection<DeviceContext> getUserContexts() {
-        return Set.of(userAgentContext);
+    public Set<UserContext<?>> getUserContexts() {
+        return browserCondition.getUserContexts();
     }
 
     @Override
     public void evaluate() {
-        var agents = String.join(",", DefaultBrowsers.DEFAULT_BROWSERS);
-        /*var anyOfKnownAgents = BrowserConditionFactory.RULE_ANY_OF.match(userAgentContext, agents);
-        if (anyOfKnownAgents) {
-            this.riskValue = RiskConfidence.VERY_CONFIDENT;
+        var isKnown = browserCondition.isDefaultKnownBrowser();
+
+        if (isKnown) {
+            this.riskValue = RiskLevel.SMALL;
         } else {
-            this.riskValue = RiskConfidence.SMALL;
-        }*/
+            this.riskValue = RiskLevel.INTERMEDIATE;
+        }
     }
 }

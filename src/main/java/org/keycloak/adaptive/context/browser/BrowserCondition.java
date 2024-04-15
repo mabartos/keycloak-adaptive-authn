@@ -3,14 +3,13 @@ package org.keycloak.adaptive.context.browser;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.spi.factor.UserContext;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
 import org.keycloak.utils.StringUtil;
 
 import java.util.Set;
@@ -26,8 +25,16 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
         this.rules = rules;
     }
 
-    @Override
-    public void close() {
+    public String getBrowser() {
+        return deviceContext.getData().getBrowser();
+    }
+
+    public boolean isBrowser(String browser) {
+        return getBrowser().equals(browser);
+    }
+
+    public boolean isDefaultKnownBrowser() {
+        return DefaultBrowsers.DEFAULT_BROWSERS.stream().anyMatch(f -> f.equals(getBrowser()));
     }
 
     @Override
@@ -46,17 +53,7 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
     }
 
     @Override
-    public void action(AuthenticationFlowContext context) {
-
-    }
-
-    @Override
-    public boolean requiresUser() {
-        return true;
-    }
-
-    @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-
+    public Set<UserContext<?>> getUserContexts() {
+        return Set.of(deviceContext);
     }
 }
