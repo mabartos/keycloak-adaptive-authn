@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.context.role;
 
+import org.jboss.logging.Logger;
 import org.keycloak.adaptive.RiskLevel;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
@@ -10,6 +11,8 @@ import org.keycloak.models.RoleModel;
 import java.util.Set;
 
 public class DefaultUserRoleEvaluator implements RiskFactorEvaluator {
+    private static final Logger logger = Logger.getLogger(DefaultUserRoleEvaluator.class);
+
     private final KeycloakSession session;
     private final UserRoleContext context;
     private Double risk;
@@ -37,5 +40,6 @@ public class DefaultUserRoleEvaluator implements RiskFactorEvaluator {
         } else {
             risk = RiskLevel.SMALL;
         }
+        logger.debugf("Risk for user role evaluated to: '%s'", risk);
     }
 }

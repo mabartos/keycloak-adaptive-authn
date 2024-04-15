@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.context.browser;
 
+import org.jboss.logging.Logger;
 import org.keycloak.adaptive.RiskLevel;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
@@ -9,9 +10,11 @@ import org.keycloak.models.KeycloakSession;
 import java.util.Set;
 
 public class BrowserRiskEvaluator implements RiskFactorEvaluator {
+    private static final Logger logger = Logger.getLogger(BrowserRiskEvaluator.class);
+
     private final KeycloakSession session;
     private final BrowserCondition browserCondition;
-    private Double riskValue;
+    private Double risk;
 
     public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
@@ -20,7 +23,7 @@ public class BrowserRiskEvaluator implements RiskFactorEvaluator {
 
     @Override
     public Double getRiskValue() {
-        return riskValue;
+        return risk;
     }
 
     @Override
@@ -33,9 +36,10 @@ public class BrowserRiskEvaluator implements RiskFactorEvaluator {
         var isKnown = browserCondition.isDefaultKnownBrowser();
 
         if (isKnown) {
-            this.riskValue = RiskLevel.SMALL;
+            this.risk = RiskLevel.SMALL;
         } else {
-            this.riskValue = RiskLevel.INTERMEDIATE;
+            this.risk = RiskLevel.INTERMEDIATE;
         }
+        logger.debugf("Risk for browser evaluated to: '%s'", risk);
     }
 }

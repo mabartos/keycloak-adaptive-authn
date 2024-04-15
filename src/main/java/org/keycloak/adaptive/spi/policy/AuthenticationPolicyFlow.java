@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class AuthenticationPolicyFlow extends DefaultAuthenticationFlow implements AuthenticationFlow {
     public static final String AUTHN_POLICY_FLOW = "authn-policy-flow";
-    private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResources.class);
+    private static final Logger logger = Logger.getLogger(AuthenticationPolicyFlow.class);
 
     private final AuthenticationProcessor processor;
     private final AuthenticationFlowModel flow;

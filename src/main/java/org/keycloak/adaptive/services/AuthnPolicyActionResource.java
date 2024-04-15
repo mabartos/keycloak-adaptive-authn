@@ -16,7 +16,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 public class AuthnPolicyActionResource {
-    private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
+    private static final Logger logger = Logger.getLogger(AuthnPolicyActionResource.class);
 
     private final KeycloakSession session;
     private final RealmModel realm;
