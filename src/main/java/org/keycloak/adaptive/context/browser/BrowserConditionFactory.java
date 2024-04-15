@@ -24,7 +24,7 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new BrowserCondition(session, createContext(session, DeviceContextFactory.PROVIDER_ID), getRules());
+        return new BrowserCondition(session, getRules());
     }
 
     @Override

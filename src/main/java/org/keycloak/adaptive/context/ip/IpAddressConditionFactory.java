@@ -4,7 +4,6 @@ import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import inet.ipaddr.IncompatibleAddressException;
 import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
 import org.keycloak.adaptive.spi.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.OperationsBuilder;
@@ -46,7 +45,7 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new IpAddressCondition(session, createContext(session, DeviceContextFactory.PROVIDER_ID), getRules());
+        return new IpAddressCondition(session, getRules());
     }
 
     @Override

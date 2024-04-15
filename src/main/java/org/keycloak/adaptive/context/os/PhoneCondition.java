@@ -1,6 +1,8 @@
 package org.keycloak.adaptive.context.os;
 
+import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
+import org.keycloak.adaptive.context.DeviceContextFactory;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -17,9 +19,9 @@ public class PhoneCondition implements UserContextCondition, ConditionalAuthenti
     private final DeviceContext deviceContext;
     private final Set<Operation<DeviceContext>> rules;
 
-    public PhoneCondition(KeycloakSession session, DeviceContext deviceContext, Set<Operation<DeviceContext>> rules) {
+    public PhoneCondition(KeycloakSession session, Set<Operation<DeviceContext>> rules) {
         this.session = session;
-        this.deviceContext = deviceContext;
+        this.deviceContext = ContextUtils.getContext(session, DeviceContext.class, DeviceContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
