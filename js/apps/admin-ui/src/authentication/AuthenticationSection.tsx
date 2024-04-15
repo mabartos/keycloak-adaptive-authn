@@ -145,7 +145,7 @@ export default function AuthenticationSection() {
       return [];
     }
 
-    const flows = flowsJson.filter((item: AuthenticationPolicyType) => !item.alias?.startsWith("POLICY -"));
+    const flows = flowsJson.filter((item: AuthenticationPolicyType) => !item.alias?.startsWith("POLICY - "));
 
     return sortBy(
       localeSort<AuthenticationType>(flows, mapByKey("alias")),
@@ -168,7 +168,7 @@ export default function AuthenticationSection() {
       return [];
     }
 
-    const flows = flowsJson.filter((item: AuthenticationPolicyType) => item.alias?.startsWith("POLICY -"));
+    const flows = flowsJson.filter((item: AuthenticationPolicyType) => item.alias?.startsWith("POLICY - "));
 
     return sortBy(
         localeSort<AuthenticationPolicyType>(flows, mapByKey("alias")),
@@ -182,7 +182,7 @@ export default function AuthenticationSection() {
   const flowsTab = useTab("flows");
   const requiredActionsTab = useTab("required-actions");
   const policiesTab = useTab("policies");
-  const authnPoliciesTab = useTab("authnPolicies");
+  const authnPoliciesTab = useTab("authn-policies");
 
   const [toggleDeleteDialog, DeleteConfirm] = useConfirmDialog({
     titleKey: "deleteConfirmFlow",
@@ -339,7 +339,7 @@ export default function AuthenticationSection() {
             <Policies />
           </Tab>
           <Tab
-              data-testid="authnPolicies"
+              data-testid="authn-policies"
               title={<TabTitleText>{t("authnPolicies")}</TabTitleText>}
               {...authnPoliciesTab}
           >

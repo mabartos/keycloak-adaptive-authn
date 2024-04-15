@@ -59,8 +59,8 @@ export const EmptyAuthenticationPolicy = ({
                 />
             )}
             <ListEmptyState
-                message={t("emptyExecution")}
-                instructions={t("emptyExecutionInstructions")}
+                message={t("emptyAuthenticationPolicy")}
+                instructions={t("emptyAuthenticationPolicyInstructions")}
             />
 
             <div className="keycloak__empty-execution-state__block">

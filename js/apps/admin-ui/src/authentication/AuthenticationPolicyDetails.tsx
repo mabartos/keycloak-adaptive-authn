@@ -8,7 +8,6 @@ import {
     DataList,
     DragDrop,
     Droppable,
-    Label,
     PageSection,
     ToggleGroup,
     ToggleGroupItem,
@@ -29,7 +28,6 @@ import { useRealm } from "../context/realm-context/RealmContext";
 import { useFetch } from "../utils/useFetch";
 import useToggle from "../utils/useToggle";
 import { BindFlowDialog } from "./BindFlowDialog";
-import { BuildInLabel } from "./BuildInLabel";
 import { DuplicateFlowModal } from "./DuplicateFlowModal";
 import { EditFlowModal } from "./EditFlowModal";
 import { FlowDiagram } from "./components/FlowDiagram";
@@ -43,10 +41,9 @@ import {
     LevelChange,
 } from "./execution-model";
 import { toAuthentication } from "./routes/Authentication";
-import { toFlow, type FlowParams } from "./routes/Flow";
 import {EmptyAuthenticationPolicy} from "./EmptyAuthenticationPolicy";
 import {AddSubPolicyModal, Policy} from "./components/modals/AddSubPolicyModal";
-import {Flow} from "./components/modals/AddSubFlowModal";
+import {AuthenticationPolicyParams, toAuthenticationPolicy} from "./routes/AuthenticationPolicy";
 
 export const providerConditionFilter = (
     value: AuthenticationProviderRepresentation,
@@ -56,7 +53,7 @@ export default function AuthenticationPolicyDetails() {
     const { t } = useTranslation();
     const { realm } = useRealm();
     const { addAlert, addError } = useAlerts();
-    const { id, usedBy, builtIn } = useParams<FlowParams>();
+    const {id} = useParams<AuthenticationPolicyParams>();
     const navigate = useNavigate();
     const [key, setKey] = useState(0);
     const refresh = () => setKey(new Date().getTime());
@@ -204,7 +201,7 @@ export default function AuthenticationPolicyDetails() {
 
     const addPolicy = async (
         flow: string,
-        { name, description = "", type, provider }: Policy,
+        {name, description = "", type = "basic-flow", provider}: Policy,
     ) => {
         try {
             await adminClient.authenticationManagement.addFlowToFlow({
@@ -295,14 +292,12 @@ export default function AuthenticationPolicyDetails() {
             {bindFlowOpen && (
                 <BindFlowDialog
                     flowAlias={policy?.alias!}
-                    onClose={(usedBy) => {
+                    onClose={() => {
                         toggleBindFlow();
                         navigate(
-                            toFlow({
+                            toAuthenticationPolicy({
                                 realm,
-                                id: id!,
-                                usedBy: usedBy ? "DEFAULT" : "notInUse",
-                                builtIn: builtIn ? "builtIn" : undefined,
+                                id: id!
                             }),
                         );
                     }}
@@ -332,15 +327,6 @@ export default function AuthenticationPolicyDetails() {
 
             <ViewHeader
                 titleKey={policy?.alias || ""}
-                badges={[
-                    { text: <Label>{t(`used.${usedBy}`)}</Label> },
-                    builtIn
-                        ? {
-                            text: <BuildInLabel />,
-                            id: "builtIn",
-                        }
-                        : {},
-                ]}
                 dropdownItems={dropdownItems}
             />
             <PageSection variant="light">
@@ -427,7 +413,7 @@ export default function AuthenticationPolicyDetails() {
                                         <>
                                             {conditionList.expandableList.map((execution) => (
                                                 <FlowRow
-                                                    builtIn={!!builtIn}
+                                                    builtIn={false}
                                                     key={execution.id}
                                                     execution={execution}
                                                     onRowClick={(execution) => {
