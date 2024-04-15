@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.context.ip;
 
+import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import inet.ipaddr.IncompatibleAddressException;
 import org.keycloak.adaptive.context.DeviceContext;
@@ -126,6 +127,14 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
             return ipRange.contains(new IPAddressString(deviceIp.get()).getAddress());
         } catch (IncompatibleAddressException e) {
             throw new IllegalArgumentException("Cannot parse IP Address", e);
+        }
+    }
+
+    static Optional<IPAddress> getIpAddress(String ipAddress) {
+        try {
+            return Optional.ofNullable(new IPAddressString(ipAddress).getAddress());
+        } catch (IncompatibleAddressException e) {
+            return Optional.empty();
         }
     }
 }

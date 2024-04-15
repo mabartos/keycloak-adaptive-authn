@@ -1,2 +1,3 @@
 org.keycloak.adaptive.context.DeviceContextFactory
 org.keycloak.adaptive.context.role.UserRoleContextFactory
+org.keycloak.adaptive.context.ip.HeaderIpAddressFactory
