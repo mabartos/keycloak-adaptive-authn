@@ -18,23 +18,26 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
     private final KeycloakSession session;
     private final DeviceContext deviceContext;
     private final Set<Operation<DeviceContext>> rules;
+    private final String browser;
 
     public BrowserCondition(KeycloakSession session, Set<Operation<DeviceContext>> rules) {
         this.session = session;
         this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
         this.rules = rules;
+        this.browser = deviceContext.getData().getBrowser();
     }
 
-    public String getBrowser() {
-        return deviceContext.getData().getBrowser();
+    public String getBrowserName() {
+        return browser.contains("/") ? browser.substring(0, browser.indexOf("/")) : browser;
     }
 
     public boolean isBrowser(String browser) {
-        return getBrowser().equals(browser);
+        return getBrowserName().equals(browser);
     }
 
     public boolean isDefaultKnownBrowser() {
-        return DefaultBrowsers.DEFAULT_BROWSERS.stream().anyMatch(f -> f.equals(getBrowser()));
+        if (getBrowserName() == null) return false;
+        return DefaultBrowsers.DEFAULT_BROWSERS.stream().anyMatch(f -> getBrowserName().startsWith(f));
     }
 
     @Override
