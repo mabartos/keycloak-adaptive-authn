@@ -20,7 +20,7 @@ public class PhoneCondition implements UserContextCondition, ConditionalAuthenti
 
     public PhoneCondition(KeycloakSession session, Set<Operation<DeviceContext>> rules) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContext.class, DeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 

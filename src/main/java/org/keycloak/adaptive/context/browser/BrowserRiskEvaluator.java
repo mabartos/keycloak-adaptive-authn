@@ -18,7 +18,7 @@ public class BrowserRiskEvaluator implements RiskFactorEvaluator {
 
     public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.browserCondition = ContextUtils.getContextCondition(session, BrowserCondition.class, BrowserConditionFactory.PROVIDER_ID);
+        this.browserCondition = ContextUtils.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
     }
 
     @Override

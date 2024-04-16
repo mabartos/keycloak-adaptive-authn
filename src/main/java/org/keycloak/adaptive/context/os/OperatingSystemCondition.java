@@ -21,7 +21,7 @@ public class OperatingSystemCondition implements UserContextCondition, Condition
 
     public OperatingSystemCondition(KeycloakSession session, Set<Operation<DeviceContext>> rules) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContext.class, DeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
