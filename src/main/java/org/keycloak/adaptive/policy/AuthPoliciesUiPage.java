@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.policy;
 
 import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;

@@ -1,8 +1,7 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.policy;
 
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.services.AuthnPolicyConditionResources;
 import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.AuthenticationFlowException;

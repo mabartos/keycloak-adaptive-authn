@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.context.os;
 
 import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.spi.policy.DefaultOperation;
+import org.keycloak.adaptive.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.policy.Operation;
 import org.keycloak.adaptive.spi.policy.OperationsBuilder;
 import org.keycloak.adaptive.spi.policy.UserContextConditionFactory;

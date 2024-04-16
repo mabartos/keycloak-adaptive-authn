@@ -1,5 +1,7 @@
 package org.keycloak.adaptive.spi.policy;
 
+import org.keycloak.adaptive.policy.DefaultOperation;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiPredicate;

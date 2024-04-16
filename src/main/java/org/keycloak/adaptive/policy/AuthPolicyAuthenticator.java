@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.policy;
 
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.services.AuthnPolicyConditionResource;
@@ -9,7 +9,6 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.util.HashMap;
 import java.util.Map;

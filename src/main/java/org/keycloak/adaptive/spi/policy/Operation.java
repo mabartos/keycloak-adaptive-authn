@@ -1,6 +1,7 @@
 package org.keycloak.adaptive.spi.policy;
 
-import java.util.Set;
+import org.keycloak.adaptive.policy.DefaultOperation;
+
 import java.util.function.BiPredicate;
 
 public class Operation<T> {

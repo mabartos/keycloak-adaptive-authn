@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.policy;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
