@@ -1,11 +1,11 @@
-package org.keycloak.adaptive.spi.factor;
+package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderFactory;
 
-public interface RiskFactorEvaluatorFactory extends ProviderFactory<RiskFactorEvaluator>, EnvironmentDependentProviderFactory {
+public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, EnvironmentDependentProviderFactory {
 
     @Override
     default void init(Config.Scope config) {

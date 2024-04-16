@@ -1,7 +1,7 @@
 package org.keycloak.adaptive;
 
 import org.keycloak.adaptive.spi.AdaptiveAuthnContext;
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.level.RiskLevel;
 import org.keycloak.models.KeycloakSession;
 

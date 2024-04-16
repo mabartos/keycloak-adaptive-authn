@@ -1,6 +1,6 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.spi.condition;
 
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.KeycloakSession;

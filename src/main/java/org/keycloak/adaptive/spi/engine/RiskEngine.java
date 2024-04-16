@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.spi.engine;
 
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
@@ -18,7 +18,7 @@ public interface RiskEngine extends Authenticator {
 
     Set<UserContext<?>> getRiskFactors();
 
-    Set<RiskFactorEvaluator> getRiskEvaluators();
+    Set<RiskEvaluator> getRiskEvaluators();
 
     void evaluateRisk();
 

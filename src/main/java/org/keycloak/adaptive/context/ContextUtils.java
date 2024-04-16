@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.context;
 
-import org.keycloak.adaptive.spi.factor.UserContext;
-import org.keycloak.adaptive.spi.policy.UserContextCondition;
+import org.keycloak.adaptive.spi.context.UserContext;
+import org.keycloak.adaptive.spi.condition.UserContextCondition;
 import org.keycloak.models.KeycloakSession;
 
 public class ContextUtils {

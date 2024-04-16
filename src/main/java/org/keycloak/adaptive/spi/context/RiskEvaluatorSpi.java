@@ -1,10 +1,10 @@
-package org.keycloak.adaptive.spi.factor;
+package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
-public class RiskFactorEvaluatorSpi implements Spi {
+public class RiskEvaluatorSpi implements Spi {
 
     public static final String SPI_NAME = "risk-factor-evaluator";
 
@@ -20,11 +20,11 @@ public class RiskFactorEvaluatorSpi implements Spi {
 
     @Override
     public Class<? extends Provider> getProviderClass() {
-        return RiskFactorEvaluator.class;
+        return RiskEvaluator.class;
     }
 
     @Override
     public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return RiskFactorEvaluatorFactory.class;
+        return RiskEvaluatorFactory.class;
     }
 }

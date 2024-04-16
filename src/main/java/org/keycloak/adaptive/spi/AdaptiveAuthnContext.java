@@ -1,6 +1,6 @@
 package org.keycloak.adaptive.spi;
 
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.level.RiskLevel;
 
 import java.util.Collection;

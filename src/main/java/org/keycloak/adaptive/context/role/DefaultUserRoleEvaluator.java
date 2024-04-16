@@ -1,16 +1,16 @@
 package org.keycloak.adaptive.context.role;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.RiskLevel;
+import org.keycloak.adaptive.level.RiskLevel;
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
 import java.util.Set;
 
-public class DefaultUserRoleEvaluator implements RiskFactorEvaluator {
+public class DefaultUserRoleEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(DefaultUserRoleEvaluator.class);
 
     private final KeycloakSession session;

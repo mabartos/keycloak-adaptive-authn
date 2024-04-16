@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.context.ip;
 
 import inet.ipaddr.IPAddress;
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.List;
 

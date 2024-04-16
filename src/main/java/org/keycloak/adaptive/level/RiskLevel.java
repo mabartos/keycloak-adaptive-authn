@@ -1,4 +1,4 @@
-package org.keycloak.adaptive;
+package org.keycloak.adaptive.level;
 
 public interface RiskLevel {
     double NONE = 0.0;

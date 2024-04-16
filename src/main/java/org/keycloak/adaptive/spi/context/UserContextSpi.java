@@ -1,11 +1,11 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
-public class UserContextConditionSpi implements Spi {
-    public static final String SPI_NAME = "user-context-condition-spi";
+public class UserContextSpi implements Spi {
+    public static final String SPI_NAME = "user-context-spi";
 
     @Override
     public boolean isInternal() {
@@ -19,11 +19,11 @@ public class UserContextConditionSpi implements Spi {
 
     @Override
     public Class<? extends Provider> getProviderClass() {
-        return UserContextCondition.class;
+        return UserContext.class;
     }
 
     @Override
     public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return UserContextConditionFactory.class;
+        return UserContextFactory.class;
     }
 }

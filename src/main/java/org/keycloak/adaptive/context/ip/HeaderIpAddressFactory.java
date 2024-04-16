@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.context.ip;
 
 import org.keycloak.Config;
-import org.keycloak.adaptive.spi.factor.UserContextFactory;
+import org.keycloak.adaptive.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 

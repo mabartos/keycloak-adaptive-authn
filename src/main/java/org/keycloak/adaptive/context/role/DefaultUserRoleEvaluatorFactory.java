@@ -1,14 +1,14 @@
 package org.keycloak.adaptive.context.role;
 
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluatorFactory;
+import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.adaptive.spi.context.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class DefaultUserRoleEvaluatorFactory implements RiskFactorEvaluatorFactory {
+public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-user-role-risk-factor";
 
     @Override
-    public RiskFactorEvaluator create(KeycloakSession session) {
+    public RiskEvaluator create(KeycloakSession session) {
         return new DefaultUserRoleEvaluator(session);
     }
 

@@ -2,9 +2,9 @@ package org.keycloak.adaptive.context.os;
 
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.policy.DefaultOperation;
-import org.keycloak.adaptive.spi.policy.Operation;
-import org.keycloak.adaptive.spi.policy.OperationsBuilder;
-import org.keycloak.adaptive.spi.policy.UserContextConditionFactory;
+import org.keycloak.adaptive.spi.condition.Operation;
+import org.keycloak.adaptive.spi.condition.OperationsBuilder;
+import org.keycloak.adaptive.spi.condition.UserContextConditionFactory;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;

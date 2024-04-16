@@ -3,8 +3,8 @@ package org.keycloak.adaptive.engine;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.browser.BrowserRiskEvaluator;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.KeycloakSession;
 
@@ -15,12 +15,12 @@ public class DefaultRiskEngine implements RiskEngine {
     private static final Logger logger = Logger.getLogger(BrowserRiskEvaluator.class);
 
     private final KeycloakSession session;
-    private final Set<RiskFactorEvaluator> riskFactorEvaluators;
+    private final Set<RiskEvaluator> riskFactorEvaluators;
     private Double riskValue;
 
     public DefaultRiskEngine(KeycloakSession session) {
         this.session = session;
-        this.riskFactorEvaluators = session.getAllProviders(RiskFactorEvaluator.class);
+        this.riskFactorEvaluators = session.getAllProviders(RiskEvaluator.class);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class DefaultRiskEngine implements RiskEngine {
         });
 
         //todo very naive
-        this.riskValue = getRiskEvaluators().stream().mapToDouble(RiskFactorEvaluator::getRiskValue).sum() / getRiskEvaluators().size();
+        this.riskValue = getRiskEvaluators().stream().mapToDouble(RiskEvaluator::getRiskValue).sum() / getRiskEvaluators().size();
         logger.debugf("The overall risk score is %f", riskValue);
     }
 
@@ -50,7 +50,7 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Set<RiskFactorEvaluator> getRiskEvaluators() {
+    public Set<RiskEvaluator> getRiskEvaluators() {
         return riskFactorEvaluators;
     }
 

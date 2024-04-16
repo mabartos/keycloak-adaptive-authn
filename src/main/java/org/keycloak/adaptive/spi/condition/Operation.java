@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.adaptive.spi.condition;
 
 import org.keycloak.adaptive.policy.DefaultOperation;
 

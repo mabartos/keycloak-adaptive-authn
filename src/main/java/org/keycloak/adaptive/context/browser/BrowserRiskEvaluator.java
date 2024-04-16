@@ -1,15 +1,15 @@
 package org.keycloak.adaptive.context.browser;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.RiskLevel;
+import org.keycloak.adaptive.level.RiskLevel;
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
-import org.keycloak.adaptive.spi.factor.UserContext;
+import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Set;
 
-public class BrowserRiskEvaluator implements RiskFactorEvaluator {
+public class BrowserRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(BrowserRiskEvaluator.class);
 
     private final KeycloakSession session;

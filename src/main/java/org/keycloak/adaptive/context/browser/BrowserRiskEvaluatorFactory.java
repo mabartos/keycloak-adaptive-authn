@@ -1,15 +1,15 @@
 package org.keycloak.adaptive.context.browser;
 
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluator;
-import org.keycloak.adaptive.spi.factor.RiskFactorEvaluatorFactory;
+import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.adaptive.spi.context.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class BrowserRiskEvaluatorFactory implements RiskFactorEvaluatorFactory {
+public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     public static final String PROVIDER_ID = "default-browser-risk-factor-evaluator";
 
     @Override
-    public RiskFactorEvaluator create(KeycloakSession session) {
+    public RiskEvaluator create(KeycloakSession session) {
         return new BrowserRiskEvaluator(session);
     }
 
