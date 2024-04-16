@@ -32,13 +32,21 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) return;
 
-        if (loginFailures.getNumFailures() == 0) {
-            this.risk = Risk.NONE;
-        }
-
         // TODO compute num of failures
         // Get maximum of possible num failures - realm brute force setting
         // relatively compute it
+        var numFailures = loginFailures.getNumFailures();
+        if (numFailures <= 2) {
+            this.risk = Risk.NONE;
+        } else if (numFailures <= 5) {
+            this.risk = Risk.SMALL;
+        } else if (numFailures < 10) {
+            this.risk = Risk.MEDIUM;
+        } else if (numFailures < 15) {
+            this.risk = Risk.INTERMEDIATE;
+        } else {
+            this.risk = Risk.HIGH;
+        }
 
         // TODO compute when was the last login failure
         // TODO analyze IP address
