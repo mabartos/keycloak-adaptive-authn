@@ -7,13 +7,15 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import static org.keycloak.adaptive.spi.engine.RiskEngine.RISK_AUTH_NOTE;
+
 public class RiskLevelCondition implements ConditionalAuthenticator {
     private static final Logger logger = Logger.getLogger(RiskLevelCondition.class);
 
     @Override
     public boolean matchCondition(AuthenticationFlowContext context) {
-        logger.info("RISK LEVEL");
-        logger.info(context.getAuthenticationSession().getAuthNote("RISK"));
+        logger.debugf("RISK LEVEL");
+        logger.debugf(context.getAuthenticationSession().getAuthNote(RISK_AUTH_NOTE));
         return true;
     }
 

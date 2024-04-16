@@ -25,16 +25,16 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public void evaluateRisk() {
-        logger.info("EVALUATING");
+        logger.debugf("Risk Engine - EVALUATING");
         getRiskEvaluators().forEach(f -> {
-            logger.infof("Evaluator: %s", f.getClass().getSimpleName());
+            logger.debugf("Evaluator: %s", f.getClass().getSimpleName());
             f.evaluate();
-            logger.infof("Risk evaluated: %f", f.getRiskValue().toString());
+            logger.debugf("Risk evaluated: %f", f.getRiskValue());
         });
 
         //todo very naive
         this.riskValue = getRiskEvaluators().stream().mapToDouble(RiskFactorEvaluator::getRiskValue).sum() / getRiskEvaluators().size();
-        logger.infof("The overall risk score is %f", riskValue);
+        logger.debugf("The overall risk score is %f", riskValue);
     }
 
     @Override
@@ -57,8 +57,8 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         evaluateRisk();
-        context.getAuthenticationSession().setAuthNote("RISK", getRiskValue().toString());
-        context.attempted();
+        context.getAuthenticationSession().setAuthNote(RISK_AUTH_NOTE, getRiskValue().toString());
+        context.success();
     }
 
 
