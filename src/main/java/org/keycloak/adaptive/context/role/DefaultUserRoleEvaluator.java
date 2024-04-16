@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.context.role;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.level.RiskLevel;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.context.UserContext;
@@ -36,9 +36,9 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     public void evaluate() {
         // TODO
         if (context.getData().stream().map(RoleModel::getName).anyMatch(f -> f.equals("ADMIN"))) {
-            risk = RiskLevel.INTERMEDIATE;
+            risk = Risk.INTERMEDIATE;
         } else {
-            risk = RiskLevel.SMALL;
+            risk = Risk.SMALL;
         }
         logger.debugf("Risk for user role evaluated to: '%s'", risk);
     }

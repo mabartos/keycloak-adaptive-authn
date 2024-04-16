@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.context.browser;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.level.RiskLevel;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.context.UserContext;
@@ -36,9 +36,9 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
         var isKnown = browserCondition.isDefaultKnownBrowser();
 
         if (isKnown) {
-            this.risk = RiskLevel.SMALL;
+            this.risk = Risk.SMALL;
         } else {
-            this.risk = RiskLevel.INTERMEDIATE;
+            this.risk = Risk.INTERMEDIATE;
         }
         logger.debugf("Risk for browser evaluated to: '%s'", risk);
     }

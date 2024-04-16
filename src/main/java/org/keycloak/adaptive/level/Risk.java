@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.level;
 
-public interface RiskLevel {
-    double NONE = 0.0;
+public interface Risk {
+    double NONE = 0.01;
     double SMALL = 0.3;
     double MEDIUM = 0.5;
     double INTERMEDIATE = 0.7;
