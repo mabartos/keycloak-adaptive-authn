@@ -8,7 +8,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 
 public class SimpleRiskLevelsFactory implements RiskLevelsFactory {
     public static final String PROVIDER_ID = "simple-risk-levels";
-    public static final RiskLevelsProvider SINGLETON = new SimpleRiskLevelsProvider();
+    private static final RiskLevelsProvider SINGLETON = new SimpleRiskLevelsProvider();
 
     @Override
     public RiskLevelsProvider create(KeycloakSession session) {

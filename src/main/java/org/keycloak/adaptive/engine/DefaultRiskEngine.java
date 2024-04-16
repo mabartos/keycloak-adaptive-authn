@@ -57,9 +57,7 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         evaluateRisk();
-        context.getAuthenticationSession().setAuthNote(RISK_AUTH_NOTE, getRiskValue().toString());
+        storeRisk(context);
         context.success();
     }
-
-
 }

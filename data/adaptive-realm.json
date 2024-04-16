@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1342,6 +1342,29 @@
       "userSetupAllowed" : false
     } ]
   }, {
+    "id" : "9b0d0624-0dbe-4867-a5db-b0b597588aac",
+    "alias" : "HIGH",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "HIGH",
+      "authenticator" : "risk-level-condition-factory",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
     "id" : "17ce49ec-811c-461d-9992-a19aca4bbdda",
     "alias" : "Handle Existing Account",
     "description" : "Handle what to do if there is existing account with same email/username like authenticated identity provider",
@@ -1361,6 +1384,29 @@
       "priority" : 20,
       "autheticatorFlow" : true,
       "flowAlias" : "Account verification options",
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "94d81623-8aef-44f2-aa3c-bcfbfd9eacf8",
+    "alias" : "MEDIUM",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "MEDIUM",
+      "authenticator" : "risk-level-condition-factory",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "auth-password-form",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1540,6 +1586,7 @@
     "topLevel" : false,
     "builtIn" : false,
     "authenticationExecutions" : [ {
+      "authenticatorConfig" : "LOW",
       "authenticator" : "risk-level-condition-factory",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
@@ -1574,6 +1621,20 @@
       "priority" : 1,
       "autheticatorFlow" : true,
       "flowAlias" : "Risk - LOW",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 2,
+      "autheticatorFlow" : true,
+      "flowAlias" : "MEDIUM",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "REQUIRED",
+      "priority" : 3,
+      "autheticatorFlow" : true,
+      "flowAlias" : "HIGH",
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1951,11 +2012,29 @@
       "denyErrorMessage" : "You cannot use Firefox on Windows"
     }
   }, {
+    "id" : "6197f6db-d697-4964-942f-ccae76005e31",
+    "alias" : "HIGH",
+    "config" : {
+      "level-config" : "HIGH"
+    }
+  }, {
     "id" : "206cc137-b45a-4908-ad45-87f44a7622ba",
     "alias" : "Is Local IP",
     "config" : {
       "ip-address-config" : "192.168.0.0-192.168.0.255",
       "operation" : "is in range"
+    }
+  }, {
+    "id" : "27601189-73fe-4ef2-b673-6c114c2b971d",
+    "alias" : "LOW",
+    "config" : {
+      "level-config" : "LOW"
+    }
+  }, {
+    "id" : "313c32e6-1a42-43b8-a6ff-200eae64a6a0",
+    "alias" : "MEDIUM",
+    "config" : {
+      "level-config" : "MEDIUM"
     }
   }, {
     "id" : "c394890a-f4ff-4b18-9030-b5f0ba3301f6",
@@ -1978,16 +2057,16 @@
       "browser-config" : "Firefox"
     }
   }, {
-    "id" : "b867a55a-39a6-49f5-9d6b-feb8224e2ceb",
-    "alias" : "NO PHONE",
-    "config" : {
-      "is-mobile" : "true"
-    }
-  }, {
     "id" : "a6a16a95-d0f8-43b5-a34b-8b6c9797ee96",
     "alias" : "NO PHONE",
     "config" : {
       "denyErrorMessage" : "You cannot access application on your mobile phone"
+    }
+  }, {
+    "id" : "b867a55a-39a6-49f5-9d6b-feb8224e2ceb",
+    "alias" : "NO PHONE",
+    "config" : {
+      "is-mobile" : "true"
     }
   }, {
     "id" : "572e175f-fb4c-404c-8a3d-c2110facdd7a",
@@ -2082,7 +2161,7 @@
     "priority" : 1000,
     "config" : { }
   } ],
-  "browserFlow" : "browser - adaptive",
+  "browserFlow" : "Risk-based ",
   "registrationFlow" : "registration",
   "directGrantFlow" : "direct grant",
   "resetCredentialsFlow" : "reset credentials",

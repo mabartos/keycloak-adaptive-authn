@@ -8,6 +8,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.util.Optional;
 import java.util.Set;
 
 public interface RiskEngine extends Authenticator {
@@ -43,5 +44,21 @@ public interface RiskEngine extends Authenticator {
     @Override
     default void close() {
 
+    }
+
+    static Optional<Double> getStoredRisk(AuthenticationFlowContext context) {
+        try {
+            return Optional.of(Double.parseDouble(context.getAuthenticationSession().getAuthNote(RISK_AUTH_NOTE)));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    static void storeRisk(AuthenticationFlowContext context, Double risk) {
+        context.getAuthenticationSession().setAuthNote(RISK_AUTH_NOTE, risk.toString());
+    }
+
+    default void storeRisk(AuthenticationFlowContext context) {
+        storeRisk(context, getRiskValue());
     }
 }
