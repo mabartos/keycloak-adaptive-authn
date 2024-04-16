@@ -14,7 +14,7 @@ import java.util.Set;
 public interface RiskEngine extends Authenticator {
     String RISK_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK";
 
-    Double getRiskValue();
+    Double getRisk();
 
     Set<UserContext<?>> getRiskFactors();
 
@@ -59,6 +59,6 @@ public interface RiskEngine extends Authenticator {
     }
 
     default void storeRisk(AuthenticationFlowContext context) {
-        storeRisk(context, getRiskValue());
+        storeRisk(context, getRisk());
     }
 }

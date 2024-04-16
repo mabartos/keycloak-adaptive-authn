@@ -38,11 +38,9 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
 
         // TODO compute num of failures
         // Get maximum of possible num failures - realm brute force setting
-        //
+        // relatively compute it
 
         // TODO compute when was the last login failure
-        //
-
         // TODO analyze IP address
     }
 }
