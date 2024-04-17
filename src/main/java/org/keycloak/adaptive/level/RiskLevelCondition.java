@@ -16,6 +16,12 @@ import java.util.Optional;
 public class RiskLevelCondition implements ConditionalAuthenticator {
     private static final Logger logger = Logger.getLogger(RiskLevelCondition.class);
 
+    private final RiskLevelsProvider riskLevelsProvider;
+
+    public RiskLevelCondition(RiskLevelsProvider riskLevelsProvider) {
+        this.riskLevelsProvider = riskLevelsProvider;
+    }
+
     @Override
     public boolean matchCondition(AuthenticationFlowContext context) {
         final AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
@@ -24,16 +30,15 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
             var risk = RiskEngine.getStoredRisk(context)
                     .orElseThrow(() -> new IllegalStateException("No risk has been evaluated. Did you forget to add Risk Engine authenticator to the flow?"));
 
-            var riskLevelProvider = context.getSession().getProvider(RiskLevelsProvider.class, SimpleRiskLevelsFactory.PROVIDER_ID);
-            if (riskLevelProvider == null) {
-                logger.errorf("Cannot find risk level provider '%s'", SimpleRiskLevelsFactory.PROVIDER_ID);
+            if (riskLevelsProvider == null) {
+                logger.errorf("Cannot find risk level provider '%s'", riskLevelsProvider);
                 throw new IllegalStateException("Risk Level Provider is not found");
             }
 
             var level = Optional.ofNullable(authConfig.getConfig().get(RiskLevelConditionFactory.LEVEL_CONFIG))
                     .filter(StringUtil::isNotBlank)
-                    .flatMap(f -> riskLevelProvider.getRiskLevels().stream().filter(g -> g.getName().equals(f)).findAny())
-                    .orElseThrow(() -> new IllegalStateException("Cannot find specified level for provider: " + SimpleRiskLevelsFactory.PROVIDER_ID));
+                    .flatMap(f -> riskLevelsProvider.getRiskLevels().stream().filter(g -> g.getName().equals(f)).findAny())
+                    .orElseThrow(() -> new IllegalStateException("Cannot find specified level for provider: " + riskLevelsProvider));
 
             var matches = level.matchesRisk(risk);
 
