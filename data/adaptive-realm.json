@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1433,6 +1433,74 @@
       "userSetupAllowed" : false
     } ]
   }, {
+    "id" : "7ca0524f-e95a-4b04-81e7-74d8cb9f3276",
+    "alias" : "No Firefox",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "No Firefox",
+      "authenticator" : "conditional-user-agent-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "6fa10583-b5ef-489f-aad4-54963bd75694",
+    "alias" : "No Windows",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "No Windows",
+      "authenticator" : "conditional-os-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "04d62fbc-d92d-40c1-b99c-0a398409cc59",
+    "alias" : "POLICY - Basic",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : true,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 0,
+      "autheticatorFlow" : true,
+      "flowAlias" : "No Firefox",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 1,
+      "autheticatorFlow" : true,
+      "flowAlias" : "No Windows",
+      "userSetupAllowed" : false
+    } ]
+  }, {
     "id" : "3fc7778f-818f-42a8-bf7f-f16a77598dc7",
     "alias" : "POLICY - IP Addr",
     "description" : "Policy IP Address",
@@ -1468,115 +1536,6 @@
       "requirement" : "REQUIRED",
       "priority" : 1,
       "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "8b3cf067-f490-482d-bcbe-b807d317368f",
-    "alias" : "POLICY - NO FIREFOX",
-    "description" : "POLICY - NO FIREFOX",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "NO FIREFOX",
-      "authenticator" : "conditional-user-agent-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorConfig" : "NO FIREFOX",
-      "authenticator" : "deny-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "29297fd0-8fa9-47d1-930c-0609c7b9e01e",
-    "alias" : "POLICY - NO PHONE",
-    "description" : "POLICY - NO PHONE",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "NO PHONE",
-      "authenticator" : "conditional-mobile-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorConfig" : "NO PHONE",
-      "authenticator" : "deny-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "627233a7-add2-44f4-a7a6-4db97bc4b6d3",
-    "alias" : "POLICY - basic policy",
-    "description" : "POLICY - basic policy",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "NO FIREFOX",
-      "authenticator" : "conditional-user-agent-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorConfig" : "NO WINDOWS",
-      "authenticator" : "conditional-os-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorConfig" : "DENY_FIREFOX_WINDOWS",
-      "authenticator" : "deny-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 2,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "ad1e16e1-072a-45ba-98c6-1643b43354e0",
-    "alias" : "Parent Policy flow",
-    "description" : "Parent policy flow",
-    "providerId" : "basic-flow",
-    "topLevel" : true,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorFlow" : true,
-      "requirement" : "CONDITIONAL",
-      "priority" : 0,
-      "autheticatorFlow" : true,
-      "flowAlias" : "POLICY - basic policy",
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorFlow" : true,
-      "requirement" : "CONDITIONAL",
-      "priority" : 1,
-      "autheticatorFlow" : true,
-      "flowAlias" : "POLICY - NO PHONE",
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorFlow" : true,
-      "requirement" : "CONDITIONAL",
-      "priority" : 2,
-      "autheticatorFlow" : true,
-      "flowAlias" : "POLICY - NO FIREFOX",
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1991,12 +1950,6 @@
     } ]
   } ],
   "authenticatorConfig" : [ {
-    "id" : "72c1f172-2cb9-4a6a-a1ae-bb8a50f6396b",
-    "alias" : "DENY_FIREFOX_WINDOWS",
-    "config" : {
-      "denyErrorMessage" : "You cannot use Firefox on Windows"
-    }
-  }, {
     "id" : "4312b2be-aabf-459b-88c9-054fb969c757",
     "alias" : "HIGH",
     "config" : {
@@ -2022,13 +1975,6 @@
       "level-config" : "MEDIUM"
     }
   }, {
-    "id" : "c394890a-f4ff-4b18-9030-b5f0ba3301f6",
-    "alias" : "NO FIREFOX",
-    "config" : {
-      "operation" : "is equal to",
-      "browser-config" : "Firefox"
-    }
-  }, {
     "id" : "7910c0c6-e1f9-4e50-9c13-d305b673d801",
     "alias" : "NO FIREFOX",
     "config" : {
@@ -2042,20 +1988,21 @@
       "browser-config" : "Firefox"
     }
   }, {
-    "id" : "a6a16a95-d0f8-43b5-a34b-8b6c9797ee96",
-    "alias" : "NO PHONE",
-    "config" : {
-      "denyErrorMessage" : "You cannot access application on your mobile phone"
-    }
-  }, {
     "id" : "b867a55a-39a6-49f5-9d6b-feb8224e2ceb",
     "alias" : "NO PHONE",
     "config" : {
       "is-mobile" : "true"
     }
   }, {
-    "id" : "572e175f-fb4c-404c-8a3d-c2110facdd7a",
-    "alias" : "NO WINDOWS",
+    "id" : "2b7d2bd1-a346-462e-87b1-44f659c8ef46",
+    "alias" : "No Firefox",
+    "config" : {
+      "operation" : "is equal to",
+      "browser-config" : "Firefox"
+    }
+  }, {
+    "id" : "a5e2aa23-4b81-4866-b903-665ec00c527e",
+    "alias" : "No Windows",
     "config" : {
       "os-config" : "Windows",
       "operation" : "is equal to"
@@ -2169,7 +2116,7 @@
     "frontendUrl" : "",
     "acr.loa.map" : "{}"
   },
-  "keycloakVersion" : "999.0.0-SNAPSHOT",
+  "keycloakVersion" : "888.0.0-ADAPTIVE",
   "userManagedAccessAllowed" : false,
   "clientProfiles" : {
     "profiles" : [ ]
