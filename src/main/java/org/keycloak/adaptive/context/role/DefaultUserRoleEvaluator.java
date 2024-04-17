@@ -1,8 +1,8 @@
 package org.keycloak.adaptive.context.role;
 
-import org.jboss.logging.Logger;
-import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.models.KeycloakSession;
@@ -11,8 +11,6 @@ import org.keycloak.models.RoleModel;
 import java.util.Set;
 
 public class DefaultUserRoleEvaluator implements RiskEvaluator {
-    private static final Logger logger = Logger.getLogger(DefaultUserRoleEvaluator.class);
-
     private final KeycloakSession session;
     private final UserRoleContext context;
     private Double risk;
@@ -33,6 +31,12 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public double getWeight() {
+        // Just like that until it's fixed
+        return Weight.NEGLIGIBLE;
+    }
+
+    @Override
     public void evaluate() {
         // TODO
         if (context.getData().stream().map(RoleModel::getName).anyMatch(f -> f.equals("ADMIN"))) {
@@ -40,6 +44,5 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
         } else {
             risk = Risk.SMALL;
         }
-        logger.debugf("Risk for user role evaluated to: '%s'", risk);
     }
 }

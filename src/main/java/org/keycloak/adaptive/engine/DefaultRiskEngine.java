@@ -8,12 +8,11 @@ import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.models.KeycloakSession;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DefaultRiskEngine implements RiskEngine {
-    private static final Logger logger = Logger.getLogger(BrowserRiskEvaluator.class);
+    private static final Logger logger = Logger.getLogger(DefaultRiskEngine.class);
 
     private final KeycloakSession session;
     private final Set<RiskEvaluator> riskFactorEvaluators;
@@ -27,20 +26,26 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public void evaluateRisk() {
         logger.debugf("Risk Engine - EVALUATING");
-        getRiskEvaluators().forEach(f -> {
-            logger.debugf("Evaluator: %s", f.getClass().getSimpleName());
-            f.evaluate();
-            logger.debugf("Risk evaluated: %f", f.getRiskValue());
-        });
+
+        getRiskEvaluators().forEach(RiskEvaluator::evaluate);
 
         var filteredEvaluators = getRiskEvaluators().stream()
-                .map(RiskEvaluator::getRiskValue)
-                .filter(Objects::nonNull)
-                .filter(risk -> risk >= 0.0d && risk <= 1.0d)
+                .filter(f -> isValidValue(f.getWeight()))
+                .filter(f -> isValidValue(f.getRiskValue()))
                 .toList();
 
-        //todo pretty naive
-        this.risk = filteredEvaluators.stream().mapToDouble(f -> f).sum() / filteredEvaluators.size();
+        var weightedRisk = filteredEvaluators.stream()
+                .peek(f -> logger.debugf("Evaluator: %s", f.getClass().getSimpleName()))
+                .peek(f -> logger.debugf("Risk evaluated: %f (weight %f)", f.getRiskValue(), f.getWeight()))
+                .mapToDouble(f -> f.getRiskValue() * f.getWeight())
+                .sum();
+        var weights = filteredEvaluators
+                .stream()
+                .mapToDouble(RiskEvaluator::getWeight)
+                .sum();
+
+        // Weighted mean
+        this.risk = weightedRisk / weights;
         logger.debugf("The overall risk score is %f", risk);
     }
 
@@ -66,5 +71,10 @@ public class DefaultRiskEngine implements RiskEngine {
         evaluateRisk();
         storeRisk(context);
         context.success();
+    }
+
+    private boolean isValidValue(Double value) {
+        if (value == null) return false;
+        return value >= 0.0d && value <= 1.0d;
     }
 }

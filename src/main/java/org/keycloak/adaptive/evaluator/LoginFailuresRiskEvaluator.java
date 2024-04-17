@@ -5,6 +5,7 @@ import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
 import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
@@ -28,6 +29,11 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
     @Override
     public Double getRiskValue() {
         return risk;
+    }
+
+    @Override
+    public double getWeight() {
+        return Weight.IMPORTANT;
     }
 
     @Override
@@ -64,7 +70,6 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
         } else {
             this.risk = Risk.HIGH;
         }
-        logger.debugf("Risk after num of failures: %f", risk);
 
         // Different IP address
         var currentIp = Optional.ofNullable(deviceContext.getData()).map(DeviceRepresentation::getIpAddress).orElse("");
@@ -72,7 +77,7 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
             if (!currentIp.equals(lastIpFailure)) {
                 this.risk = Math.max(risk, Risk.INTERMEDIATE);
-                logger.debugf("Request from different IP address. Risk: %f", risk);
+                logger.debug("Request from different IP address");
             }
         }
 
