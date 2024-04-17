@@ -9,8 +9,10 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class OperatingSystemConditionFactory extends UserContextConditionFactory<DeviceContext> {
@@ -62,16 +64,23 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .build();
     }
 
+    public static boolean isOs(DeviceContext context, String os) {
+        return Optional.ofNullable(context.getData())
+                .map(DeviceRepresentation::getOs)
+                .map(f -> f.startsWith(os))
+                .orElse(false);
+    }
+
     @Override
     public Set<Operation<DeviceContext>> initRules() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
-                    .condition((dev, val) -> dev.getData().getOs().startsWith(val))
+                    .condition(OperatingSystemConditionFactory::isOs)
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NEQ)
-                    .condition((dev, val) -> !dev.getData().getOs().startsWith(val))
+                    .condition((dev, val) -> !isOs(dev, val))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)

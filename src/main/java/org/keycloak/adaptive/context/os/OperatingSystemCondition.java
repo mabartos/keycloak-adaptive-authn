@@ -3,9 +3,9 @@ package org.keycloak.adaptive.context.os;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
-import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.condition.Operation;
 import org.keycloak.adaptive.spi.condition.UserContextCondition;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -28,6 +28,14 @@ public class OperatingSystemCondition implements UserContextCondition, Condition
     @Override
     public Set<UserContext<?>> getUserContexts() {
         return Set.of(deviceContext);
+    }
+
+    public boolean isOs(String os) {
+        return OperatingSystemConditionFactory.isOs(deviceContext, os);
+    }
+
+    public boolean isDefaultKnownOs() {
+        return DefaultOperatingSystems.DEFAULT_OPERATING_SYSTEMS.stream().anyMatch(this::isOs);
     }
 
     @Override
