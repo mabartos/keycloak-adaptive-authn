@@ -378,18 +378,18 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids" : [ ],
   "webAuthnPolicyPasswordlessExtraOrigins" : [ ],
   "users" : [ {
-    "id" : "70fef583-7b8b-4394-97a8-134c8fc94287",
-    "username" : "admin",
+    "id" : "b0e0fc91-404e-465d-b511-96f632bc33a5",
+    "username" : "admin2",
     "emailVerified" : true,
-    "createdTimestamp" : 1712683552638,
+    "createdTimestamp" : 1713378993064,
     "enabled" : true,
     "totp" : false,
     "credentials" : [ {
-      "id" : "a654a5ec-c866-4d59-be39-aa00de0131a0",
+      "id" : "00b89fe0-0985-4d4e-9728-a5232847d55a",
       "type" : "password",
       "userLabel" : "My password",
-      "createdDate" : 1712683564852,
-      "secretData" : "{\"value\":\"kOjHgmSdAhbPfKfz6JHAY5iWDCNI7I+0YKH98zGUhZM=\",\"salt\":\"67k0sxJNfC50PumnFRKXnQ==\",\"additionalParameters\":{}}",
+      "createdDate" : 1713379005116,
+      "secretData" : "{\"value\":\"1VONp0zs9b7HvkKCXTP/I6j0MvsT5jeOclcP8hUKGIc=\",\"salt\":\"Q/gCwKYI0oaZnxDqHPy1eg==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
     } ],
     "disableableCredentialTypes" : [ ],
@@ -1342,29 +1342,6 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "9b0d0624-0dbe-4867-a5db-b0b597588aac",
-    "alias" : "HIGH",
-    "description" : "",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "HIGH",
-      "authenticator" : "risk-level-condition-factory",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "deny-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
     "id" : "17ce49ec-811c-461d-9992-a19aca4bbdda",
     "alias" : "Handle Existing Account",
     "description" : "Handle what to do if there is existing account with same email/username like authenticated identity provider",
@@ -1387,8 +1364,54 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "94d81623-8aef-44f2-aa3c-bcfbfd9eacf8",
-    "alias" : "MEDIUM",
+    "id" : "98a8c0f4-b7ed-4ac6-afe7-066b21fe928d",
+    "alias" : "High Risk",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "HIGH",
+      "authenticator" : "risk-level-condition-factory",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "deny-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "38fbd099-1bd2-4e1b-a343-e3a2d8d81fac",
+    "alias" : "Low Risk",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "LOW",
+      "authenticator" : "risk-level-condition-factory",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "allow-access-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "09918c4e-e0f2-4b04-90e3-546885eb3c2d",
+    "alias" : "Medium Risk",
     "description" : "",
     "providerId" : "basic-flow",
     "topLevel" : false,
@@ -1404,7 +1427,7 @@
     }, {
       "authenticator" : "auth-password-form",
       "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
+      "requirement" : "DISABLED",
       "priority" : 1,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
@@ -1579,68 +1602,9 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "74c36a1d-729d-41a3-bd2c-e41296f414c8",
-    "alias" : "Risk - LOW",
-    "description" : "",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "LOW",
-      "authenticator" : "risk-level-condition-factory",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "allow-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "bc260be5-73c6-4065-a1fa-ae46b84d1a76",
+    "id" : "51af4cfa-4452-4120-a69e-abbb9cfdb202",
     "alias" : "Risk-based",
-    "description" : "",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticator" : "default-risk-engine",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorFlow" : true,
-      "requirement" : "CONDITIONAL",
-      "priority" : 1,
-      "autheticatorFlow" : true,
-      "flowAlias" : "Risk - LOW",
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorFlow" : true,
-      "requirement" : "CONDITIONAL",
-      "priority" : 2,
-      "autheticatorFlow" : true,
-      "flowAlias" : "MEDIUM",
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorFlow" : true,
-      "requirement" : "REQUIRED",
-      "priority" : 3,
-      "autheticatorFlow" : true,
-      "flowAlias" : "HIGH",
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "4681ef9a-a902-4b62-bea3-58b26e7945ca",
-    "alias" : "Risk-based ",
-    "description" : "Risk-based authentication flow",
+    "description" : "Risk-based authentication",
     "providerId" : "basic-flow",
     "topLevel" : true,
     "builtIn" : false,
@@ -1659,11 +1623,32 @@
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     }, {
-      "authenticatorFlow" : true,
+      "authenticator" : "default-risk-engine",
+      "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 2,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 3,
       "autheticatorFlow" : true,
-      "flowAlias" : "Risk-based",
+      "flowAlias" : "Low Risk",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 4,
+      "autheticatorFlow" : true,
+      "flowAlias" : "Medium Risk",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 5,
+      "autheticatorFlow" : true,
+      "flowAlias" : "High Risk",
       "userSetupAllowed" : false
     } ]
   }, {
@@ -2012,7 +1997,7 @@
       "denyErrorMessage" : "You cannot use Firefox on Windows"
     }
   }, {
-    "id" : "6197f6db-d697-4964-942f-ccae76005e31",
+    "id" : "4312b2be-aabf-459b-88c9-054fb969c757",
     "alias" : "HIGH",
     "config" : {
       "level-config" : "HIGH"
@@ -2025,13 +2010,13 @@
       "operation" : "is in range"
     }
   }, {
-    "id" : "27601189-73fe-4ef2-b673-6c114c2b971d",
+    "id" : "98b04bb9-d866-4737-8c19-da61b1a39216",
     "alias" : "LOW",
     "config" : {
       "level-config" : "LOW"
     }
   }, {
-    "id" : "313c32e6-1a42-43b8-a6ff-200eae64a6a0",
+    "id" : "5b78abd0-d490-4721-acf0-44fd0697e625",
     "alias" : "MEDIUM",
     "config" : {
       "level-config" : "MEDIUM"
@@ -2161,7 +2146,7 @@
     "priority" : 1000,
     "config" : { }
   } ],
-  "browserFlow" : "Risk-based ",
+  "browserFlow" : "browser",
   "registrationFlow" : "registration",
   "directGrantFlow" : "direct grant",
   "resetCredentialsFlow" : "reset credentials",
