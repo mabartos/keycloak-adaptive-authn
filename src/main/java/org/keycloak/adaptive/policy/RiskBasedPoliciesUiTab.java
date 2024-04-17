@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AuthPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
+public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
 
     @Override
     public String getId() {
-        return "Authentication policies";
+        return "Risk-based policies";
     }
 
     @Override
@@ -27,13 +27,13 @@ public class AuthPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<Co
     @Override
     public Map<String, String> getParams() {
         Map<String, String> params = new HashMap<>();
-        params.put("tab", "auth-policies");
+        params.put("tab", "risk-based-policies");
         return params;
     }
 
     @Override
     public String getHelpText() {
-        return "Authentication policies";
+        return "Risk-based policies";
     }
 
     @Override

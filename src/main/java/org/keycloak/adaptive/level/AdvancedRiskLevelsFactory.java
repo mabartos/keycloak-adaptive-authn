@@ -4,9 +4,9 @@ import org.keycloak.adaptive.spi.level.RiskLevelsFactory;
 import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
 import org.keycloak.models.KeycloakSession;
 
-public class SimpleRiskLevelsFactory implements RiskLevelsFactory {
-    public static final String PROVIDER_ID = "simple-risk-levels";
-    private static final RiskLevelsProvider SINGLETON = new SimpleRiskLevelsProvider();
+public class AdvancedRiskLevelsFactory implements RiskLevelsFactory {
+    public static final String PROVIDER_ID = "advanced-risk-levels";
+    private static final RiskLevelsProvider SINGLETON = new AdvancedRiskLevelsProvider();
 
     @Override
     public RiskLevelsProvider create(KeycloakSession session) {
@@ -20,6 +20,6 @@ public class SimpleRiskLevelsFactory implements RiskLevelsFactory {
 
     @Override
     public String getHelpText() {
-        return "Risk levels - 3 levels (Low, Medium, High)";
+        return "Risk levels - 5 levels (Low, Mild, Medium, Moderate, High)";
     }
 }

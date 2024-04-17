@@ -1,6 +1,38 @@
 package org.keycloak.adaptive.spi.level;
 
+import org.keycloak.Config;
+import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.provider.ConfiguredProvider;
+import org.keycloak.provider.EnvironmentDependentProviderFactory;
+import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderFactory;
 
-public interface RiskLevelsFactory extends ProviderFactory<RiskLevelsProvider> {
+import java.util.Collections;
+import java.util.List;
+
+public interface RiskLevelsFactory extends ProviderFactory<RiskLevelsProvider>, ConfiguredProvider, EnvironmentDependentProviderFactory {
+    @Override
+    default void init(Config.Scope config) {
+
+    }
+
+    @Override
+    default void postInit(KeycloakSessionFactory factory) {
+
+    }
+
+    @Override
+    default void close() {
+
+    }
+
+    @Override
+    default List<ProviderConfigProperty> getConfigProperties() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    default boolean isSupported(Config.Scope config) {
+        return true;
+    }
 }

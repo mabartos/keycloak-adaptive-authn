@@ -12,12 +12,7 @@ public class SimpleRiskLevelsProvider implements RiskLevelsProvider {
     static final RiskLevel HIGH = new SimpleRiskLevel("HIGH", 0.76, 1.0);
 
     @Override
-    public Collection<RiskLevel> getRiskLevels() {
+    public Set<RiskLevel> getRiskLevels() {
         return Set.of(LOW, MEDIUM, HIGH);
-    }
-
-    @Override
-    public void close() {
-
     }
 }
