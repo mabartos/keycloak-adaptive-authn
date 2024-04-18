@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-user-property-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-property-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1273,6 +1273,35 @@
       "priority" : 20,
       "autheticatorFlow" : true,
       "flowAlias" : "Verify Existing Account by Re-authentication",
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "ac9f2e7b-8787-4959-9916-96009b2e24f2",
+    "alias" : "Authn Policies",
+    "description" : "Browser flow with Auth Policies",
+    "providerId" : "basic-flow",
+    "topLevel" : true,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticator" : "auth-username-form",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "authn-policy-authenticator",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 1,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "auth-password-form",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 2,
+      "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1456,29 +1485,6 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "6fa10583-b5ef-489f-aad4-54963bd75694",
-    "alias" : "No Windows",
-    "description" : "",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "No Windows",
-      "authenticator" : "conditional-os-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "deny-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
     "id" : "04d62fbc-d92d-40c1-b99c-0a398409cc59",
     "alias" : "POLICY - Basic",
     "description" : "",
@@ -1491,13 +1497,6 @@
       "priority" : 0,
       "autheticatorFlow" : true,
       "flowAlias" : "No Firefox",
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorFlow" : true,
-      "requirement" : "CONDITIONAL",
-      "priority" : 1,
-      "autheticatorFlow" : true,
-      "flowAlias" : "No Windows",
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1689,35 +1688,6 @@
       "priority" : 30,
       "autheticatorFlow" : true,
       "flowAlias" : "forms",
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "ac9f2e7b-8787-4959-9916-96009b2e24f2",
-    "alias" : "browser - adaptive",
-    "description" : "Browser flow with Auth Policies",
-    "providerId" : "basic-flow",
-    "topLevel" : true,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticator" : "auth-username-form",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "authn-policy-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "auth-password-form",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 2,
-      "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
   }, {
@@ -2001,13 +1971,6 @@
       "browser-config" : "Firefox"
     }
   }, {
-    "id" : "a5e2aa23-4b81-4866-b903-665ec00c527e",
-    "alias" : "No Windows",
-    "config" : {
-      "os-config" : "Windows",
-      "operation" : "is equal to"
-    }
-  }, {
     "id" : "2d5e3cb5-a7dc-44a2-a82c-f8460e827448",
     "alias" : "create unique user config",
     "config" : {
@@ -2093,7 +2056,7 @@
     "priority" : 1000,
     "config" : { }
   } ],
-  "browserFlow" : "Risk-based",
+  "browserFlow" : "Authn Policies",
   "registrationFlow" : "registration",
   "directGrantFlow" : "direct grant",
   "resetCredentialsFlow" : "reset credentials",

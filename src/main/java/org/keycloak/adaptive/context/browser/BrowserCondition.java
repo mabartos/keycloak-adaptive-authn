@@ -32,7 +32,7 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
     }
 
     public boolean isBrowser(String browser) {
-        return getBrowserName().equals(browser);
+        return getBrowserName().startsWith(browser);
     }
 
     public boolean isDefaultKnownBrowser() {
