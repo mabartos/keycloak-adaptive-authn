@@ -6,11 +6,13 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
 
 public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
     public static final String PROVIDER_ID = "authn-policy-authenticator";
+    public static final String REQUIRES_USER_CONFIG = "requiresUserConfig";
     private static final AuthPolicyAuthenticator SINGLETON = new AuthPolicyAuthenticator();
 
     @Override
@@ -35,7 +37,7 @@ public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public boolean isConfigurable() {
-        return false;
+        return true;
     }
 
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -61,9 +63,16 @@ public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
-        return null;
+        return ProviderConfigurationBuilder.create()
+                .property()
+                .name(REQUIRES_USER_CONFIG)
+                .label(REQUIRES_USER_CONFIG)
+                .helpText(REQUIRES_USER_CONFIG + ".tooltip")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(true)
+                .add()
+                .build();
     }
-
 
     @Override
     public void init(Config.Scope config) {
