@@ -26,6 +26,11 @@ public class IpAddressCondition implements UserContextCondition, ConditionalAuth
     }
 
     @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
+    @Override
     public Set<UserContext<?>> getUserContexts() {
         return Set.of(deviceContext);
     }

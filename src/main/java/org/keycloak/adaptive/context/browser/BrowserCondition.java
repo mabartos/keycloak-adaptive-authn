@@ -27,6 +27,11 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
         this.browser = deviceContext.getData().getBrowser();
     }
 
+    @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
     public String getBrowserName() {
         return browser.contains("/") ? browser.substring(0, browser.indexOf("/")) : browser;
     }

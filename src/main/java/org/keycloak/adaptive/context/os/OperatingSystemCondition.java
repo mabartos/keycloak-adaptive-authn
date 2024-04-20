@@ -26,6 +26,11 @@ public class OperatingSystemCondition implements UserContextCondition, Condition
     }
 
     @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
+    @Override
     public Set<UserContext<?>> getUserContexts() {
         return Set.of(deviceContext);
     }
