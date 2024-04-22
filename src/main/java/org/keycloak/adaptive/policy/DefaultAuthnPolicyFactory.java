@@ -1,9 +1,9 @@
 package org.keycloak.adaptive.policy;
 
+import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProviderFactory;
-import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
@@ -12,11 +12,17 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderEvent;
 
 public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
+    private static final Logger logger = Logger.getLogger(DefaultAuthnPolicyFactory.class);
     public static final String PROVIDER_ID = "default-authn-policy";
 
     @Override
     public AuthnPolicyProvider create(KeycloakSession session) {
         return new DefaultAuthnPolicyProvider(session);
+    }
+
+    @Override
+    public AuthnPolicyProvider create(KeycloakSession session, RealmModel realm) {
+        return new DefaultAuthnPolicyProvider(session, realm);
     }
 
     @Override
@@ -40,19 +46,19 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
     }
 
     private void handleEvents(ProviderEvent event) {
-        if (event instanceof RealmModel.RealmPostCreateEvent) {
-            RealmModel realm = ((RealmModel.RealmPostCreateEvent) event).getCreatedRealm();
-            configureAuthenticationFlows(realm);
+        if (event instanceof RealmModel.RealmPostCreateEvent realmEvent) {
+            logger.debugf("Handling RealmPostCreateEvent");
+            configureAuthenticationFlows(realmEvent.getKeycloakSession(), realmEvent.getCreatedRealm());
         }
 
-        if (event instanceof RealmModel.RealmRemovedEvent) {
-            KeycloakSession session = ((RealmModel.RealmRemovedEvent) event).getKeycloakSession();
-            AuthnPolicyProvider provider = session.getProvider(AuthnPolicyProvider.class);
+        if (event instanceof RealmModel.RealmRemovedEvent realmEvent) {
+            logger.debugf("Handling RealmRemovedEvent");
+            AuthnPolicyProvider provider = realmEvent.getKeycloakSession().getProvider(AuthnPolicyProvider.class);
             provider.removeAll();
         }
     }
 
-    private void configureAuthenticationFlows(RealmModel realm) {
+    private void configureAuthenticationFlows(KeycloakSession session, RealmModel realm) {
         AuthenticationFlowModel browserFlow = realm.getBrowserFlow();
 
         if (browserFlow == null) {
@@ -65,36 +71,37 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
             return;
         }
 
-        AuthenticationExecutionModel authnPoliciesNoUser = new AuthenticationExecutionModel();
-        authnPoliciesNoUser.setParentFlow(browserFlow.getId());
-        authnPoliciesNoUser.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL);
-        authnPoliciesNoUser.setAuthenticator(DefaultAuthnPolicyFactory.PROVIDER_ID); // TODO
-        authnPoliciesNoUser.setPriority(0); // First flow execution
-        authnPoliciesNoUser.setAuthenticatorFlow(true);
-
-        authnPoliciesNoUser = realm.addAuthenticatorExecution(authnPoliciesNoUser);
-
-        /*
-
-        authnPolicies.setAlias("Authentication Policies");
-        authnPolicies.setDescription("Set of authentication policies");
-        authnPolicies.setProviderId(AuthenticationFlow.BASIC_FLOW);
-        authnPolicies.setTopLevel(false);
-        authnPolicies.setBuiltIn(true);
-        authnPolicies. (true);
-        authnPolicies = realm.addAuthenticationFlow(authnPolicies);
-
-
-        AuthenticationExecutionModel execution = new AuthenticationExecutionModel();
-
-        execution.setParentFlow(browserFlow.getId());
-        execution.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL);
-        execution.setAuthenticator(DefaultAuthnPolicyFactory.PROVIDER_ID);
-        execution.setPriority(0);
-        execution.setAuthenticatorFlow(false);
-
-        realm.addAuthenticatorExecution(execution);*/
+        addWrapperCondition(session, realm, browserFlow.getId(), 0, false);
+        addWrapperCondition(session, realm, browserFlow.getId(), 9999, true);
     }
 
+    protected void addWrapperCondition(KeycloakSession session, RealmModel realm, String parentFlowId, int priority, boolean requiresUser) {
+        AuthenticationFlowModel policies = new AuthenticationFlowModel();
+        policies.setTopLevel(false);
+        policies.setBuiltIn(true);
+        policies.setAlias("Authentication Policies");
+        policies.setDescription("Set of Authentication policies");
+        policies.setProviderId(AuthenticationPolicyFlow.BASIC_FLOW);
+        policies = realm.addAuthenticationFlow(policies);
 
+        final AuthenticationExecutionModel authnPolicies = new AuthenticationExecutionModel();
+        authnPolicies.setParentFlow(parentFlowId);
+        authnPolicies.setFlowId(policies.getId());
+        authnPolicies.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL);
+        authnPolicies.setPriority(priority);
+        authnPolicies.setAuthenticatorFlow(true);
+
+        final AuthenticationExecutionModel parentFlow = realm.addAuthenticatorExecution(authnPolicies);
+        final AuthnPolicyProviderFactory factory = (AuthnPolicyProviderFactory) session.getKeycloakSessionFactory().getProviderFactory(AuthnPolicyProvider.class);
+        final AuthnPolicyProvider provider = factory.create(session, realm);
+
+        provider.getAllStream(requiresUser)
+                .forEach(f -> {
+                    var execs = realm.getAuthenticationExecutionsStream(f.getId());
+                    execs.forEach(g -> {
+                        g.setParentFlow(parentFlow.getId());
+                        realm.updateAuthenticatorExecution(g);
+                    });
+                });
+    }
 }

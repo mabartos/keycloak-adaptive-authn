@@ -17,8 +17,12 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     private static final String POLICY_PREFIX = "POLICY - "; // TODO better approach to mark authn policy
 
     public DefaultAuthnPolicyProvider(KeycloakSession session) {
+        this(session, session.getContext().getRealm());
+    }
+
+    public DefaultAuthnPolicyProvider(KeycloakSession session, RealmModel realm) {
         this.session = session;
-        this.realm = session.getContext().getRealm();
+        this.realm = realm;
         if (realm == null) {
             throw new IllegalArgumentException("Session not bound to a realm");
         }

@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// Not usable much - wrong conditions/actions gathering - leverage the DefaultAuthnPolicyProvider
 public class AuthPolicyAuthenticator implements Authenticator {
     private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
 
