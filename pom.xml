@@ -210,6 +210,9 @@
     <profiles>
         <profile>
             <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <keycloak.adaptive.version>888.0.0-ADAPTIVE</keycloak.adaptive.version>
             </properties>
