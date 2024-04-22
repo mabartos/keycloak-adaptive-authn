@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+// not usable much - use AuthnPolicyProvider
 public class AuthenticationPolicyFlow extends DefaultAuthenticationFlow implements AuthenticationFlow {
     public static final String AUTHN_POLICY_FLOW = "authn-policy-flow";
     private static final Logger logger = Logger.getLogger(AuthenticationPolicyFlow.class);
