@@ -1,12 +1,13 @@
 package org.keycloak.adaptive.policy;
 
-import org.keycloak.adaptive.models.AuthnPolicyModel;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.utils.StringUtil;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -29,7 +30,7 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     }
 
     @Override
-    public AuthnPolicyModel addPolicy(AuthnPolicyModel policy) {
+    public AuthenticationFlowModel addPolicy(AuthenticationFlowModel policy) {
         if (StringUtil.isBlank(policy.getAlias()))
             throw new IllegalArgumentException("Cannot create an authentication policy with an empty alias");
 
@@ -37,18 +38,18 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
             policy.setAlias(POLICY_PREFIX + policy.getAlias());
         }
 
-        return (AuthnPolicyModel) realm.addAuthenticationFlow(policy); // TODO just cast it for now
+        return realm.addAuthenticationFlow(policy); // TODO just cast it for now
     }
 
     @Override
-    public Stream<AuthnPolicyModel> getAllStream() {
+    public Stream<AuthenticationFlowModel> getAllStream() {
         return realm.getAuthenticationFlowsStream()
-                .filter(f -> f.getAlias().startsWith(POLICY_PREFIX))
-                .map(f -> (AuthnPolicyModel) f);
+                .filter(Objects::nonNull)
+                .filter(f -> f.getAlias().startsWith(POLICY_PREFIX));
     }
 
     @Override
-    public Stream<AuthnPolicyModel> getAllStream(boolean requiresUser) {
+    public Stream<AuthenticationFlowModel> getAllStream(boolean requiresUser) {
         return getAllStream().filter(f -> realm.getAuthenticationExecutionsStream(f.getId())
                 .flatMap(g -> {
                     if (g.isAuthenticatorFlow()) {
@@ -65,14 +66,14 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     }
 
     @Override
-    public AuthnPolicyModel getById(String id) {
-        return (AuthnPolicyModel) Optional.ofNullable(realm.getAuthenticationFlowById(id))
+    public AuthenticationFlowModel getById(String id) {
+        return Optional.ofNullable(realm.getAuthenticationFlowById(id))
                 .filter(f -> f.getAlias().startsWith(POLICY_PREFIX))
                 .orElse(null);
     }
 
     @Override
-    public boolean remove(AuthnPolicyModel policy) {
+    public boolean remove(AuthenticationFlowModel policy) {
         if (!policy.getAlias().startsWith(POLICY_PREFIX)) {
             return false;
         }

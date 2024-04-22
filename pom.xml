@@ -12,7 +12,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <keycloak.adaptive.version>${keycloak.version}</keycloak.adaptive.version>
         <keycloak.version>${project.version}</keycloak.version>
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
 
@@ -20,7 +19,7 @@
         <maven.plugins.jar.version>3.3.0</maven.plugins.jar.version>
         <maven.plugins.exec.version>3.2.0</maven.plugins.exec.version>
 
-        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.adaptive.version}</keycloak.distribution.path>
+        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}</keycloak.distribution.path>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -91,7 +90,7 @@
                                 <artifactItem>
                                     <groupId>org.keycloak</groupId>
                                     <artifactId>keycloak-quarkus-dist</artifactId>
-                                    <version>${keycloak.adaptive.version}</version>
+                                    <version>${keycloak.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
                                 </artifactItem>
@@ -214,7 +213,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <keycloak.adaptive.version>888.0.0-ADAPTIVE</keycloak.adaptive.version>
+                <keycloak.version>888.0.0-ADAPTIVE</keycloak.version>
             </properties>
         </profile>
     </profiles>

@@ -1,0 +1,2 @@
+org.keycloak.adaptive.policy.AuthnPolicyNoUserFactory
+org.keycloak.adaptive.policy.AuthnPolicyRequiresUserFactory
