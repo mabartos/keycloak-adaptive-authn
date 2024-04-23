@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.policy;
+package org.keycloak.adaptive.policy.basic;
 
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.services.AuthnPolicyConditionResource;

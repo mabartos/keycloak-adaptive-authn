@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.policy;
+package org.keycloak.adaptive.policy.basic;
 
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;

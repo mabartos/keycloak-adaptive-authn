@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.policy;
+package org.keycloak.adaptive.policy.basic;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticatorFactory;
@@ -10,13 +10,13 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
 
-public class AdvancedAuthnPolicyAuthenticatorFactory implements AuthenticatorFactory {
-    public static final String PROVIDER_ID = "advanced-authn-policy-authenticator";
+public class BasicAuthnPolicyAuthenticatorFactory implements AuthenticatorFactory {
+    public static final String PROVIDER_ID = "basic-authn-policy-authenticator";
     static final String REQUIRES_USER_CONFIG = "requires-user-config";
-    private static final AdvancedAuthnPolicyAuthenticator SINGLETON = new AdvancedAuthnPolicyAuthenticator();
+    private static final BasicAuthnPolicyAuthenticator SINGLETON = new BasicAuthnPolicyAuthenticator();
 
     @Override
-    public AdvancedAuthnPolicyAuthenticator create(KeycloakSession session) {
+    public BasicAuthnPolicyAuthenticator create(KeycloakSession session) {
         return SINGLETON;
     }
 
@@ -27,7 +27,7 @@ public class AdvancedAuthnPolicyAuthenticatorFactory implements AuthenticatorFac
 
     @Override
     public String getDisplayType() {
-        return "Authentication policies";
+        return "Authentication policies (Basic)";
     }
 
     @Override
@@ -58,7 +58,7 @@ public class AdvancedAuthnPolicyAuthenticatorFactory implements AuthenticatorFac
 
     @Override
     public String getHelpText() {
-        return "Evaluate enabled Authentication policies";
+        return "Evaluate enabled Authentication policies (basic)";
     }
 
     @Override

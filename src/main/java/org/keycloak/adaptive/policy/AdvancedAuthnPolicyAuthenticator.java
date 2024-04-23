@@ -36,7 +36,7 @@ public class AdvancedAuthnPolicyAuthenticator implements Authenticator {
 
         var requiresUser = Optional.ofNullable(context.getAuthenticatorConfig())
                 .map(AuthenticatorConfigModel::getConfig)
-                .map(f -> f.get(AdvancedAuthnPolicyAuthenticatorFactory.REQUIRES_USER_CONFIG))
+                .map(f -> f.get(AuthnPolicyAuthenticatorFactory.REQUIRES_USER_CONFIG))
                 .map(Boolean::parseBoolean)
                 .orElse(null);
 

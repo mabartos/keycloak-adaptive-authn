@@ -2,7 +2,7 @@ package org.keycloak.adaptive.policy.ephemeral;
 
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
-import org.keycloak.adaptive.policy.AuthenticationPolicyFlow;
+import org.keycloak.adaptive.policy.basic.AuthenticationPolicyFlow;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.EphemeralFlowFactory;
 import org.keycloak.authentication.EphemeralFlowProvider;
