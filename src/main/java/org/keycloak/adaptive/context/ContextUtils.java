@@ -13,4 +13,6 @@ public class ContextUtils {
     public static <T extends UserContextCondition> T getContextCondition(KeycloakSession session, String providerId) {
         return (T) session.getProvider(UserContextCondition.class, providerId);
     }
+
+
 }

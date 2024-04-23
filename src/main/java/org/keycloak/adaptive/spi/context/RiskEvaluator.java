@@ -1,6 +1,7 @@
 package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.adaptive.level.Weight;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.Provider;
 
 import java.util.Collections;

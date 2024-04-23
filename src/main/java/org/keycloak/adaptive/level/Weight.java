@@ -6,4 +6,6 @@ public interface Weight {
     double NORMAL = 0.5;
     double IMPORTANT = 0.8;
     double HIGHEST = 1;
+
+    double DEFAULT = NORMAL;
 }

@@ -1,6 +1,7 @@
 package org.keycloak.adaptive.context.role;
 
 import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
@@ -32,8 +33,7 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        // Just like that until it's fixed
-        return Weight.NEGLIGIBLE;
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, DefaultUserRoleEvaluatorFactory.NAME, Weight.NEGLIGIBLE); // Just like that until it's fixed
     }
 
     @Override

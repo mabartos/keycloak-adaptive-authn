@@ -1,7 +1,6 @@
 package org.keycloak.adaptive.engine;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.context.browser.BrowserRiskEvaluator;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
@@ -30,8 +29,8 @@ public class DefaultRiskEngine implements RiskEngine {
         getRiskEvaluators().forEach(RiskEvaluator::evaluate);
 
         var filteredEvaluators = getRiskEvaluators().stream()
-                .filter(f -> isValidValue(f.getWeight()))
-                .filter(f -> isValidValue(f.getRiskValue()))
+                .filter(f -> RiskEngine.isValidValue(f.getWeight()))
+                .filter(f -> RiskEngine.isValidValue(f.getRiskValue()))
                 .toList();
 
         var weightedRisk = filteredEvaluators.stream()
@@ -71,10 +70,5 @@ public class DefaultRiskEngine implements RiskEngine {
         evaluateRisk();
         storeRisk(context);
         context.success();
-    }
-
-    private boolean isValidValue(Double value) {
-        if (value == null) return false;
-        return value >= 0.0d && value <= 1.0d;
     }
 }
