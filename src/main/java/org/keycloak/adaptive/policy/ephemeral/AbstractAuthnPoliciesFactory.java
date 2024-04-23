@@ -1,7 +1,8 @@
-package org.keycloak.adaptive.policy;
+package org.keycloak.adaptive.policy.ephemeral;
 
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
+import org.keycloak.adaptive.policy.AuthenticationPolicyFlow;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.EphemeralFlowFactory;
 import org.keycloak.authentication.EphemeralFlowProvider;
@@ -10,7 +11,6 @@ import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.provider.ProviderEvent;
 
 public abstract class AbstractAuthnPoliciesFactory implements EphemeralFlowFactory {

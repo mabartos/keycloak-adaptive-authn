@@ -1,4 +1,6 @@
-package org.keycloak.adaptive.policy;
+package org.keycloak.adaptive.policy.ephemeral;
+
+import org.keycloak.adaptive.policy.ephemeral.AbstractAuthnPoliciesFactory;
 
 public class AuthnPolicyRequiresUserFactory extends AbstractAuthnPoliciesFactory {
     public static final String PROVIDER_IR = "authn-policy-ephemeral-requires-user";

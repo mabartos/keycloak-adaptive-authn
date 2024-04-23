@@ -38,7 +38,7 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
             policy.setAlias(POLICY_PREFIX + policy.getAlias());
         }
 
-        return realm.addAuthenticationFlow(policy); // TODO just cast it for now
+        return realm.addAuthenticationFlow(policy);
     }
 
     @Override
