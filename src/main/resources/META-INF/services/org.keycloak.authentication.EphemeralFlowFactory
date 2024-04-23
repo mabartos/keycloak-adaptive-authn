@@ -1,2 +1,0 @@
-org.keycloak.adaptive.policy.ephemeral.AuthnPolicyNoUserFactory
-org.keycloak.adaptive.policy.ephemeral.AuthnPolicyRequiresUserFactory
