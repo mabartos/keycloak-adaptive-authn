@@ -2,6 +2,7 @@ package org.keycloak.adaptive.policy;
 
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -9,6 +10,7 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
@@ -50,15 +52,25 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
 
     @Override
     public Stream<AuthenticationFlowModel> getAllStream(boolean requiresUser) {
-        return getAllStream().filter(f -> realm.getAuthenticationExecutionsStream(f.getId())
-                .flatMap(g -> {
-                    if (g.isAuthenticatorFlow()) {
-                        var execs = realm.getAuthenticationExecutionsStream(g.getFlowId()); //TODO multiple layers?
-                        return execs.map(h -> getAuthenticator(session, h.getAuthenticator()));
-                    } else {
-                        return Stream.of(getAuthenticator(session, g.getAuthenticator()));
-                    }
-                }).anyMatch(s -> s.requiresUser() == requiresUser));
+        final Predicate<Stream<Authenticator>> OPERATION = requiresUser ?
+                s -> s.anyMatch(Authenticator::requiresUser) :
+                s -> s.noneMatch(Authenticator::requiresUser);
+
+        final Predicate<AuthenticationFlowModel> FILTER = f -> OPERATION.test(
+                getAllAuthenticationExecutionsStream(f.getId()).map(g -> getAuthenticator(session, g.getAuthenticator()))
+        );
+
+        return getAllStream().filter(FILTER);
+    }
+
+    private Stream<AuthenticationExecutionModel> getAllAuthenticationExecutionsStream(String flowId) {
+        return realm.getAuthenticationExecutionsStream(flowId).flatMap(g -> {
+            if (g.isAuthenticatorFlow()) {
+                return getAllAuthenticationExecutionsStream(g.getFlowId());
+            } else {
+                return Stream.of(g);
+            }
+        });
     }
 
     private Authenticator getAuthenticator(KeycloakSession session, String authenticator) {
