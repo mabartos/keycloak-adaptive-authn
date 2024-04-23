@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// Custom authenticator for evaluating authn policies - for basic usage
+// Custom authenticator for evaluating authn policies - for basic usage - use AdvancedAuthnPolicyAuthenticator
 public class BasicAuthnPolicyAuthenticator implements Authenticator {
     private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
 

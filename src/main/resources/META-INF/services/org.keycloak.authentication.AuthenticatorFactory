@@ -3,5 +3,6 @@ org.keycloak.adaptive.context.os.OperatingSystemConditionFactory
 org.keycloak.adaptive.context.os.PhoneConditionFactory
 org.keycloak.adaptive.context.ip.IpAddressConditionFactory
 org.keycloak.adaptive.policy.BasicAuthnPolicyAuthenticatorFactory
+org.keycloak.adaptive.policy.AdvancedAuthnPolicyAuthenticatorFactory
 org.keycloak.adaptive.engine.DefaultRiskEngineFactory
 org.keycloak.adaptive.level.RiskLevelConditionFactory
