@@ -1,4 +1,3 @@
-org.keycloak.adaptive.spi.AdaptiveAuthnSpi
 org.keycloak.adaptive.spi.context.UserContextSpi
 org.keycloak.adaptive.spi.context.RiskEvaluatorSpi
 org.keycloak.adaptive.spi.level.RiskLevelsSpi
