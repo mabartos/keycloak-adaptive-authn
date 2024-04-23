@@ -2,10 +2,12 @@ package org.keycloak.adaptive.policy;
 
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.services.AuthnPolicyConditionResource;
+import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
+import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -13,22 +15,35 @@ import org.keycloak.models.UserModel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// Not usable much - wrong conditions/actions gathering - leverage the DefaultAuthnPolicyProvider
-public class AuthPolicyAuthenticator implements Authenticator {
+// Custom authenticator for evaluating authn policies - for basic usage
+public class BasicAuthnPolicyAuthenticator implements Authenticator {
     private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         RealmModel realm = context.getRealm();
         KeycloakSession session = context.getSession();
-        var authPolicies = realm.getAuthenticationFlowsStream()
-                .filter(f -> f.getAlias().startsWith("POLICY -")) // TODO have better approach how to determine it's auth policy flow
-                .collect(Collectors.toSet());
+
+        final var provider = session.getProvider(AuthnPolicyProvider.class);
+        if (provider == null) {
+            throw new IllegalStateException("Cannot find AuthnPolicyProvider");
+        }
+
+        var requiresUser = Optional.ofNullable(context.getAuthenticatorConfig())
+                .map(AuthenticatorConfigModel::getConfig)
+                .map(f -> f.get(BasicAuthnPolicyAuthenticatorFactory.REQUIRES_USER_CONFIG))
+                .map(Boolean::parseBoolean)
+                .orElseThrow(() -> new IllegalStateException(String.format("Cannot find authenticator config '%s'", BasicAuthnPolicyAuthenticatorFactory.REQUIRES_USER_CONFIG)));
+
+        var authPolicies = provider.getAllStream(requiresUser).collect(Collectors.toSet());
 
         for (var policy : authPolicies) {
+            logger.debugf("processing authn policy '%s'", policy.getAlias());
+
             Map<AuthenticationExecutionModel, ConditionalAuthenticator> conditions = new HashMap<>();
             Map<AuthenticationExecutionModel, Authenticator> actions = new HashMap<>();
 
@@ -58,7 +73,7 @@ public class AuthPolicyAuthenticator implements Authenticator {
             if (allConditionsMatch) {
                 actions.values().forEach(f -> f.authenticate(context));
             } else {
-                logger.warn("Flow is not OK");
+                logger.debugf("conditions for authn policy '%s' were not met", policy.getAlias());
             }
         }
 

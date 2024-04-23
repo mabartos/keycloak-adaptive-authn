@@ -46,7 +46,7 @@ public abstract class AbstractAuthnPoliciesFactory implements EphemeralFlowFacto
 
     @Override
     public boolean isSupported(Config.Scope config) {
-        return true;//TODO add feature check
+        return false;//TODO add feature check
     }
 
     private void handleEvents(ProviderEvent event) {

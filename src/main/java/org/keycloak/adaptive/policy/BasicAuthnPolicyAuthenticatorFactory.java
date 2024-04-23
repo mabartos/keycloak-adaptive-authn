@@ -6,15 +6,17 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
 
-public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
-    public static final String PROVIDER_ID = "authn-policy-authenticator";
-    private static final AuthPolicyAuthenticator SINGLETON = new AuthPolicyAuthenticator();
+public class BasicAuthnPolicyAuthenticatorFactory implements AuthenticatorFactory {
+    public static final String PROVIDER_ID = "basic-authn-policy-authenticator";
+    static final String REQUIRES_USER_CONFIG = "requires-user-config";
+    private static final BasicAuthnPolicyAuthenticator SINGLETON = new BasicAuthnPolicyAuthenticator();
 
     @Override
-    public AuthPolicyAuthenticator create(KeycloakSession session) {
+    public BasicAuthnPolicyAuthenticator create(KeycloakSession session) {
         return SINGLETON;
     }
 
@@ -25,7 +27,7 @@ public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public String getDisplayType() {
-        return "Authentication policies";
+        return "Authentication policies (Basic)";
     }
 
     @Override
@@ -35,7 +37,7 @@ public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public boolean isConfigurable() {
-        return false;
+        return true;
     }
 
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -51,19 +53,25 @@ public class AuthPolicyAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public boolean isUserSetupAllowed() {
-        return false;
+        return true;
     }
 
     @Override
     public String getHelpText() {
-        return "Evaluate enabled Authentication policies";
+        return "Evaluate enabled Authentication policies (basic)";
     }
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
-        return null;
+        return ProviderConfigurationBuilder.create()
+                .property()
+                .name(REQUIRES_USER_CONFIG)
+                .label(REQUIRES_USER_CONFIG)
+                .helpText(REQUIRES_USER_CONFIG + ".tooltip")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .add()
+                .build();
     }
-
 
     @Override
     public void init(Config.Scope config) {
