@@ -2,7 +2,6 @@ package org.keycloak.adaptive.policy.ephemeral;
 
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
-import org.keycloak.adaptive.policy.basic.AuthenticationPolicyFlow;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.EphemeralFlowFactory;
 import org.keycloak.authentication.EphemeralFlowProvider;
@@ -71,7 +70,6 @@ public abstract class AbstractAuthnPoliciesFactory implements EphemeralFlowFacto
         flow.setBuiltIn(false);
         flow.setAlias(getAlias());
         flow.setDescription(getDescription());
-        flow.setProviderId(AuthenticationPolicyFlow.BASIC_FLOW);
         realm.addAuthenticationFlow(flow);
 
         final AuthenticationExecutionModel execution = new AuthenticationExecutionModel();
