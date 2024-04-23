@@ -44,6 +44,42 @@ public class AdvancedAuthnPolicyAuthenticator implements Authenticator {
 
         var authPolicies = provider.getAllStream(requiresUser).collect(Collectors.toSet());
 
+        final AuthenticationProcessor processor = createProcessor(session, realm, context);
+
+        for (var policy : authPolicies) {
+            processor.setFlowId(policy.getId());
+
+            AuthenticationFlow flow = processor.createFlowExecution(policy.getId(), realm.getAuthenticationExecutionByFlowId(policy.getId()));
+            Response response = flow.processFlow();
+
+            if (flow.isSuccessful()) {
+                context.success();
+                break;
+            }
+
+            if (response != null) {
+                if (response.getStatus() >= 400) {
+                    final AuthenticationFlowError error = Optional.ofNullable(context.getEvent())
+                            .map(EventBuilder::getEvent)
+                            .map(Event::getError)
+                            .map(String::toUpperCase)
+                            .map(AuthenticationFlowError::valueOf)
+                            .orElse(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
+
+                    context.failure(error, response);
+                } else {
+                    context.challenge(response);
+                }
+                break;
+            }
+        }
+
+        if (context.getStatus() == null) {
+            context.success();
+        }
+    }
+
+    protected AuthenticationProcessor createProcessor(KeycloakSession session, RealmModel realm, AuthenticationFlowContext context) {
         AuthenticationProcessor processor = new AuthenticationProcessor();
         processor.setRealm(realm)
                 .setAuthenticationSession(session.getContext().getAuthenticationSession())
@@ -55,36 +91,12 @@ public class AdvancedAuthnPolicyAuthenticator implements Authenticator {
                 .setBrowserFlow(true)
                 .setFlowPath(LoginActionsService.AUTHENTICATE_PATH)
                 .setEventBuilder(context.getEvent());
-
-        for (var policy : authPolicies) {
-            AuthenticationFlow flow = processor.createFlowExecution(policy.getId(), realm.getAuthenticationExecutionByFlowId(policy.getId()));
-            Response response = flow.processFlow();
-
-            if (flow.isSuccessful()) {
-                context.success();
-                break;
-            }
-
-            if (response != null) {
-                final AuthenticationFlowError error = Optional.ofNullable(context.getEvent())
-                        .map(EventBuilder::getEvent)
-                        .map(Event::getError)
-                        .map(String::toUpperCase)
-                        .map(AuthenticationFlowError::valueOf)
-                        .orElse(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
-
-                context.failure(error, response);
-                break;
-            }
-        }
-
-        if (context.getStatus() == null) {
-            context.success();
-        }
+        return processor;
     }
 
     @Override
     public void action(AuthenticationFlowContext context) {
+        System.err.println("HERE");
     }
 
     @Override
