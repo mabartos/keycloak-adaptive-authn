@@ -3,7 +3,7 @@ package org.keycloak.adaptive.level;
 import org.keycloak.adaptive.spi.level.RiskLevel;
 import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
 
-import java.util.Set;
+import java.util.List;
 
 public class AdvancedRiskLevelsProvider implements RiskLevelsProvider {
     static final RiskLevel LOW = new SimpleRiskLevel("LOW", 0.0, 0.2);
@@ -13,7 +13,7 @@ public class AdvancedRiskLevelsProvider implements RiskLevelsProvider {
     static final RiskLevel HIGH = new SimpleRiskLevel("HIGH", 0.81, 1.0);
 
     @Override
-    public Set<RiskLevel> getRiskLevels() {
-        return Set.of(LOW, MILD, MEDIUM, MODERATE, HIGH);
+    public List<RiskLevel> getRiskLevels() {
+        return List.of(LOW, MILD, MEDIUM, MODERATE, HIGH);
     }
 }
