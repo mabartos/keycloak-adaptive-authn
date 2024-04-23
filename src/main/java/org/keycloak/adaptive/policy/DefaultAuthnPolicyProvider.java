@@ -36,7 +36,7 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
         if (StringUtil.isBlank(policy.getAlias()))
             throw new IllegalArgumentException("Cannot create an authentication policy with an empty alias");
 
-        if (policy.getAlias().startsWith(POLICY_PREFIX)) {
+        if (!policy.getAlias().startsWith(POLICY_PREFIX)) {
             policy.setAlias(POLICY_PREFIX + policy.getAlias());
         }
 
@@ -82,6 +82,12 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
         return Optional.ofNullable(realm.getAuthenticationFlowById(id))
                 .filter(f -> f.getAlias().startsWith(POLICY_PREFIX))
                 .orElse(null);
+    }
+
+    @Override
+    public AuthenticationFlowModel getByAlias(String alias) {
+        var finalAlias = alias.startsWith(POLICY_PREFIX) ? alias : POLICY_PREFIX + alias;
+        return realm.getFlowByAlias(finalAlias);
     }
 
     @Override

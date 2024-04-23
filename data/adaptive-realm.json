@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1380,6 +1380,22 @@
       "userSetupAllowed" : false
     } ]
   }, {
+    "id" : "a22d0310-02f8-4d02-bccc-a87d37e27c25",
+    "alias" : "HIGH Risk",
+    "description" : "HIGH Risk",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : true,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "HIGH",
+      "authenticator" : "risk-level-condition-factory",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 60,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    } ]
+  }, {
     "id" : "17ce49ec-811c-461d-9992-a19aca4bbdda",
     "alias" : "Handle Existing Account",
     "description" : "Handle what to do if there is existing account with same email/username like authenticated identity provider",
@@ -1402,71 +1418,34 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "98a8c0f4-b7ed-4ac6-afe7-066b21fe928d",
-    "alias" : "High Risk",
-    "description" : "",
+    "id" : "b5f4828f-539a-411b-8dab-eccdd676bf17",
+    "alias" : "LOW Risk",
+    "description" : "LOW Risk",
     "providerId" : "basic-flow",
     "topLevel" : false,
-    "builtIn" : false,
-    "authenticationExecutions" : [ {
-      "authenticatorConfig" : "HIGH",
-      "authenticator" : "risk-level-condition-factory",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "deny-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    } ]
-  }, {
-    "id" : "38fbd099-1bd2-4e1b-a343-e3a2d8d81fac",
-    "alias" : "Low Risk",
-    "description" : "",
-    "providerId" : "basic-flow",
-    "topLevel" : false,
-    "builtIn" : false,
+    "builtIn" : true,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "LOW",
       "authenticator" : "risk-level-condition-factory",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "allow-access-authenticator",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
+      "priority" : 30,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "09918c4e-e0f2-4b04-90e3-546885eb3c2d",
-    "alias" : "Medium Risk",
-    "description" : "",
+    "id" : "bb88db73-7c89-4b71-9f95-b9a1da347581",
+    "alias" : "MEDIUM Risk",
+    "description" : "MEDIUM Risk",
     "providerId" : "basic-flow",
     "topLevel" : false,
-    "builtIn" : false,
+    "builtIn" : true,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "MEDIUM",
       "authenticator" : "risk-level-condition-factory",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "auth-password-form",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
+      "priority" : 45,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
@@ -1509,6 +1488,21 @@
       "userSetupAllowed" : false
     } ]
   }, {
+    "id" : "e04079d7-062f-440a-b9ed-78839edf315e",
+    "alias" : "POLICY - Risk-based",
+    "description" : "Policy leveraging risk-based authentication",
+    "providerId" : "basic-flow",
+    "topLevel" : true,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorFlow" : true,
+      "requirement" : "DISABLED",
+      "priority" : 0,
+      "autheticatorFlow" : true,
+      "flowAlias" : "Risk-based",
+      "userSetupAllowed" : false
+    } ]
+  }, {
     "id" : "512e69a2-dadc-49f8-8f7f-74b68b627a39",
     "alias" : "Reset - Conditional OTP",
     "description" : "Flow to determine if the OTP should be reset or not. Set to REQUIRED to force.",
@@ -1531,53 +1525,39 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "51af4cfa-4452-4120-a69e-abbb9cfdb202",
+    "id" : "c5e0cbf6-e1c7-43a5-9b87-749a2a3a3113",
     "alias" : "Risk-based",
-    "description" : "Risk-based authentication",
+    "description" : "Policy leveraging risk-based authentication",
     "providerId" : "basic-flow",
-    "topLevel" : true,
+    "topLevel" : false,
     "builtIn" : false,
     "authenticationExecutions" : [ {
-      "authenticator" : "auth-username-form",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticator" : "auth-password-form",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 1,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
       "authenticator" : "default-risk-engine",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
-      "priority" : 2,
+      "priority" : 10,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 3,
+      "priority" : 20,
       "autheticatorFlow" : true,
-      "flowAlias" : "Low Risk",
+      "flowAlias" : "LOW Risk",
       "userSetupAllowed" : false
     }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 4,
+      "priority" : 35,
       "autheticatorFlow" : true,
-      "flowAlias" : "Medium Risk",
+      "flowAlias" : "MEDIUM Risk",
       "userSetupAllowed" : false
     }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 5,
+      "priority" : 50,
       "autheticatorFlow" : true,
-      "flowAlias" : "High Risk",
+      "flowAlias" : "HIGH Risk",
       "userSetupAllowed" : false
     } ]
   }, {
@@ -1903,19 +1883,19 @@
       "requires-user-config" : "true"
     }
   }, {
-    "id" : "4312b2be-aabf-459b-88c9-054fb969c757",
+    "id" : "669a2acd-b64c-44fa-8d43-c2fb6da902c8",
     "alias" : "HIGH",
     "config" : {
       "level-config" : "HIGH"
     }
   }, {
-    "id" : "98b04bb9-d866-4737-8c19-da61b1a39216",
+    "id" : "0d97ed3d-5297-4493-bbd7-403f6d57f5a0",
     "alias" : "LOW",
     "config" : {
       "level-config" : "LOW"
     }
   }, {
-    "id" : "5b78abd0-d490-4721-acf0-44fd0697e625",
+    "id" : "be4fe8a9-e67e-4769-8f7d-b0b29aa1d685",
     "alias" : "MEDIUM",
     "config" : {
       "level-config" : "MEDIUM"

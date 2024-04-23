@@ -21,6 +21,7 @@ import java.util.Map;
 
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private List<RiskLevelsFactory> riskLevelsFactories = Collections.emptyList();
+    public static final String RISK_BASED_AUTHN_ENABLED_CONFIG = "riskBasedAuthnEnabled";
     public static final String RISK_LEVEL_PROVIDER_CONFIG = "riskLevelProvider";
 
     @Override
@@ -52,6 +53,8 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .findAny()
                 .map(ProviderFactory::getId)
                 .orElse("");
+
+        realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, model.get(RISK_BASED_AUTHN_ENABLED_CONFIG));
         realm.setAttribute(RISK_LEVEL_PROVIDER_CONFIG, providerId);
     }
 
@@ -59,6 +62,13 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     public List<ProviderConfigProperty> getConfigProperties() {
         final ProviderConfigurationBuilder builder = ProviderConfigurationBuilder.create();
         builder.property()
+                .name(RISK_BASED_AUTHN_ENABLED_CONFIG)
+                .label("enabled")
+                .helpText("Whether risk-based authentication should be enabled")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(true)
+                .add()
+                .property()
                 .name(RISK_LEVEL_PROVIDER_CONFIG)
                 .label("Risk levels")
                 .helpText("Which risk levels will be used for Risk Level conditions")

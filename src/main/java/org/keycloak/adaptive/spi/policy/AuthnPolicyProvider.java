@@ -15,6 +15,8 @@ public interface AuthnPolicyProvider extends Provider {
 
     AuthenticationFlowModel getById(String id);
 
+    AuthenticationFlowModel getByAlias(String alias);
+
     boolean remove(AuthenticationFlowModel policy);
 
     void removeAll();
