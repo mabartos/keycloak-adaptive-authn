@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 // Custom authenticator for evaluating authn policies - handle whole flows
-public class AdvancedAuthnPolicyAuthenticator implements Authenticator {
+public class AuthnPolicyAuthenticator implements Authenticator {
     private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
 
     @Override

@@ -27,10 +27,10 @@ public class AuthnPolicyAuthenticatorFactory implements AuthenticatorFactory {
 
     public static final String PROVIDER_ID = "advanced-authn-policy-authenticator";
     static final String REQUIRES_USER_CONFIG = "requires-user-config";
-    private static final AdvancedAuthnPolicyAuthenticator SINGLETON = new AdvancedAuthnPolicyAuthenticator();
+    private static final AuthnPolicyAuthenticator SINGLETON = new AuthnPolicyAuthenticator();
 
     @Override
-    public AdvancedAuthnPolicyAuthenticator create(KeycloakSession session) {
+    public AuthnPolicyAuthenticator create(KeycloakSession session) {
         return SINGLETON;
     }
 
