@@ -30,6 +30,11 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
+    @Override
     public Set<UserContext<?>> getUserContexts() {
         return browserCondition.getUserContexts();
     }

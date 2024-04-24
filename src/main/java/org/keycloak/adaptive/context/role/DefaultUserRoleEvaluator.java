@@ -37,6 +37,11 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean requiresUser() {
+        return true;
+    }
+
+    @Override
     public void evaluate() {
         // TODO
         if (context.getData().stream().map(RoleModel::getName).anyMatch(f -> f.equals("ADMIN"))) {

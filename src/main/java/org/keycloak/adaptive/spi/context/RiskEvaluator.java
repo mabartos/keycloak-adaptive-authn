@@ -11,6 +11,8 @@ public interface RiskEvaluator extends Provider {
 
     double getWeight();
 
+    boolean requiresUser();
+
     default Set<UserContext<?>> getUserContexts() {
         return Collections.emptySet();
     }

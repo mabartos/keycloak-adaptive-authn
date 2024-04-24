@@ -38,6 +38,11 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean requiresUser() {
+        return true;
+    }
+
+    @Override
     public void evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {

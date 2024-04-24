@@ -27,7 +27,7 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
         final AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
 
         if (authConfig != null) {
-            var risk = RiskEngine.getStoredRisk(context)
+            var risk = RiskEngine.getStoredRisk(context, RiskEngine.RiskPhase.OVERALL)
                     .orElseThrow(() -> new IllegalStateException("No risk has been evaluated. Did you forget to add Risk Engine authenticator to the flow?"));
 
             if (riskLevelsProvider == null) {

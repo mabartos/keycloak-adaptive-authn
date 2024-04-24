@@ -16,6 +16,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.utils.StringUtil;
 
@@ -32,6 +33,8 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
     public static final String PROVIDER_ID = "default-risk-engine";
     protected static final String DEFAULT_RISK_BASED_POLICY_ALIAS = "POLICY - Risk-based";
+
+    static final String REQUIRES_USER_CONFIG = "requiresUserConfig";
 
     @Override
     public RiskEngine create(KeycloakSession session) {
@@ -69,7 +72,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
     @Override
     public boolean isConfigurable() {
-        return false;
+        return true;
     }
 
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
@@ -94,7 +97,14 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
-        return null;
+        return ProviderConfigurationBuilder.create()
+                .property()
+                .name(REQUIRES_USER_CONFIG)
+                .label(REQUIRES_USER_CONFIG)
+                .helpText(REQUIRES_USER_CONFIG + ".tooltip")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .add()
+                .build();
     }
 
     protected void handleEvents(ProviderEvent event) {

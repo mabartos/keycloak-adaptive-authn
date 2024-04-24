@@ -12,7 +12,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface RiskEngine extends Authenticator {
-    String RISK_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK";
+    String RISK_NO_USER_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK_NO_USER";
+    String RISK_REQUIRES_USER_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK_REQUIRES_USER";
+    String RISK_OVERALL_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_OVERALL_RISK";
 
     Double getRisk();
 
@@ -46,20 +48,42 @@ public interface RiskEngine extends Authenticator {
 
     }
 
-    static Optional<Double> getStoredRisk(AuthenticationFlowContext context) {
+    enum RiskPhase {
+        NO_USER(RISK_NO_USER_AUTH_NOTE),
+        REQUIRES_USER(RISK_REQUIRES_USER_AUTH_NOTE),
+        OVERALL(RISK_OVERALL_AUTH_NOTE);
+
+        final String authNote;
+
+        RiskPhase(String authNote) {
+            this.authNote = authNote;
+        }
+
+        public String getAuthNote() {
+            return authNote;
+        }
+    }
+
+    static Optional<Double> getStoredRisk(AuthenticationFlowContext context, RiskPhase riskPhase) {
         try {
-            return Optional.of(Double.parseDouble(context.getAuthenticationSession().getAuthNote(RISK_AUTH_NOTE)));
+            return Optional.of(Double.parseDouble(context.getAuthenticationSession().getAuthNote(riskPhase.getAuthNote())));
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
     }
 
-    static void storeRisk(AuthenticationFlowContext context, Double risk) {
-        context.getAuthenticationSession().setAuthNote(RISK_AUTH_NOTE, risk.toString());
+    static void storeRisk(AuthenticationFlowContext context, RiskPhase riskPhase, Double risk) {
+        context.getAuthenticationSession().setAuthNote(riskPhase.getAuthNote(), risk.toString());
+
+        if (riskPhase != RiskPhase.OVERALL) { // Store Overall risk
+            var oppositePhase = riskPhase == RiskPhase.NO_USER ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
+            getStoredRisk(context, oppositePhase)
+                    .ifPresent(oppositeRisk -> context.getAuthenticationSession().setAuthNote(RiskPhase.OVERALL.getAuthNote(), Double.toString((risk + oppositeRisk) / 2.0d)));
+        }
     }
 
-    default void storeRisk(AuthenticationFlowContext context) {
-        storeRisk(context, getRisk());
+    default void storeRisk(AuthenticationFlowContext context, RiskPhase riskPhase) {
+        storeRisk(context, riskPhase, getRisk());
     }
 
     static boolean isValidValue(Double value) {

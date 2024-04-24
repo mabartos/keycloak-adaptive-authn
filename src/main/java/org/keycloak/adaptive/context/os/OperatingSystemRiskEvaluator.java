@@ -1,7 +1,6 @@
 package org.keycloak.adaptive.context.os;
 
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.browser.BrowserRiskEvaluatorFactory;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
@@ -25,6 +24,11 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     @Override
     public double getWeight() {
         return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.NAME);
+    }
+
+    @Override
+    public boolean requiresUser() {
+        return false;
     }
 
     @Override
