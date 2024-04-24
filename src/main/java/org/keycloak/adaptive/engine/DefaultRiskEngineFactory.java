@@ -152,6 +152,21 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
         policy.setBuiltIn(false);
         policy = authnPolicyProvider.addPolicy(policy);
 
+        // Risk Evaluator - no user required
+        var configModel = new AuthenticatorConfigModel();
+        configModel.setConfig(Map.of(DefaultRiskEngineFactory.REQUIRES_USER_CONFIG, Boolean.FALSE.toString()));
+        configModel.setAlias("Risk evaluator - no user required");
+        configModel = realm.addAuthenticatorConfig(configModel);
+
+        var execution = new AuthenticationExecutionModel();
+        execution.setParentFlow(policy.getId());
+        execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
+        execution.setAuthenticator(DefaultRiskEngineFactory.PROVIDER_ID);
+        execution.setPriority(0);
+        execution.setAuthenticatorFlow(false);
+        execution.setAuthenticatorConfig(configModel.getId());
+        realm.addAuthenticatorExecution(execution);
+
         // Conditional policy
         AuthenticationFlowModel conditionalPolicy = new AuthenticationFlowModel();
         conditionalPolicy.setAlias("Risk-based");
@@ -171,12 +186,18 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
         realm.addAuthenticatorExecution(conditionalPolicyExecution);
 
         // Evaluate risk provider
-        var execution = new AuthenticationExecutionModel();
+        configModel = new AuthenticatorConfigModel();
+        configModel.setConfig(Map.of(DefaultRiskEngineFactory.REQUIRES_USER_CONFIG, Boolean.TRUE.toString()));
+        configModel.setAlias("Risk evaluator - requires user");
+        configModel = realm.addAuthenticatorConfig(configModel);
+
+        execution = new AuthenticationExecutionModel();
         execution.setParentFlow(conditionalPolicy.getId());
         execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
         execution.setAuthenticator(DefaultRiskEngineFactory.PROVIDER_ID);
         execution.setPriority(10);
         execution.setAuthenticatorFlow(false);
+        execution.setAuthenticatorConfig(configModel.getId());
         realm.addAuthenticatorExecution(execution);
 
         // Levels
@@ -185,7 +206,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
             // Conditional flow for level
             AuthenticationFlowModel levelFlow = new AuthenticationFlowModel();
             levelFlow.setTopLevel(false);
-            levelFlow.setBuiltIn(true);
+            levelFlow.setBuiltIn(false);
             levelFlow.setAlias(level.getName() + " Risk");
             levelFlow.setDescription(level.getName() + " Risk");
             levelFlow.setProviderId(BASIC_FLOW);
@@ -199,7 +220,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
             realm.addAuthenticatorExecution(levelFlowExecution);
 
             // Condition for level
-            var configModel = new AuthenticatorConfigModel();
+            configModel = new AuthenticatorConfigModel();
             configModel.setConfig(Map.of(RiskLevelConditionFactory.LEVEL_CONFIG, level.getName()));
             configModel.setAlias(level.getName());
             configModel = realm.addAuthenticatorConfig(configModel);

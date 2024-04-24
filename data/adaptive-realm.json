@@ -1160,7 +1160,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "120ac0df-62ff-430e-9478-6212fc0f6e73",
@@ -1169,7 +1169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-property-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "5dc9a4c1-6a48-46be-9eed-5d9c502110d0",
@@ -1410,12 +1410,12 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "a22d0310-02f8-4d02-bccc-a87d37e27c25",
+    "id" : "578517b1-98a3-46c4-bfbb-16c1bd7d0e19",
     "alias" : "HIGH Risk",
     "description" : "HIGH Risk",
     "providerId" : "basic-flow",
     "topLevel" : false,
-    "builtIn" : true,
+    "builtIn" : false,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "HIGH",
       "authenticator" : "risk-level-condition-factory",
@@ -1448,12 +1448,12 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "b5f4828f-539a-411b-8dab-eccdd676bf17",
+    "id" : "e1e1b9cd-b55e-4785-96f6-e9e04c29d8e4",
     "alias" : "LOW Risk",
     "description" : "LOW Risk",
     "providerId" : "basic-flow",
     "topLevel" : false,
-    "builtIn" : true,
+    "builtIn" : false,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "LOW",
       "authenticator" : "risk-level-condition-factory",
@@ -1464,12 +1464,12 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "bb88db73-7c89-4b71-9f95-b9a1da347581",
+    "id" : "6ab34174-e076-4545-b1c7-4ec1860b97ec",
     "alias" : "MEDIUM Risk",
     "description" : "MEDIUM Risk",
     "providerId" : "basic-flow",
     "topLevel" : false,
-    "builtIn" : true,
+    "builtIn" : false,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "MEDIUM",
       "authenticator" : "risk-level-condition-factory",
@@ -1518,13 +1518,21 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "e04079d7-062f-440a-b9ed-78839edf315e",
+    "id" : "58ad8c51-3c10-44ef-9ce2-5d54e5de1a84",
     "alias" : "POLICY - Risk-based",
     "description" : "Policy leveraging risk-based authentication",
     "providerId" : "basic-flow",
     "topLevel" : true,
     "builtIn" : false,
     "authenticationExecutions" : [ {
+      "authenticatorConfig" : "Risk evaluator - no user required",
+      "authenticator" : "default-risk-engine",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
       "authenticatorFlow" : true,
       "requirement" : "DISABLED",
       "priority" : 0,
@@ -1570,13 +1578,14 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "c5e0cbf6-e1c7-43a5-9b87-749a2a3a3113",
+    "id" : "892e5c37-4c11-487f-acc6-43af883635bd",
     "alias" : "Risk-based",
     "description" : "Policy leveraging risk-based authentication",
     "providerId" : "basic-flow",
     "topLevel" : false,
     "builtIn" : false,
     "authenticationExecutions" : [ {
+      "authenticatorConfig" : "Risk evaluator - requires user",
       "authenticator" : "default-risk-engine",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
@@ -1928,19 +1937,19 @@
       "requires-user-config" : "true"
     }
   }, {
-    "id" : "669a2acd-b64c-44fa-8d43-c2fb6da902c8",
+    "id" : "70719d43-152c-4139-9395-074bbf2512d3",
     "alias" : "HIGH",
     "config" : {
       "level-config" : "HIGH"
     }
   }, {
-    "id" : "0d97ed3d-5297-4493-bbd7-403f6d57f5a0",
+    "id" : "06d927d2-f7f2-4237-a259-c037a1630662",
     "alias" : "LOW",
     "config" : {
       "level-config" : "LOW"
     }
   }, {
-    "id" : "be4fe8a9-e67e-4769-8f7d-b0b29aa1d685",
+    "id" : "ac301cc5-5a71-4087-8b46-a3f6bd280401",
     "alias" : "MEDIUM",
     "config" : {
       "level-config" : "MEDIUM"
@@ -1970,6 +1979,18 @@
     "config" : {
       "operation" : "is equal to",
       "browser-config" : "Firefox"
+    }
+  }, {
+    "id" : "64dd4e4e-45ea-462b-b574-58f1ff512778",
+    "alias" : "Risk evaluator - no user required",
+    "config" : {
+      "requiresUserConfig" : "false"
+    }
+  }, {
+    "id" : "01d6a1fe-a908-4ec5-96c0-d0ab413989f8",
+    "alias" : "Risk evaluator - requires user",
+    "config" : {
+      "requiresUserConfig" : "true"
     }
   }, {
     "id" : "2d5e3cb5-a7dc-44a2-a82c-f8460e827448",

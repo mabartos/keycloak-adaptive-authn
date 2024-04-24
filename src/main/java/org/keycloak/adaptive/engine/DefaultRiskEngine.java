@@ -75,6 +75,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
+
         var requiresUser = Optional.ofNullable(context.getAuthenticatorConfig())
                 .map(AuthenticatorConfigModel::getConfig)
                 .map(f -> f.get(DefaultRiskEngineFactory.REQUIRES_USER_CONFIG))
