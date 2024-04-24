@@ -43,7 +43,6 @@ public class AdvancedAuthnPolicyAuthenticator implements Authenticator {
         if (requiresUser == null) return;
 
         var authPolicies = provider.getAllStream(requiresUser).collect(Collectors.toSet());
-
         final AuthenticationProcessor processor = createProcessor(session, realm, context);
 
         for (var policy : authPolicies) {
@@ -68,6 +67,8 @@ public class AdvancedAuthnPolicyAuthenticator implements Authenticator {
 
                     context.failure(error, response);
                 } else {
+                    // TODO handle challenged sub-executions
+                    //context.getAuthenticationSession().setAuthNote(CURRENT_AUTHENTICATION_EXECUTION, xxxx);
                     context.challenge(response);
                 }
                 break;
