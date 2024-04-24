@@ -39,7 +39,7 @@ public class HeaderIpAddressProvider implements IpAddressContext {
                 .orElse(Collections.emptyList())
                 .stream()
                 .flatMap(f -> Stream.of(f.split(",")))
-                .map(IpAddressConditionFactory::getIpAddress)
+                .map(IpAddressUtils::getIpAddress)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
