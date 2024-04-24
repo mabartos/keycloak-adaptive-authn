@@ -39,7 +39,9 @@ public class IpApiLocationContext implements LocationContext {
 
     @Override
     public void initData() {
-        try (var client = httpClientProvider.getHttpClient()) {
+        try {
+            var client = httpClientProvider.getHttpClient();
+
             var uriString = Optional.ofNullable(deviceContext)
                     .map(UserContext::getData)
                     .map(DeviceRepresentation::getIpAddress)

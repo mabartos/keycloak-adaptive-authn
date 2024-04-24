@@ -2,3 +2,4 @@
  org.keycloak.adaptive.context.role.DefaultUserRoleEvaluatorFactory
  org.keycloak.adaptive.evaluator.LoginFailuresRiskEvaluatorFactory
  org.keycloak.adaptive.context.os.OperatingSystemRiskEvaluatorFactory
+ org.keycloak.adaptive.context.location.LocationRiskEvaluatorFactory
