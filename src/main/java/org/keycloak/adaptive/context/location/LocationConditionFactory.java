@@ -2,6 +2,7 @@ package org.keycloak.adaptive.context.location;
 
 import org.keycloak.adaptive.spi.condition.Operation;
 import org.keycloak.adaptive.spi.condition.UserContextConditionFactory;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
@@ -31,6 +32,11 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
     public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (location, val) -> !location.getData().getCity().equals(val));
 
     public LocationConditionFactory() {
+    }
+
+    @Override
+    public LocationCondition create(KeycloakSession session) {
+        return new LocationCondition(session, getRules());
     }
 
     @Override

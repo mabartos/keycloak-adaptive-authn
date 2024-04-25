@@ -21,7 +21,6 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
         this.rules = rules;
     }
 
-
     @Override
     public Set<UserContext<?>> getUserContexts() {
         return Set.of(locationContext);
