@@ -13,7 +13,6 @@ public class LocationRiskEvaluator implements RiskEvaluator {
 
     private final KeycloakSession session;
     private final RealmModel realm;
-    private final UserModel user;
     private final LocationContext locationContext;
 
     private Double risk;
@@ -21,7 +20,6 @@ public class LocationRiskEvaluator implements RiskEvaluator {
     public LocationRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.realm = session.getContext().getRealm();
-        this.user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
         this.locationContext = ContextUtils.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
     }
 
@@ -46,6 +44,8 @@ public class LocationRiskEvaluator implements RiskEvaluator {
             logger.debugf("Realm is null");
             return;
         }
+
+        var user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
 
         if (user == null) {
             logger.debugf("User is null");
