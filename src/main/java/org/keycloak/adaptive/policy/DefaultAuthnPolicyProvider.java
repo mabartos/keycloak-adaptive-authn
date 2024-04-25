@@ -8,6 +8,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.utils.StringUtil;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -76,7 +77,8 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     public Stream<AuthenticationFlowModel> getAllStream() {
         return realm.getAuthenticationExecutionsStream(parent.getId())
                 .filter(AuthenticationExecutionModel::isAuthenticatorFlow)
-                .map(f -> realm.getAuthenticationFlowById(f.getId()));
+                .map(f -> realm.getAuthenticationFlowById(f.getFlowId()))
+                .filter(Objects::nonNull);
     }
 
     @Override

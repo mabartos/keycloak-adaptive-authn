@@ -32,7 +32,7 @@ export default function CreateAuthenticationPolicy() {
 
         try {
             const {id} =
-                await adminClient.authenticationManagement.createFlow(flow);
+                await adminClient.authenticationPolicies.createPolicy(flow);
             addAlert(t("authnPolicyCreatedSuccess"), AlertVariant.success);
             navigate(
                 toAuthenticationPolicy({

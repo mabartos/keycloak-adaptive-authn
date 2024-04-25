@@ -154,24 +154,22 @@ export default function AuthenticationSection() {
   };
 
   const loaderAuthnPolicies = async () => {
-    const flowsRequest = await fetchWithError(
+    const policiesRequest = await fetchWithError(
         `${addTrailingSlash(
             adminClient.baseUrl,
-        )}admin/realms/${realmName}/ui-ext/authentication-management/flows`,
+        )}realms/${realmName}/authn-policies`,
         {
           method: "GET",
           headers: getAuthorizationHeaders(await adminClient.getAccessToken()),
         },
     );
-    const flowsJson = await flowsRequest.json();
-    if (!flowsJson) {
+    const policies = await policiesRequest.json();
+    if (!policies) {
       return [];
     }
 
-    const flows = flowsJson.filter((item: AuthenticationPolicyType) => item.alias?.startsWith("POLICY - "));
-
     return sortBy(
-        localeSort<AuthenticationPolicyType>(flows, mapByKey("alias")),
+        localeSort<AuthenticationPolicyType>(policies, mapByKey("alias")),
         (flow) => flow,
     );
   };

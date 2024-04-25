@@ -74,20 +74,20 @@ export default function AuthenticationPolicyDetails() {
 
     useFetch(
         async () => {
-            const flows = await adminClient.authenticationManagement.getFlows();
-            const flow = flows.find((f) => f.id === id);
-            if (!flow) {
+            const policies = await adminClient.authenticationPolicies.getPolicies();
+            const policy = policies.find((f) => f.id === id);
+            if (!policy) {
                 throw new Error(t("notFound"));
             }
 
             const executions =
                 await adminClient.authenticationManagement.getExecutions({
-                    flow: flow.alias!,
+                    flow: policy.alias!,
                 });
-            return { flow, executions};
+            return { policy, executions};
         },
-        ({ flow, executions }) => {
-            setPolicy(flow);
+        ({ policy, executions }) => {
+            setPolicy(policy);
             setConditionList(new ExecutionList(executions));
         },
         [key],
@@ -253,7 +253,7 @@ export default function AuthenticationPolicyDetails() {
         continueButtonVariant: ButtonVariant.danger,
         onConfirm: async () => {
             try {
-                await adminClient.authenticationManagement.deleteFlow({
+                await adminClient.authenticationPolicies.deletePolicy({
                     flowId: policy!.id!,
                 });
                 navigate(toAuthentication({ realm }));
