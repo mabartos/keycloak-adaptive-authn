@@ -27,4 +27,6 @@ public interface AuthnPolicyProvider extends Provider {
     boolean remove(AuthenticationFlowModel policy);
 
     void removeAll();
+
+    void update(AuthenticationFlowModel policy);
 }

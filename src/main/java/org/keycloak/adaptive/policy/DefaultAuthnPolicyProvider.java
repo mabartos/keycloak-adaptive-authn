@@ -132,6 +132,13 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     }
 
     @Override
+    public void update(AuthenticationFlowModel policy) {
+        var found = getById(policy.getId());
+        if (found.isEmpty()) return;
+        realm.updateAuthenticationFlow(policy);
+    }
+
+    @Override
     public void close() {
 
     }

@@ -28,8 +28,7 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
     private static final Logger logger = Logger.getLogger(DefaultAuthnPolicyFactory.class);
     public static final String DEFAULT_AUTHN_POLICIES_FLOW_ALIAS = "Authentication policies - PARENT";
 
-
-    public static final String PROVIDER_ID = "default-authn-policy";
+    public static final String PROVIDER_ID = "default";
     protected static final String DEFAULT_RISK_BASED_POLICY_ALIAS = "POLICY - Risk-based";
 
     @Override

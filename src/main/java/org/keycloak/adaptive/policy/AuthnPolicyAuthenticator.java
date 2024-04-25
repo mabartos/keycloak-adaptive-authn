@@ -2,7 +2,6 @@ package org.keycloak.adaptive.policy;
 
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.services.AuthnPolicyConditionResource;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -21,7 +20,7 @@ import java.util.Optional;
 
 // Custom authenticator for evaluating authn policies - handle whole flows
 public class AuthnPolicyAuthenticator implements Authenticator {
-    private static final Logger logger = Logger.getLogger(AuthnPolicyConditionResource.class);
+    private static final Logger logger = Logger.getLogger(AuthnPolicyAuthenticator.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
