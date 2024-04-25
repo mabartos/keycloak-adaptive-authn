@@ -4,3 +4,4 @@ org.keycloak.adaptive.spi.level.RiskLevelsSpi
 org.keycloak.adaptive.spi.engine.RiskEngineSpi
 org.keycloak.adaptive.spi.condition.UserContextConditionSpi
 org.keycloak.adaptive.spi.policy.AuthnPolicySpi
+org.keycloak.adaptive.spi.ai.AiEngineSpi
