@@ -14,6 +14,7 @@
     <properties>
         <keycloak.version>${project.version}</keycloak.version>
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
+        <langchain4j.openai.version>0.12.0</langchain4j.openai.version>
 
         <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
         <maven.plugins.jar.version>3.3.0</maven.plugins.jar.version>
@@ -62,6 +63,24 @@
             <artifactId>ipaddress</artifactId>
             <version>${seancfoley.ipaddress.version}</version>
         </dependency>
+
+        <!-- AI -->
+        <dependency>
+            <groupId>io.quarkiverse.langchain4j</groupId>
+            <artifactId>quarkus-langchain4j-openai</artifactId>
+            <version>${langchain4j.openai.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai</artifactId>
+            <version>0.30.0</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-core</artifactId>
+            <version>0.30.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -71,10 +90,46 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.plugins.compiler.version}</version>
             </plugin>
-            <plugin>
+           <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven.plugins.jar.version}</version>
+            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>org.keycloak*</exclude>
+                            <exclude>io.smallrye</exclude>
+                            <exclude>org.apache.httpcomponents:httpcore</exclude>
+                            <exclude>com.google*</exclude>
+                            <exclude>org.checkerframework*</exclude>
+                        </excludes>
+                    </artifactSet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -113,13 +168,98 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
                                 </artifactItem>
-                                <artifactItem>
+                                <!--<artifactItem>
                                     <groupId>com.github.seancfoley</groupId>
                                     <artifactId>ipaddress</artifactId>
                                     <version>${seancfoley.ipaddress.version}</version>
                                     <type>jar</type>
                                     <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
                                 </artifactItem>
+                                &lt;!&ndash;LangChain4j&ndash;&gt;
+                                <artifactItem>
+                                    <groupId>io.quarkiverse.langchain4j</groupId>
+                                    <artifactId>quarkus-langchain4j-openai</artifactId>
+                                    <version>${langchain4j.openai.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>io.quarkiverse.langchain4j</groupId>
+                                    <artifactId>quarkus-langchain4j-core</artifactId>
+                                    <version>${langchain4j.openai.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j-open-ai</artifactId>
+                                    <version>0.30.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j</artifactId>
+                                    <version>0.30.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j-core</artifactId>
+                                    <version>0.30.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.ai4j</groupId>
+                                    <artifactId>openai4j</artifactId>
+                                    <version>0.17.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.okhttp3</groupId>
+                                    <artifactId>okhttp</artifactId>
+                                    <version>4.12.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>retrofit</artifactId>
+                                    <version>2.11.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>converter-gson</artifactId>
+                                    <version>2.11.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jetbrains.kotlin</groupId>
+                                    <artifactId>kotlin-stdlib</artifactId>
+                                    <version>1.9.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.okio</groupId>
+                                    <artifactId>okio-jvm</artifactId>
+                                    <version>3.9.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.code.gson</groupId>
+                                    <artifactId>gson</artifactId>
+                                    <version>2.10.1</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>-->
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -198,6 +338,7 @@
                                 <argument>--debug</argument>
                                 <argument>start-dev</argument>
                                 <argument>--log-level=org.keycloak.adaptive:debug,org.keycloak.services:debug</argument>
+                                <argument>--verbose</argument>
                             </arguments>
                         </configuration>
                     </execution>
