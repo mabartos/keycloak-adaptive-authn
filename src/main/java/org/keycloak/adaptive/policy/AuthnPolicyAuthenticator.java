@@ -76,7 +76,12 @@ public class AuthnPolicyAuthenticator implements Authenticator {
         }
 
         if (context.getStatus() == null) {
-            context.success();
+            var execution = realm.getAuthenticationExecutionById(context.getExecution().getId());
+            if (execution.isAlternative()) {
+                context.failure(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
+            } else {
+                context.success();
+            }
         }
     }
 
