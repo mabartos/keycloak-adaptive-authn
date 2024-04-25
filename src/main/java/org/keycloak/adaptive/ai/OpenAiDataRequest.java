@@ -14,7 +14,7 @@ public record OpenAiDataRequest(String model,
     }
 
     public static OpenAiDataRequest newRequest(String systemMessage, String userMessage) {
-        return newRequest("gpt-3.5-turbo", systemMessage, userMessage);
+        return newRequest(OpenAiEngineFactory.DEFAULT_MODEL, systemMessage, userMessage);
     }
 
     public static OpenAiDataRequest newRequest(String userMessage) {
