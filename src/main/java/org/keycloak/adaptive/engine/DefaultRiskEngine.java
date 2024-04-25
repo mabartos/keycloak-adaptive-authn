@@ -76,7 +76,6 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-
         var requiresUser = Optional.ofNullable(context.getAuthenticatorConfig())
                 .map(AuthenticatorConfigModel::getConfig)
                 .map(f -> f.get(DefaultRiskEngineFactory.REQUIRES_USER_CONFIG))
@@ -89,8 +88,16 @@ public class DefaultRiskEngine implements RiskEngine {
         }
         this.requiresUser = requiresUser;
 
-        evaluateRisk();
-        storeRisk(context, requiresUser ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER);
+        final var phase = requiresUser ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
+        final var storedRisk = getStoredRisk(context, phase);
+
+        if (storedRisk.isPresent()) {
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase, storedRisk.get());
+        } else {
+            evaluateRisk();
+            storeRisk(context, requiresUser ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER);
+        }
+
         context.success();
     }
 

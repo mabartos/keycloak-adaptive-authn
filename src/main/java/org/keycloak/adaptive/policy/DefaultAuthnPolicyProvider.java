@@ -47,6 +47,7 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
 
     @Override
     public AuthenticationFlowModel addPolicy(AuthenticationFlowModel policy) {
+        getOrCreateParentPolicy();
         return addPolicy(policy, parent.getId());
     }
 
