@@ -1,7 +1,11 @@
 package org.keycloak.adaptive.engine;
 
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.service.AiServices;
+import io.quarkus.arc.Arc;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
+import org.keycloak.adaptive.Main;
 import org.keycloak.adaptive.level.RiskLevelConditionFactory;
 import org.keycloak.adaptive.level.SimpleRiskLevelsFactory;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
@@ -47,6 +51,11 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
+
+        var model = OpenAiChatModel.withApiKey("asdf");
+        AiTest test = AiServices.create(AiTest.class, model);
+        System.err.println("ECHO");
+        System.err.println(test.test("hello"));
         factory.register(this::handleEvents);
     }
 

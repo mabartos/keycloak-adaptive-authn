@@ -14,6 +14,7 @@
     <properties>
         <keycloak.version>${project.version}</keycloak.version>
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
+        <langchain4j.openai.version>0.12.0</langchain4j.openai.version>
 
         <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
         <maven.plugins.jar.version>3.3.0</maven.plugins.jar.version>
@@ -61,6 +62,13 @@
             <groupId>com.github.seancfoley</groupId>
             <artifactId>ipaddress</artifactId>
             <version>${seancfoley.ipaddress.version}</version>
+        </dependency>
+
+        <!-- AI -->
+        <dependency>
+            <groupId>io.quarkiverse.langchain4j</groupId>
+            <artifactId>quarkus-langchain4j-openai</artifactId>
+            <version>${langchain4j.openai.version}</version>
         </dependency>
     </dependencies>
 
@@ -117,6 +125,98 @@
                                     <groupId>com.github.seancfoley</groupId>
                                     <artifactId>ipaddress</artifactId>
                                     <version>${seancfoley.ipaddress.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <!--LangChain4j-->
+                                <artifactItem>
+                                    <groupId>io.quarkiverse.langchain4j</groupId>
+                                    <artifactId>quarkus-langchain4j-openai</artifactId>
+                                    <version>${langchain4j.openai.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>io.quarkiverse.langchain4j</groupId>
+                                    <artifactId>quarkus-langchain4j-core</artifactId>
+                                    <version>${langchain4j.openai.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j-open-ai</artifactId>
+                                    <version>0.30.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j</artifactId>
+                                    <version>0.30.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.langchain4j</groupId>
+                                    <artifactId>langchain4j-core</artifactId>
+                                    <version>0.30.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>dev.ai4j</groupId>
+                                    <artifactId>openai4j</artifactId>
+                                    <version>0.17.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.okhttp3</groupId>
+                                    <artifactId>okhttp</artifactId>
+                                    <version>4.12.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>retrofit</artifactId>
+                                    <version>2.11.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.retrofit2</groupId>
+                                    <artifactId>converter-gson</artifactId>
+                                    <version>2.11.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jetbrains.kotlin</groupId>
+                                    <artifactId>kotlin-stdlib</artifactId>
+                                    <version>1.9.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.squareup.okio</groupId>
+                                    <artifactId>okio-jvm</artifactId>
+                                    <version>3.9.0</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.code.gson</groupId>
+                                    <artifactId>gson</artifactId>
+                                    <version>2.10.1</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.knuddels</groupId>
+                                    <artifactId>jtokkit</artifactId>
+                                    <version>1.0.0</version>
                                     <type>jar</type>
                                     <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
                                 </artifactItem>
@@ -198,6 +298,7 @@
                                 <argument>--debug</argument>
                                 <argument>start-dev</argument>
                                 <argument>--log-level=org.keycloak.adaptive:debug,org.keycloak.services:debug</argument>
+                                <argument>--verbose</argument>
                             </arguments>
                         </configuration>
                     </execution>
