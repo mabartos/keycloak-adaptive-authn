@@ -18,7 +18,6 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.resources.LoginActionsService;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 // Custom authenticator for evaluating authn policies - handle whole flows
 public class AuthnPolicyAuthenticator implements Authenticator {
@@ -42,37 +41,39 @@ public class AuthnPolicyAuthenticator implements Authenticator {
 
         if (requiresUser == null) return;
 
-        var authPolicies = provider.getAllStream(requiresUser).collect(Collectors.toSet());
         final AuthenticationProcessor processor = createProcessor(session, realm, context);
 
-        for (var policy : authPolicies) {
-            processor.setFlowId(policy.getId());
+        var policy = realm.getFlowByAlias(DefaultAuthnPolicyFactory.DEFAULT_AUTHN_POLICIES_FLOW_ALIAS);
+        if (policy == null) {
+            throw new IllegalStateException("Parent flow for authentication policies does not exist");
+        }
 
-            AuthenticationFlow flow = processor.createFlowExecution(policy.getId(), realm.getAuthenticationExecutionByFlowId(policy.getId()));
-            Response response = flow.processFlow();
+        processor.setFlowId(policy.getId());
 
-            if (flow.isSuccessful()) {
-                context.success();
-                break;
+        AuthenticationFlow flow = processor.createFlowExecution(policy.getId(), realm.getAuthenticationExecutionByFlowId(policy.getId()));
+        Response response = flow.processFlow();
+
+        if (flow.isSuccessful()) {
+            context.success();
+            return;
+        }
+
+        if (response != null) {
+            if (response.getStatus() >= 400) {
+                final AuthenticationFlowError error = Optional.ofNullable(context.getEvent())
+                        .map(EventBuilder::getEvent)
+                        .map(Event::getError)
+                        .map(String::toUpperCase)
+                        .map(AuthenticationFlowError::valueOf)
+                        .orElse(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
+
+                context.failure(error, response);
+            } else {
+                // TODO handle challenged sub-executions
+                //context.getAuthenticationSession().setAuthNote(CURRENT_AUTHENTICATION_EXECUTION, xxxx);
+                context.challenge(response);
             }
-
-            if (response != null) {
-                if (response.getStatus() >= 400) {
-                    final AuthenticationFlowError error = Optional.ofNullable(context.getEvent())
-                            .map(EventBuilder::getEvent)
-                            .map(Event::getError)
-                            .map(String::toUpperCase)
-                            .map(AuthenticationFlowError::valueOf)
-                            .orElse(AuthenticationFlowError.GENERIC_AUTHENTICATION_ERROR);
-
-                    context.failure(error, response);
-                } else {
-                    // TODO handle challenged sub-executions
-                    //context.getAuthenticationSession().setAuthNote(CURRENT_AUTHENTICATION_EXECUTION, xxxx);
-                    context.challenge(response);
-                }
-                break;
-            }
+            return;
         }
 
         if (context.getStatus() == null) {

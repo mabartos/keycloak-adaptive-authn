@@ -26,6 +26,8 @@ import static org.keycloak.authentication.AuthenticationFlow.BASIC_FLOW;
 
 public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
     private static final Logger logger = Logger.getLogger(DefaultAuthnPolicyFactory.class);
+    public static final String DEFAULT_AUTHN_POLICIES_FLOW_ALIAS = "Authentication policies - PARENT";
+
 
     public static final String PROVIDER_ID = "default-authn-policy";
     protected static final String DEFAULT_RISK_BASED_POLICY_ALIAS = "POLICY - Risk-based";
@@ -67,6 +69,16 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
         }
     }
 
+    static AuthenticationFlowModel createParentFlow(RealmModel realm) {
+        var parent = new AuthenticationFlowModel();
+        parent.setAlias(DEFAULT_AUTHN_POLICIES_FLOW_ALIAS);
+        parent.setDescription("Parent Authentication Policy");
+        parent.setProviderId(BASIC_FLOW);
+        parent.setTopLevel(true);
+        parent.setBuiltIn(false);
+        return realm.addAuthenticationFlow(parent);
+    }
+
     protected void configureAuthenticationFlows(KeycloakSession session, RealmModel realm) {
         var factory = session.getKeycloakSessionFactory().getProviderFactory(AuthnPolicyProvider.class);
         if (factory == null) {
@@ -80,8 +92,10 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
             return;
         }
 
-        final var existing = authnPolicyProvider.getByAlias(DEFAULT_RISK_BASED_POLICY_ALIAS);
-        if (existing != null) {
+        authnPolicyProvider.getOrCreateParentPolicy();
+
+        final var existing = Optional.ofNullable(realm.getFlowByAlias(DEFAULT_RISK_BASED_POLICY_ALIAS));
+        if (existing.isPresent()) {
             logger.warnf("Default policy '%s' already exists", DEFAULT_RISK_BASED_POLICY_ALIAS);
             return;
         }
@@ -96,12 +110,12 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
             return;
         }
 
-        // Parent Policy
+        // Parent Risk-based Policy
         AuthenticationFlowModel policy = new AuthenticationFlowModel();
         policy.setAlias(DEFAULT_RISK_BASED_POLICY_ALIAS);
         policy.setDescription("Policy leveraging risk-based authentication");
         policy.setProviderId(BASIC_FLOW);
-        policy.setTopLevel(true);
+        policy.setTopLevel(false);
         policy.setBuiltIn(false);
         policy = authnPolicyProvider.addPolicy(policy);
 
@@ -115,7 +129,7 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
         execution.setParentFlow(policy.getId());
         execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
         execution.setAuthenticator(DefaultRiskEngineFactory.PROVIDER_ID);
-        execution.setPriority(0);
+        execution.setPriority(10);
         execution.setAuthenticatorFlow(false);
         execution.setAuthenticatorConfig(configModel.getId());
         realm.addAuthenticatorExecution(execution);
@@ -148,13 +162,13 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
         execution.setParentFlow(conditionalPolicy.getId());
         execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
         execution.setAuthenticator(DefaultRiskEngineFactory.PROVIDER_ID);
-        execution.setPriority(10);
+        execution.setPriority(20);
         execution.setAuthenticatorFlow(false);
         execution.setAuthenticatorConfig(configModel.getId());
         realm.addAuthenticatorExecution(execution);
 
         // Levels
-        AtomicInteger priority = new AtomicInteger(20);
+        AtomicInteger priority = new AtomicInteger(30);
         for (var level : riskLevelsProvider.getRiskLevels()) {
             // Conditional flow for level
             AuthenticationFlowModel levelFlow = new AuthenticationFlowModel();

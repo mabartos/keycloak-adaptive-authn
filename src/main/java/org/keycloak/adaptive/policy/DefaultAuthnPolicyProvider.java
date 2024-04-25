@@ -8,7 +8,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.utils.StringUtil;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -16,6 +15,7 @@ import java.util.stream.Stream;
 public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     private final KeycloakSession session;
     private final RealmModel realm;
+    private final AuthenticationFlowModel parent;
 
     private static final String POLICY_PREFIX = "POLICY - "; // TODO better approach to mark authn policy
 
@@ -29,10 +29,28 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
         if (realm == null) {
             throw new IllegalArgumentException("Session not bound to a realm");
         }
+        // Create parent authn policies flow if does not exist
+        this.parent = getOrCreateParentPolicy();
+    }
+
+    @Override
+    public AuthenticationFlowModel getParentPolicy() {
+        return Optional.ofNullable(realm.getFlowByAlias(DefaultAuthnPolicyFactory.DEFAULT_AUTHN_POLICIES_FLOW_ALIAS))
+                .orElseThrow(() -> new IllegalStateException(String.format("Authentication policies Parent Flow '%s' does not exist", DefaultAuthnPolicyFactory.DEFAULT_AUTHN_POLICIES_FLOW_ALIAS)));
+    }
+
+    @Override
+    public AuthenticationFlowModel getOrCreateParentPolicy() {
+        return Optional.ofNullable(realm.getFlowByAlias(DefaultAuthnPolicyFactory.DEFAULT_AUTHN_POLICIES_FLOW_ALIAS)).orElseGet(() -> DefaultAuthnPolicyFactory.createParentFlow(realm));
     }
 
     @Override
     public AuthenticationFlowModel addPolicy(AuthenticationFlowModel policy) {
+        return addPolicy(policy, parent.getId());
+    }
+
+    @Override
+    public AuthenticationFlowModel addPolicy(AuthenticationFlowModel policy, String parentFlowId) {
         if (StringUtil.isBlank(policy.getAlias()))
             throw new IllegalArgumentException("Cannot create an authentication policy with an empty alias");
 
@@ -40,14 +58,25 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
             policy.setAlias(POLICY_PREFIX + policy.getAlias());
         }
 
-        return realm.addAuthenticationFlow(policy);
+        var flow = realm.addAuthenticationFlow(policy);
+
+        var execution = new AuthenticationExecutionModel();
+        execution.setParentFlow(parentFlowId);
+        execution.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL);
+        execution.setPriority(0);
+        execution.setFlowId(flow.getId());
+        execution.setAuthenticatorFlow(true);
+
+        realm.addAuthenticatorExecution(execution);
+
+        return flow;
     }
 
     @Override
     public Stream<AuthenticationFlowModel> getAllStream() {
-        return realm.getAuthenticationFlowsStream()
-                .filter(Objects::nonNull)
-                .filter(f -> f.getAlias().startsWith(POLICY_PREFIX));
+        return realm.getAuthenticationExecutionsStream(parent.getId())
+                .filter(AuthenticationExecutionModel::isAuthenticatorFlow)
+                .map(f -> realm.getAuthenticationFlowById(f.getId()));
     }
 
     @Override
@@ -78,24 +107,22 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     }
 
     @Override
-    public AuthenticationFlowModel getById(String id) {
-        return Optional.ofNullable(realm.getAuthenticationFlowById(id))
-                .filter(f -> f.getAlias().startsWith(POLICY_PREFIX))
-                .orElse(null);
+    public Optional<AuthenticationFlowModel> getById(String id) {
+        return getAllStream().filter(f -> f.getId().equals(id)).findAny();
     }
 
     @Override
-    public AuthenticationFlowModel getByAlias(String alias) {
-        var finalAlias = alias.startsWith(POLICY_PREFIX) ? alias : POLICY_PREFIX + alias;
-        return realm.getFlowByAlias(finalAlias);
+    public Optional<AuthenticationFlowModel> getByAlias(String alias) {
+        return getAllStream().filter(f -> f.getAlias().equals(alias)).findAny();
     }
 
     @Override
     public boolean remove(AuthenticationFlowModel policy) {
-        if (!policy.getAlias().startsWith(POLICY_PREFIX)) {
+        var found = getById(policy.getId());
+        if (found.isEmpty()) {
             return false;
         }
-        realm.removeAuthenticationFlow(policy);
+        realm.removeAuthenticationFlow(found.get());
         return true;
     }
 
