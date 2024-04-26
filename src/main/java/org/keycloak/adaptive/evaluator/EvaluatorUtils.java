@@ -1,14 +1,34 @@
 package org.keycloak.adaptive.evaluator;
 
 import com.apicatalog.jsonld.StringUtils;
+import org.keycloak.adaptive.ai.OpenAiDataResponse;
+import org.keycloak.adaptive.ai.OpenAiEngine;
 import org.keycloak.adaptive.level.Weight;
+import org.keycloak.adaptive.spi.ai.AiEngine;
+import org.keycloak.adaptive.spi.ai.AiRiskEvaluatorMessages;
 import org.keycloak.adaptive.spi.context.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.utils.StringUtil;
 
 import java.util.Optional;
 
 public class EvaluatorUtils {
+
+
+    public static Optional<Double> getRiskFromAi(AiEngine aiEngine, String message) {
+        if (aiEngine instanceof OpenAiEngine) {
+            OpenAiDataResponse response = aiEngine.getResult(AiRiskEvaluatorMessages.CONTEXT_MESSAGE, message, OpenAiDataResponse.class);
+
+            return Optional.ofNullable(response)
+                    .flatMap(f -> f.choices().stream().findAny())
+                    .map(OpenAiDataResponse.Choice::message)
+                    .map(OpenAiDataResponse.Choice.Message::content)
+                    .filter(StringUtil::isNotBlank)
+                    .map(Double::parseDouble);
+        }
+        return Optional.empty();
+    }
 
     private static Optional<String> getWeight(KeycloakSession session, String evaluatorName) {
         return Optional.ofNullable(session.getContext())

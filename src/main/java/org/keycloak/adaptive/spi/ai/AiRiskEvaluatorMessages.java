@@ -11,5 +11,6 @@ public interface AiRiskEvaluatorMessages {
                 - Values close to 1 mean the risk of user fraud is high.
                                
             You need to analyze the data I provide to you and return risk values.
+            The message MUST contain only the double value, no text around - gave me only the number without further explanations.
             """;
 }
