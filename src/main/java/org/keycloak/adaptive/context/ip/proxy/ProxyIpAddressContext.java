@@ -1,7 +1,8 @@
-package org.keycloak.adaptive.context.ip;
+package org.keycloak.adaptive.context.ip.proxy;
 
 import inet.ipaddr.IPAddress;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.keycloak.adaptive.context.ip.IpAddressUtils;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
@@ -17,12 +18,12 @@ import java.util.stream.Stream;
 
 import static org.keycloak.adaptive.context.ip.IpAddressUtils.IP_PATTERN;
 
-public class ProxyIpAddressProvider implements IpProxyContext {
+public class ProxyIpAddressContext implements IpProxyContext {
     private final KeycloakSession session;
     private Set<IPAddress> data;
     private boolean isInitialized;
 
-    public ProxyIpAddressProvider(KeycloakSession session) {
+    public ProxyIpAddressContext(KeycloakSession session) {
         this.session = session;
         initData();
     }

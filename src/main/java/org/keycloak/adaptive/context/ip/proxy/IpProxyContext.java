@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.context.ip;
+package org.keycloak.adaptive.context.ip.proxy;
 
 import inet.ipaddr.IPAddress;
 import org.keycloak.adaptive.spi.context.UserContext;
