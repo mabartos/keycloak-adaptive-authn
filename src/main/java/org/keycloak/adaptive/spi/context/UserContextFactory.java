@@ -7,6 +7,17 @@ import org.keycloak.provider.ProviderFactory;
 
 public interface UserContextFactory<T extends Provider> extends ProviderFactory<T> {
 
+    /**
+     * Priority for order evaluation of multiple same contexts
+     * <p>
+     * More higher number, user context is evaluated sooner
+     *
+     * @return priority
+     */
+    default int priority() {
+        return 0;
+    }
+
     @Override
     default void init(Config.Scope config) {
     }

@@ -11,6 +11,12 @@ public class DeviceIpAddressContextFactory implements UserContextFactory<IpAddre
         return new DeviceIpAddressContext(session);
     }
 
+
+    @Override
+    public int priority() {
+        return 10; // first option for the IpAddressContext evaluation
+    }
+
     @Override
     public String getId() {
         return PROVIDER_ID;
