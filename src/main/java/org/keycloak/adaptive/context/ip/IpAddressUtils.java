@@ -3,17 +3,22 @@ package org.keycloak.adaptive.context.ip;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import inet.ipaddr.IncompatibleAddressException;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.utils.StringUtil;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IpAddressUtils {
 
     public static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
+    public static final Pattern FORWARDED_FOR_PATTERN = Pattern.compile("for=([^;]+)");
 
     public static boolean isInRange(DeviceContext context, String value) {
         if (StringUtil.isBlank(value)) throw new IllegalArgumentException("Cannot parse IP Address");
@@ -52,5 +57,26 @@ public class IpAddressUtils {
         } catch (IncompatibleAddressException e) {
             return Optional.empty();
         }
+    }
+
+    private static IPAddress parseForwardedHeader(String header, Pattern pattern) {
+        Matcher matcher = pattern.matcher(header);
+        if (matcher.find()) {
+            var ip = IpAddressUtils.getIpAddress(matcher.group(1));
+            if (ip.isPresent()) {
+                return ip.get();
+            }
+        }
+        return null;
+    }
+
+    public static Optional<IPAddress> getIpAddressFromHeader(HttpHeaders headers, String headerName, Pattern pattern) {
+        return Optional.ofNullable(headers.getRequestHeader(headerName))
+                .flatMap(h -> h.stream().findFirst())
+                .map(h -> List.of(h.split(",")))
+                .stream()
+                .flatMap(Collection::stream)
+                .findFirst()
+                .map(f -> parseForwardedHeader(f, pattern));
     }
 }

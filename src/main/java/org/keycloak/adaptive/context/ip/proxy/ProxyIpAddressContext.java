@@ -8,7 +8,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -35,19 +34,23 @@ public class ProxyIpAddressContext implements IpProxyContext {
 
     @Override
     public void initData() {
-        this.data = Optional.ofNullable(session.getContext())
+        var result = Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)
                 .map(headers -> Stream.concat(
                         getIpAddressFromHeader(headers, "Forwarded"),
                         getIpAddressFromHeader(headers, "X-Forwarded-For"))
                 )
-                .map(f -> f.collect(Collectors.toSet()))
-                .orElseGet(Collections::emptySet);
+                .map(f -> f.collect(Collectors.toSet()));
 
-        this.isInitialized = true;
+        if (result.isPresent()) {
+            this.data = result.get();
+            this.isInitialized = true;
+        } else {
+            this.isInitialized = false;
+        }
     }
 
-    private static Stream<IPAddress> getIpAddressFromHeader(HttpHeaders headers, String headerName) {
+    protected static Stream<IPAddress> getIpAddressFromHeader(HttpHeaders headers, String headerName) {
         return Optional.ofNullable(headers.getRequestHeader(headerName))
                 .flatMap(h -> h.stream().findFirst())
                 .map(h -> List.of(h.split(",")))
