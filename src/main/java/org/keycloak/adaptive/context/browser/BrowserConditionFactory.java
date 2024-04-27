@@ -27,7 +27,7 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
     }
 
     @Override
-    public Set<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initRules() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)

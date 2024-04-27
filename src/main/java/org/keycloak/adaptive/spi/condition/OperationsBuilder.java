@@ -2,15 +2,17 @@ package org.keycloak.adaptive.spi.condition;
 
 import org.keycloak.adaptive.policy.DefaultOperation;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
 public class OperationsBuilder<T> {
-    private final Set<Operation<T>> operations;
+    private final List<Operation<T>> operations;
 
     private OperationsBuilder() {
-        this.operations = new HashSet<>();
+        this.operations = new ArrayList<>();
     }
 
     public static <U> OperationsBuilder<U> builder(Class<U> ignore) {
@@ -21,7 +23,7 @@ public class OperationsBuilder<T> {
         return new OperationBuilder<>();
     }
 
-    public Set<Operation<T>> build() {
+    public List<Operation<T>> build() {
         return operations;
     }
 

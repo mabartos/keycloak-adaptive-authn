@@ -7,7 +7,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class LocationConditionFactory extends UserContextConditionFactory<LocationContext> {
@@ -40,8 +39,8 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
     }
 
     @Override
-    public Set<Operation<LocationContext>> initRules() {
-        return Set.of(CONTINENT_IS, CONTINENT_IS_NOT, COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
+    public List<Operation<LocationContext>> initRules() {
+        return List.of(CONTINENT_IS, CONTINENT_IS_NOT, COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
     }
 
     @Override

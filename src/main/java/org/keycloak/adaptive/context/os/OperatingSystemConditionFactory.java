@@ -13,7 +13,6 @@ import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class OperatingSystemConditionFactory extends UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-os-authenticator";
@@ -72,7 +71,7 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
     }
 
     @Override
-    public Set<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initRules() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)

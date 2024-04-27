@@ -11,7 +11,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
-import java.util.Set;
 
 public class IpAddressConditionFactory extends UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-ip-address-authenticator";
@@ -62,7 +61,7 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
     }
 
     @Override
-    public Set<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initRules() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)

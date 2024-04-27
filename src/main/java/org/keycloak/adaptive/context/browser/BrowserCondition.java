@@ -12,15 +12,16 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
 
+import java.util.List;
 import java.util.Set;
 
 public class BrowserCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
     private final DeviceContext deviceContext;
-    private final Set<Operation<DeviceContext>> rules;
+    private final List<Operation<DeviceContext>> rules;
     private final String browser;
 
-    public BrowserCondition(KeycloakSession session, Set<Operation<DeviceContext>> rules) {
+    public BrowserCondition(KeycloakSession session, List<Operation<DeviceContext>> rules) {
         this.session = session;
         this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
         this.rules = rules;

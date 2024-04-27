@@ -8,14 +8,15 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.KeycloakSession;
 
+import java.util.List;
 import java.util.Set;
 
 public class LocationCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
     private final LocationContext locationContext;
-    private final Set<Operation<LocationContext>> rules;
+    private final List<Operation<LocationContext>> rules;
 
-    public LocationCondition(KeycloakSession session, Set<Operation<LocationContext>> rules) {
+    public LocationCondition(KeycloakSession session, List<Operation<LocationContext>> rules) {
         this.session = session;
         this.locationContext = ContextUtils.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
         this.rules = rules;

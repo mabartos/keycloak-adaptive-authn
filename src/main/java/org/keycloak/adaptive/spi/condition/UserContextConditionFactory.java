@@ -16,16 +16,16 @@ public abstract class UserContextConditionFactory<T extends UserContext<?>> impl
             AuthenticationExecutionModel.Requirement.DISABLED
     };
 
-    private Set<Operation<T>> rules;
+    private List<Operation<T>> rules;
 
     @Override
     public void init(Config.Scope config) {
         this.rules = initRules();
     }
 
-    abstract public Set<Operation<T>> initRules();
+    abstract public List<Operation<T>> initRules();
 
-    public Set<Operation<T>> getRules() {
+    public List<Operation<T>> getRules() {
         return rules;
     }
 

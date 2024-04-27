@@ -12,7 +12,6 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class PhoneConditionFactory extends UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-mobile-authenticator";
@@ -54,7 +53,7 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
     }
 
     @Override
-    public Set<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initRules() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                 .operationKey(DefaultOperation.IS)
