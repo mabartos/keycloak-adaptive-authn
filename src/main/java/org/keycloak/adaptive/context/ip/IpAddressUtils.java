@@ -9,8 +9,11 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class IpAddressUtils {
+
+    public static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
 
     public static boolean isInRange(DeviceContext context, String value) {
         if (StringUtil.isBlank(value)) throw new IllegalArgumentException("Cannot parse IP Address");

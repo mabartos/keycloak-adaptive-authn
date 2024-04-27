@@ -12,18 +12,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class HeaderIpAddressProvider implements IpAddressContext {
+import static org.keycloak.adaptive.context.ip.IpAddressUtils.IP_PATTERN;
+
+public class ProxyIpAddressProvider implements IpProxyContext {
     private final KeycloakSession session;
     private Set<IPAddress> data;
     private boolean isInitialized;
 
-    private static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
-
-    public HeaderIpAddressProvider(KeycloakSession session) {
+    public ProxyIpAddressProvider(KeycloakSession session) {
         this.session = session;
         initData();
     }
