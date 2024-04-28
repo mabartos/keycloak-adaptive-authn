@@ -15,7 +15,7 @@ public class DeviceContextProvider implements DeviceContext {
     }
 
     @Override
-    public boolean isDataInitialized() {
+    public boolean isInitialized() {
         return isInitialized;
     }
 

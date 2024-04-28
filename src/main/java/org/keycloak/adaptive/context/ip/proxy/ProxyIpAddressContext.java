@@ -28,7 +28,7 @@ public class ProxyIpAddressContext implements IpProxyContext {
     }
 
     @Override
-    public boolean isDataInitialized() {
+    public boolean isInitialized() {
         return isInitialized;
     }
 

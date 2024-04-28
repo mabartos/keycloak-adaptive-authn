@@ -4,7 +4,11 @@ import org.keycloak.provider.Provider;
 
 public interface UserContext<T> extends Provider {
 
-    boolean isDataInitialized();
+    default boolean requiresUser() {
+        return false;
+    }
+
+    boolean isInitialized();
 
     void initData();
 

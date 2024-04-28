@@ -36,7 +36,7 @@ public class DefaultIpAddress implements IpAddressContext {
     }
 
     @Override
-    public boolean isDataInitialized() {
+    public boolean isInitialized() {
         return isInitialized;
     }
 

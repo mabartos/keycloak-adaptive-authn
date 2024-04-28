@@ -38,7 +38,7 @@ public class DeviceIpAddressContext implements IpAddressContext {
     }
 
     @Override
-    public boolean isDataInitialized() {
+    public boolean isInitialized() {
         return isInitialized;
     }
 

@@ -33,7 +33,7 @@ public class IpApiLocationContext implements LocationContext {
     }
 
     @Override
-    public boolean isDataInitialized() {
+    public boolean isInitialized() {
         return isInitialized;
     }
 

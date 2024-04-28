@@ -22,7 +22,7 @@ public class UserRoleContextProvider implements UserRoleContext {
     }
 
     @Override
-    public boolean isDataInitialized() {
+    public boolean isInitialized() {
         return isInitialized;
     }
 
