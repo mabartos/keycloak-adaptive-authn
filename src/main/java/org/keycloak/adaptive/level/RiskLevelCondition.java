@@ -1,7 +1,7 @@
 package org.keycloak.adaptive.level;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.engine.DefaultRiskEngine;
+import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
@@ -27,7 +27,8 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
         final AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
 
         if (authConfig != null) {
-            var risk = DefaultRiskEngine.getStoredRisk(context, DefaultRiskEngine.RiskPhase.OVERALL)
+            var storedRiskProvider = context.getSession().getProvider(StoredRiskProvider.class);
+            var risk = storedRiskProvider.getStoredRisk()
                     .orElseThrow(() -> new IllegalStateException("No risk has been evaluated. Did you forget to add Risk Engine authenticator to the flow?"));
 
             if (riskLevelsProvider == null) {

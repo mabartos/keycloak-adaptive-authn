@@ -11,10 +11,6 @@ import org.keycloak.models.UserModel;
 import java.util.Set;
 
 public interface RiskEngine extends Authenticator {
-    String RISK_NO_USER_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK_NO_USER";
-    String RISK_REQUIRES_USER_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK_REQUIRES_USER";
-    String RISK_OVERALL_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_OVERALL_RISK";
-
     Double getRisk();
 
     Set<UserContext<?>> getRiskFactors();

@@ -6,13 +6,13 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
+import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.utils.KeycloakModelUtils;
-import org.keycloak.utils.StringUtil;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -25,14 +25,17 @@ public class DefaultRiskEngine implements RiskEngine {
     private final KeycloakSession session;
     private final Set<RiskEvaluator> riskFactorEvaluators;
     private final ExecutorsProvider executorsProvider;
+    private final StoredRiskProvider storedRiskProvider;
 
     private boolean requiresUser;
+    private StoredRiskProvider.RiskPhase riskPhase;
     private Double risk;
 
     public DefaultRiskEngine(KeycloakSession session) {
         this.session = session;
         this.riskFactorEvaluators = session.getAllProviders(RiskEvaluator.class);
         this.executorsProvider = session.getProvider(ExecutorsProvider.class);
+        this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
     }
 
     @Override
@@ -80,8 +83,7 @@ public class DefaultRiskEngine implements RiskEngine {
             this.risk = weightedRisk / weights;
             logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
 
-            // TODO store risk
-            //storeRisk(risk, requiresUser ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER);
+            storedRiskProvider.storeRisk(risk, riskPhase);
         }), failure -> logger.error(failure.getMessage()));
         logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
     }
@@ -115,67 +117,18 @@ public class DefaultRiskEngine implements RiskEngine {
             logger.warnf("Cannot find config '%s'", DefaultRiskEngineFactory.REQUIRES_USER_CONFIG);
             return;
         }
-        this.requiresUser = requiresUser;
 
-        final var phase = requiresUser ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
-        final var storedRisk = getStoredRisk(context, phase);
+        this.requiresUser = requiresUser;
+        this.riskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
+
+        final var storedRisk = storedRiskProvider.getStoredRisk(riskPhase);
 
         if (storedRisk.isPresent()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase, storedRisk.get());
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", riskPhase, storedRisk.get());
         } else {
             evaluateRisk();
-            // TODO store risk
-            //storeRisk(context, requiresUser ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER);
         }
 
         context.success();
-    }
-
-    public enum RiskPhase {
-        NO_USER(RISK_NO_USER_AUTH_NOTE),
-        REQUIRES_USER(RISK_REQUIRES_USER_AUTH_NOTE),
-        OVERALL(RISK_OVERALL_AUTH_NOTE);
-
-        final String authNote;
-
-        RiskPhase(String authNote) {
-            this.authNote = authNote;
-        }
-
-        public String getAuthNote() {
-            return authNote;
-        }
-    }
-
-    public static Optional<Double> getStoredRisk(AuthenticationFlowContext context, RiskPhase riskPhase) {
-        try {
-            return Optional.ofNullable(context.getAuthenticationSession())
-                    .map(f -> f.getAuthNote(riskPhase.getAuthNote()))
-                    .filter(StringUtil::isNotBlank)
-                    .map(Double::parseDouble);
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-    }
-
-    public static void storeRisk(AuthenticationFlowContext context, RiskPhase riskPhase, Double risk) {
-        context.getAuthenticationSession().setAuthNote(riskPhase.getAuthNote(), risk.toString());
-
-        if (riskPhase != RiskPhase.OVERALL) { // Store Overall risk
-            var oppositePhase = riskPhase == RiskPhase.NO_USER ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
-            getStoredRisk(context, oppositePhase)
-                    .ifPresent(oppositeRisk -> {
-                        final var sum = risk + oppositeRisk;
-                        final var result = sum / 2.0f;
-
-                        logger.debugf("Stored overall risk: %f ('%s') + %f ('%s') = %f / 2.0 = %f", risk, riskPhase.name(), oppositeRisk, oppositePhase.name(), sum, result);
-
-                        context.getAuthenticationSession().setAuthNote(RiskPhase.OVERALL.getAuthNote(), Double.toString(result));
-                    });
-        }
-    }
-
-    public void storeRisk(AuthenticationFlowContext context, RiskPhase riskPhase) {
-        storeRisk(context, riskPhase, getRisk());
     }
 }
