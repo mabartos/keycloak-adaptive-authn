@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface AuthnPolicyProvider extends Provider {
+    String POLICY_PREFIX = "POLICY - ";
 
     AuthenticationFlowModel getParentPolicy();
 

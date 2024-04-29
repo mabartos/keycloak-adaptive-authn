@@ -18,8 +18,6 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     private final RealmModel realm;
     private final AuthenticationFlowModel parent;
 
-    private static final String POLICY_PREFIX = "POLICY - "; // TODO better approach to mark authn policy
-
     public DefaultAuthnPolicyProvider(KeycloakSession session) {
         this(session, session.getContext().getRealm());
     }
@@ -131,7 +129,7 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
 
     @Override
     public void removeAll() {
-        getAllStream().forEach(this::remove); // TODO not very good
+        getAllStream().forEach(this::remove);
     }
 
     @Override

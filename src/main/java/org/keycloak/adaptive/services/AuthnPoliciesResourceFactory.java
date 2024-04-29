@@ -7,7 +7,7 @@ import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
 public class AuthnPoliciesResourceFactory implements RealmResourceProviderFactory {
-    public static final String PROVIDER_ID = "authn-policies"; // TODO better path
+    public static final String PROVIDER_ID = "authn-policies";
 
     @Override
     public RealmResourceProvider create(KeycloakSession session) {

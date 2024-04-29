@@ -1,17 +1,16 @@
 package org.keycloak.adaptive.evaluator;
 
+import inet.ipaddr.IPAddress;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
-import org.keycloak.adaptive.context.browser.BrowserRiskEvaluatorFactory;
+import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
+import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserLoginFailureModel;
-import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.util.Optional;
@@ -20,13 +19,13 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiLoginFailuresRiskEvaluator.class);
 
     private final KeycloakSession session;
-    private final DeviceContext deviceContext;
+    private final IpAddressContext ipAddressContext;
     private final AiEngine aiEngine;
     private Double risk;
 
     public AiLoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
+        this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiEngine.class);
     }
 
@@ -50,9 +49,7 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
         return true;
     }
 
-    protected static String request(UserLoginFailureModel loginFailures, DeviceRepresentation device) {
-        var currentIp = Optional.ofNullable(device).map(DeviceRepresentation::getIpAddress);
-
+    protected String request(UserLoginFailureModel loginFailures) {
         // we should be careful about the message poisoning
         var request = String.format("""
                         Give me the overall risk that the user trying to authenticate is fraud based on its parameters.
@@ -69,7 +66,7 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
                         """,
                 loginFailures.getNumFailures(),
                 loginFailures.getLastIPFailure(),
-                currentIp.orElse("unknown"), // TODO use IP Address context
+                Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toFullString).orElse("unknown"),
                 loginFailures.getNumTemporaryLockouts(),
                 Time.currentTimeMillis() - loginFailures.getLastFailure()
         );
@@ -99,7 +96,7 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
             return;
         }
 
-        Optional<Double> evaluatedRisk = EvaluatorUtils.getRiskFromAi(aiEngine, request(loginFailures, deviceContext.getData()));
+        Optional<Double> evaluatedRisk = EvaluatorUtils.getRiskFromAi(aiEngine, request(loginFailures));
         evaluatedRisk.ifPresent(risk -> {
             logger.debugf("AI request was successful. Evaluated risk: %f", risk);
             this.risk = risk;
