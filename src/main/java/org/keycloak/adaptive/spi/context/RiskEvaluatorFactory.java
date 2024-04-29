@@ -38,7 +38,6 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
                 .label(getName() + " Risk Weight")
                 .helpText(WEIGHT_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue(Weight.DEFAULT)
                 .add()
                 .build();
     }

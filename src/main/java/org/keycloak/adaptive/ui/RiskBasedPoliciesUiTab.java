@@ -19,12 +19,15 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.ui.extend.UiTabProvider;
 import org.keycloak.services.ui.extend.UiTabProviderFactory;
+import org.keycloak.utils.StringUtil;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
@@ -69,21 +72,31 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.debugf("onCreate execution");
 
         updateRiskBasedLevel(realm, model);
-        realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, model.get(RISK_BASED_AUTHN_ENABLED_CONFIG));
-        realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, model.get(EVALUATOR_TIMEOUT_CONFIG));
-        realm.setAttribute(EVALUATOR_RETRIES_CONFIG, model.get(EVALUATOR_RETRIES_CONFIG));
+
+        doIfPresent(model.get(RISK_BASED_AUTHN_ENABLED_CONFIG), value -> realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, value));
+        doIfPresent(model.get(EVALUATOR_TIMEOUT_CONFIG), value -> realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, value));
+        doIfPresent(model.get(EVALUATOR_RETRIES_CONFIG), value -> realm.setAttribute(EVALUATOR_RETRIES_CONFIG, value));
 
         riskEvaluatorFactories.forEach(f -> {
-            var provider = f.create(session);
+            // Enabled
+            var enabled = model.get(isEnabledConfig(f.getClass()));
+            doIfPresent(enabled, value -> {
+                logger.debugf("stored state '%s' for evaluator '%s'", value, f.getName());
+                EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), Boolean.parseBoolean(value));
+            });
 
-            model.put(isEnabledConfig(f.getClass()), provider.isEnabled());
-            EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), Boolean.parseBoolean(model.get(isEnabledConfig(f.getClass()))));
-            logger.debugf("stored state '%s' for evaluator '%s'", provider.isEnabled(), f.getName());
-
-            model.put(getWeightConfig(f.getClass()), Double.toString(provider.getWeight()));
-            EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(model.get(getWeightConfig(f.getClass()))));
-            logger.debugf("putting weight '%f' for evaluator '%s'", provider.getWeight(), f.getName());
+            var weight = model.get(getWeightConfig(f.getClass()));
+            doIfPresent(weight, value -> {
+                logger.debugf("putting weight '%f' for evaluator '%s'", value, f.getName());
+                EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(value));
+            });
         });
+    }
+
+    private void doIfPresent(String value, Consumer<String> operation) {
+        Optional.ofNullable(value)
+                .filter(StringUtil::isNotBlank)
+                .ifPresent(operation);
     }
 
     @Override
@@ -91,24 +104,31 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.debugf("onUpdate execution");
 
         updateRiskBasedLevel(realm, newModel);
-        realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, newModel.get(RISK_BASED_AUTHN_ENABLED_CONFIG));
-        realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, newModel.get(EVALUATOR_TIMEOUT_CONFIG));
-        realm.setAttribute(EVALUATOR_RETRIES_CONFIG, newModel.get(EVALUATOR_RETRIES_CONFIG));
+        doIfPresent(newModel.get(RISK_BASED_AUTHN_ENABLED_CONFIG), value -> realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, value));
+        doIfPresent(newModel.get(EVALUATOR_TIMEOUT_CONFIG), value -> realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, value));
+        doIfPresent(newModel.get(EVALUATOR_RETRIES_CONFIG), value -> realm.setAttribute(EVALUATOR_RETRIES_CONFIG, value));
 
         riskEvaluatorFactories.forEach(f -> {
-            var oldEnabled = oldModel.get(isEnabledConfig(f.getClass()));
-            var newEnabled = oldModel.get(isEnabledConfig(f.getClass()));
-            if (!Objects.equals(oldEnabled, newEnabled) && newEnabled != null) {
-                var enabled = Boolean.parseBoolean(newEnabled);
-                logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.getClass()), enabled);
-                EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), enabled);
+            {
+                var oldEnabled = oldModel.get(isEnabledConfig(f.getClass()));
+                var newEnabled = newModel.get(isEnabledConfig(f.getClass()));
+                if (!Objects.equals(oldEnabled, newEnabled)) {
+                    doIfPresent(newEnabled, value -> {
+                        logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.getClass()), Boolean.parseBoolean(value));
+                        EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), Boolean.parseBoolean(value));
+                    });
+                }
             }
 
-            var oldWeight = oldModel.get(getWeightConfig(f.getClass()));
-            var newWeight = newModel.get(getWeightConfig(f.getClass()));
-            if (!Objects.equals(oldWeight, newWeight) && newWeight != null) {
-                logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getClass()), newWeight);
-                EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(newWeight));
+            {
+                var oldWeight = oldModel.get(getWeightConfig(f.getClass()));
+                var newWeight = newModel.get(getWeightConfig(f.getClass()));
+                if (!Objects.equals(oldWeight, newWeight)) {
+                    doIfPresent(newWeight, value -> {
+                        logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getClass()), value);
+                        EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(value));
+                    });
+                }
             }
         });
     }
@@ -122,8 +142,11 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         riskEvaluatorFactories.forEach(f -> {
             try {
-                var value = Double.parseDouble(model.get(getWeightConfig(f.getClass())));
-                if (!RiskEngine.isValidValue(value)) {
+                var value = model.get(getWeightConfig(f.getClass()));
+                if (StringUtil.isBlank(value)) return; // default value is an empty string
+
+                var weight = Double.parseDouble(value);
+                if (!RiskEngine.isValidValue(weight)) {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
