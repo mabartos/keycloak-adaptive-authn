@@ -12,17 +12,25 @@ import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 
 public class DefaultRiskEngine implements RiskEngine {
     private static final Logger logger = Logger.getLogger(DefaultRiskEngine.class);
 
     private final KeycloakSession session;
+    private final RealmModel realm;
     private final Set<RiskEvaluator> riskFactorEvaluators;
     private final ExecutorsProvider executorsProvider;
     private final StoredRiskProvider storedRiskProvider;
@@ -33,6 +41,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
     public DefaultRiskEngine(KeycloakSession session) {
         this.session = session;
+        this.realm = session.getContext().getRealm();
         this.riskFactorEvaluators = session.getAllProviders(RiskEvaluator.class);
         this.executorsProvider = session.getProvider(ExecutorsProvider.class);
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
@@ -45,17 +54,20 @@ public class DefaultRiskEngine implements RiskEngine {
         var start = Time.currentTimeMillis();
         var exec = executorsProvider.getExecutor("risk-engine");
 
+        var timeout = getNumberRealmAttribute(EVALUATOR_TIMEOUT_CONFIG, Long::parseLong).orElse(DEFAULT_EVALUATOR_TIMEOUT);
+        var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
+
         final var evaluators = Multi.createFrom()
                 .items(getRiskEvaluators())
                 .onItem()
                 .transformToIterable(f -> f)
                 .filter(f -> f.requiresUser() == this.requiresUser)
                 .ifNoItem()
-                .after(Duration.ofMillis(1500))
+                .after(Duration.ofMillis(timeout))
                 .fail()
                 .onFailure(TimeoutException.class)
                 .retry()
-                .atMost(3)
+                .atMost(retries)
                 .collect()
                 .asSet()
                 .runSubscriptionOn(exec);
@@ -130,5 +142,13 @@ public class DefaultRiskEngine implements RiskEngine {
         }
 
         context.success();
+    }
+
+    protected <T extends Number> Optional<T> getNumberRealmAttribute(String attribute, Function<String, T> func) {
+        try {
+            return Optional.ofNullable(realm.getAttribute(attribute)).map(func);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 }

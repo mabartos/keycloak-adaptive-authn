@@ -34,6 +34,12 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
     public static final String PROVIDER_ID = "default-risk-engine";
     public static final String REQUIRES_USER_CONFIG = "requiresUserConfig";
 
+    public static final long DEFAULT_EVALUATOR_TIMEOUT = 1500L;
+    public static final int DEFAULT_EVALUATOR_RETRIES = 3;
+
+    public static final String EVALUATOR_TIMEOUT_CONFIG = "riskEvaluatorTimeoutConfig";
+    public static final String EVALUATOR_RETRIES_CONFIG = "riskEvaluatorRetriesConfig";
+
     protected static final String DEFAULT_RISK_BASED_POLICY_ALIAS = "POLICY - Risk-based";
 
     @Override

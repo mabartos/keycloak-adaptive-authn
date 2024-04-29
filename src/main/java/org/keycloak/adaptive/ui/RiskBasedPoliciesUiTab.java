@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static org.keycloak.adaptive.spi.context.RiskEvaluatorFactory.getWeightConfig;
 
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
@@ -63,14 +67,10 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
         logger.debugf("onCreate execution");
 
-        var providerId = riskLevelsFactories.stream()
-                .filter(f -> f.getHelpText().equals(model.get(RISK_LEVEL_PROVIDER_CONFIG)))
-                .findAny()
-                .map(ProviderFactory::getId)
-                .orElse("");
-
+        updateRiskBasedLevel(realm, model);
         realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, model.get(RISK_BASED_AUTHN_ENABLED_CONFIG));
-        realm.setAttribute(RISK_LEVEL_PROVIDER_CONFIG, providerId);
+        realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, model.get(EVALUATOR_TIMEOUT_CONFIG));
+        realm.setAttribute(EVALUATOR_RETRIES_CONFIG, model.get(EVALUATOR_RETRIES_CONFIG));
 
         riskEvaluatorFactories.forEach(f -> {
             var provider = f.create(session);
@@ -83,6 +83,12 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     @Override
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         logger.debugf("onUpdate execution");
+
+        updateRiskBasedLevel(realm, newModel);
+        realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, newModel.get(RISK_BASED_AUTHN_ENABLED_CONFIG));
+        realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, newModel.get(EVALUATOR_TIMEOUT_CONFIG));
+        realm.setAttribute(EVALUATOR_RETRIES_CONFIG, newModel.get(EVALUATOR_RETRIES_CONFIG));
+
         riskEvaluatorFactories.forEach(f -> {
             var oldConfig = oldModel.get(getWeightConfig(f.getName()));
             var newConfig = newModel.get(getWeightConfig(f.getName()));
@@ -96,16 +102,41 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
         logger.debugf("validateConfiguration execution");
+
+        validateInteger(model.get(EVALUATOR_TIMEOUT_CONFIG), "Timeout");
+        validateInteger(model.get(EVALUATOR_RETRIES_CONFIG), "Retries");
+
         riskEvaluatorFactories.forEach(f -> {
             try {
                 var value = Double.parseDouble(model.get(getWeightConfig(f.getName())));
                 if (!RiskEngine.isValidValue(value)) {
-                    throw new ComponentValidationException("Risk Weights must be double values in range (0,1>");
+                    throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
                 throw new ComponentValidationException("Risk Weights must be double values in range (0,1>");
             }
         });
+    }
+
+    protected void updateRiskBasedLevel(RealmModel realm, ComponentModel model) {
+        var providerId = riskLevelsFactories.stream()
+                .filter(f -> f.getHelpText().equals(model.get(RISK_LEVEL_PROVIDER_CONFIG)))
+                .findAny()
+                .map(ProviderFactory::getId)
+                .orElse("");
+
+        realm.setAttribute(RISK_LEVEL_PROVIDER_CONFIG, providerId);
+    }
+
+    protected void validateInteger(String value, String attributeDisplayName) {
+        try {
+            var timeout = Integer.parseInt(value);
+            if (timeout < 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            throw new ComponentValidationException(String.format("%s must be positive number or 0", attributeDisplayName));
+        }
     }
 
     @Override
@@ -124,6 +155,20 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .defaultValue(riskLevelsFactories.stream().findFirst().map(ConfiguredProvider::getHelpText).orElse("No Levels"))
                 .options(riskLevelsFactories.stream().map(ConfiguredProvider::getHelpText).toList())
+                .add()
+                .property()
+                .name(EVALUATOR_TIMEOUT_CONFIG)
+                .label("Risk evaluator timeout (ms)")
+                .helpText("Timeout for evaluating risk score")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue(DEFAULT_EVALUATOR_TIMEOUT)
+                .add()
+                .property()
+                .name(EVALUATOR_RETRIES_CONFIG)
+                .label("Risk evaluator retries")
+                .helpText("Number of retries for evaluating risk score")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue(DEFAULT_EVALUATOR_RETRIES)
                 .add()
                 .build();
 
