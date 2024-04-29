@@ -2,6 +2,7 @@ package org.keycloak.adaptive.engine;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.TimeoutException;
+import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
@@ -61,41 +62,51 @@ public class DefaultRiskEngine implements RiskEngine {
                 .transformToIterable(f -> f)
                 .filter(RiskEvaluator::isEnabled)
                 .filter(f -> f.requiresUser() == this.requiresUser)
-                .ifNoItem()
-                .after(Duration.ofMillis(timeout))
-                .fail()
-                .onFailure(TimeoutException.class)
-                .retry()
-                .atMost(retries)
                 .collect()
                 .asSet()
                 .runSubscriptionOn(exec);
 
+        final Function<RiskEvaluator, Uni<RiskEvaluator>> processEvaluator = (re) -> Uni.createFrom()
+                .item(re)
+                .onItem()
+                .invoke(RiskEvaluator::evaluate)
+                .onFailure()
+                .retry()
+                .atMost(retries)
+                .ifNoItem()
+                .after(Duration.ofMillis(timeout))
+                .fail()
+                .onFailure(TimeoutException.class)
+                .recoverWithItem(() -> re)
+                .emitOn(exec);
+
         evaluators.subscribe().with(e -> KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            e.forEach(RiskEvaluator::evaluate);
+            var evaluatedRisks = Multi.createFrom()
+                    .items(e.stream())
+                    .onItem()
+                    .transformToUniAndConcatenate(processEvaluator::apply)
+                    .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue()))
+                    .collect()
+                    .asSet();
 
-            var filteredEvaluators = e.stream()
-                    .filter(f -> RiskEngine.isValidValue(f.getWeight()))
-                    .filter(f -> RiskEngine.isValidValue(f.getRiskValue()))
-                    .toList();
+            evaluatedRisks.subscribe().with(risks -> {
+                var weightedRisk = risks.stream()
+                        .peek(g -> logger.debugf("Evaluator: %s", g.getClass().getSimpleName()))
+                        .peek(g -> logger.debugf("Risk evaluated: %f (weight %f)", g.getRiskValue(), g.getWeight()))
+                        .mapToDouble(g -> g.getRiskValue() * g.getWeight())
+                        .sum();
 
-            var weightedRisk = filteredEvaluators.stream()
-                    .peek(f -> logger.debugf("Evaluator: %s", f.getClass().getSimpleName()))
-                    .peek(f -> logger.debugf("Risk evaluated: %f (weight %f)", f.getRiskValue(), f.getWeight()))
-                    .mapToDouble(f -> f.getRiskValue() * f.getWeight())
-                    .sum();
+                var weights = risks.stream()
+                        .mapToDouble(RiskEvaluator::getWeight)
+                        .sum();
 
-            var weights = filteredEvaluators
-                    .stream()
-                    .mapToDouble(RiskEvaluator::getWeight)
-                    .sum();
+                // Weighted mean
+                this.risk = weightedRisk / weights;
+                logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
 
-            // Weighted mean
-            this.risk = weightedRisk / weights;
-            logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
-
-            storedRiskProvider.storeRisk(risk, riskPhase);
-        }), failure -> logger.error(failure.getMessage()));
+                storedRiskProvider.storeRisk(risk, riskPhase);
+            });
+        }), failure -> logger.error(failure.getCause()));
         logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
     }
 
