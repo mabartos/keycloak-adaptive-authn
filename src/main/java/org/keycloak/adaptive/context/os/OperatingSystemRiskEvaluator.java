@@ -27,6 +27,11 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean isEnabled() {
+        return EvaluatorUtils.isEvaluatorEnabled(session, OperatingSystemRiskEvaluatorFactory.NAME);
+    }
+
+    @Override
     public boolean requiresUser() {
         return false;
     }

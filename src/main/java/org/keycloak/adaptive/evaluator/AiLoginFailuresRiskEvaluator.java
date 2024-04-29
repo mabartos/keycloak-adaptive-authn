@@ -4,6 +4,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.context.browser.BrowserRiskEvaluatorFactory;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
@@ -37,6 +38,11 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
     @Override
     public double getWeight() {
         return EvaluatorUtils.getStoredEvaluatorWeight(session, AiLoginFailuresRiskEvaluatorFactory.NAME, Weight.IMPORTANT);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return EvaluatorUtils.isEvaluatorEnabled(session, AiLoginFailuresRiskEvaluatorFactory.NAME);
     }
 
     @Override

@@ -37,6 +37,11 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean isEnabled() {
+        return EvaluatorUtils.isEvaluatorEnabled(session, DefaultUserRoleEvaluatorFactory.NAME);
+    }
+
+    @Override
     public boolean requiresUser() {
         return true;
     }

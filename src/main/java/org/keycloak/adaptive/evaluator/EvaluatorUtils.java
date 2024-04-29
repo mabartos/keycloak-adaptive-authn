@@ -15,7 +15,6 @@ import java.util.Optional;
 
 public class EvaluatorUtils {
 
-
     public static Optional<Double> getRiskFromAi(AiEngine aiEngine, String message) {
         if (aiEngine instanceof OpenAiEngine) {
             OpenAiDataResponse response = aiEngine.getResult(AiRiskEvaluatorMessages.CONTEXT_MESSAGE, message, OpenAiDataResponse.class);
@@ -55,5 +54,19 @@ public class EvaluatorUtils {
         Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
                 .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getWeightConfig(evaluatorName), Double.toString(value)));
+    }
+
+    public static boolean isEvaluatorEnabled(KeycloakSession session, String evaluatorName) {
+        return Optional.ofNullable(session.getContext())
+                .map(KeycloakContext::getRealm)
+                .map(f -> f.getAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluatorName)))
+                .map(Boolean::parseBoolean)
+                .orElse(false);
+    }
+
+    public static void setEvaluatorEnabled(KeycloakSession session, String evaluatorName, boolean enabled) {
+        Optional.ofNullable(session.getContext())
+                .map(KeycloakContext::getRealm)
+                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluatorName), Boolean.valueOf(enabled).toString()));
     }
 }

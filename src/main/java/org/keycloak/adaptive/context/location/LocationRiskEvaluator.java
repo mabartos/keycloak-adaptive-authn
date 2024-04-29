@@ -2,6 +2,8 @@ package org.keycloak.adaptive.context.location;
 
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.browser.BrowserRiskEvaluatorFactory;
+import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
@@ -31,6 +33,11 @@ public class LocationRiskEvaluator implements RiskEvaluator {
     @Override
     public double getWeight() {
         return Weight.DEFAULT;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return EvaluatorUtils.isEvaluatorEnabled(session, LocationRiskEvaluatorFactory.NAME);
     }
 
     @Override

@@ -61,6 +61,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 .items(getRiskEvaluators())
                 .onItem()
                 .transformToIterable(f -> f)
+                .filter(RiskEvaluator::isEnabled)
                 .filter(f -> f.requiresUser() == this.requiresUser)
                 .ifNoItem()
                 .after(Duration.ofMillis(timeout))

@@ -38,6 +38,11 @@ public class AiDeviceRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean isEnabled() {
+        return EvaluatorUtils.isEvaluatorEnabled(session, AiDeviceRiskEvaluatorFactory.NAME);
+    }
+
+    @Override
     public boolean requiresUser() {
         return false;
     }

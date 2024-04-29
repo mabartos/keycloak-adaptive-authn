@@ -14,6 +14,7 @@ import java.util.List;
 public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, EnvironmentDependentProviderFactory, ConfiguredProvider {
     String NAME_PREFIX = "Risk Evaluator - ";
     String WEIGHT_CONFIG = "riskEvaluatorWeightConfig";
+    String ENABLED_CONFIG = "riskEvaluatorEnabledConfig";
 
     String getName();
 
@@ -25,6 +26,13 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
     @Override
     default List<ProviderConfigProperty> getConfigProperties() {
         return ProviderConfigurationBuilder.create()
+                .property()
+                .name(isEnabledConfig(getName()))
+                .label(getName() + " Enabled")
+                .helpText(ENABLED_CONFIG + ".tooltip")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(true)
+                .add()
                 .property()
                 .name(getWeightConfig(getName()))
                 .label(getName() + " Risk Weight")
@@ -52,6 +60,10 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
     @Override
     default boolean isSupported(Config.Scope config) {
         return true;
+    }
+
+    static String isEnabledConfig(String evaluatorName) {
+        return ENABLED_CONFIG + "-" + evaluatorName;
     }
 
     static String getWeightConfig(String evaluatorName) {

@@ -31,6 +31,7 @@ import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVAL
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static org.keycloak.adaptive.spi.context.RiskEvaluatorFactory.getWeightConfig;
+import static org.keycloak.adaptive.spi.context.RiskEvaluatorFactory.isEnabledConfig;
 
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private static final Logger logger = Logger.getLogger(RiskBasedPoliciesUiTab.class);
@@ -74,6 +75,11 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         riskEvaluatorFactories.forEach(f -> {
             var provider = f.create(session);
+
+            model.put(isEnabledConfig(f.getName()), provider.isEnabled());
+            EvaluatorUtils.setEvaluatorEnabled(session, f.getName(), Boolean.parseBoolean(model.get(isEnabledConfig(f.getName()))));
+            logger.debugf("stored state '%s' for evaluator '%s'", provider.isEnabled(), f.getName());
+
             model.put(getWeightConfig(f.getName()), Double.toString(provider.getWeight()));
             EvaluatorUtils.storeEvaluatorWeight(session, f.getName(), Double.parseDouble(model.get(getWeightConfig(f.getName()))));
             logger.debugf("putting weight '%f' for evaluator '%s'", provider.getWeight(), f.getName());
@@ -90,11 +96,19 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         realm.setAttribute(EVALUATOR_RETRIES_CONFIG, newModel.get(EVALUATOR_RETRIES_CONFIG));
 
         riskEvaluatorFactories.forEach(f -> {
-            var oldConfig = oldModel.get(getWeightConfig(f.getName()));
-            var newConfig = newModel.get(getWeightConfig(f.getName()));
-            if (!Objects.equals(oldConfig, newConfig) && newConfig != null) {
-                logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getName()), newConfig);
-                EvaluatorUtils.storeEvaluatorWeight(session, f.getName(), Double.parseDouble(newConfig));
+            var oldEnabled = oldModel.get(isEnabledConfig(f.getName()));
+            var newEnabled = oldModel.get(isEnabledConfig(f.getName()));
+            if (!Objects.equals(oldEnabled, newEnabled) && newEnabled != null) {
+                var enabled = Boolean.parseBoolean(newEnabled);
+                logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.getName()), enabled);
+                EvaluatorUtils.setEvaluatorEnabled(session, f.getName(), enabled);
+            }
+
+            var oldWeight = oldModel.get(getWeightConfig(f.getName()));
+            var newWeight = newModel.get(getWeightConfig(f.getName()));
+            if (!Objects.equals(oldWeight, newWeight) && newWeight != null) {
+                logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getName()), newWeight);
+                EvaluatorUtils.storeEvaluatorWeight(session, f.getName(), Double.parseDouble(newWeight));
             }
         });
     }

@@ -30,6 +30,11 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean isEnabled() {
+        return EvaluatorUtils.isEvaluatorEnabled(session, BrowserRiskEvaluatorFactory.NAME);
+    }
+
+    @Override
     public boolean requiresUser() {
         return false;
     }

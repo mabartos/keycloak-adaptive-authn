@@ -19,6 +19,10 @@ public interface RiskEvaluator extends Provider {
 
     void evaluate();
 
+    default boolean isEnabled() {
+        return true;
+    }
+
     default void close() {
     }
 }
