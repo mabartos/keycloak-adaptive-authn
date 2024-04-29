@@ -56,29 +56,33 @@ public class DefaultRiskEngine implements RiskEngine {
         var timeout = getNumberRealmAttribute(EVALUATOR_TIMEOUT_CONFIG, Long::parseLong).orElse(DEFAULT_EVALUATOR_TIMEOUT);
         var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
 
-        final var evaluators = Multi.createFrom()
+        var evaluators = Multi.createFrom()
                 .items(getRiskEvaluators())
                 .onItem()
                 .transformToIterable(f -> f)
                 .filter(RiskEvaluator::isEnabled)
                 .filter(f -> f.requiresUser() == this.requiresUser)
                 .collect()
-                .asSet()
-                .runSubscriptionOn(exec);
+                .asSet();
 
-        final Function<RiskEvaluator, Uni<RiskEvaluator>> processEvaluator = (re) -> Uni.createFrom()
-                .item(re)
-                .onItem()
-                .invoke(RiskEvaluator::evaluate)
-                .onFailure()
-                .retry()
-                .atMost(retries)
-                .ifNoItem()
-                .after(Duration.ofMillis(timeout))
-                .fail()
-                .onFailure(TimeoutException.class)
-                .recoverWithItem(() -> re)
-                .emitOn(exec);
+        // Evaluate factors with no user in parallel, otherwise in blocking manner
+        evaluators = requiresUser ? evaluators : evaluators.runSubscriptionOn(exec);
+
+        final Function<RiskEvaluator, Uni<RiskEvaluator>> processEvaluator = (re) -> {
+            var item = Uni.createFrom()
+                    .item(re)
+                    .onItem()
+                    .invoke(RiskEvaluator::evaluate)
+                    .onFailure()
+                    .retry()
+                    .atMost(retries)
+                    .ifNoItem()
+                    .after(Duration.ofMillis(timeout))
+                    .fail()
+                    .onFailure(TimeoutException.class)
+                    .recoverWithItem(() -> re);
+            return requiresUser ? item : item.emitOn(exec);
+        };
 
         evaluators.subscribe().with(e -> KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
             var evaluatedRisks = Multi.createFrom()
