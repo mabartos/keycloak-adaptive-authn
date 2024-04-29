@@ -56,12 +56,16 @@ public class EvaluatorUtils {
                 .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getWeightConfig(evaluatorFactory), Double.toString(value)));
     }
 
-    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
+    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, boolean defaultValue) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
                 .map(f -> f.getAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluatorFactory)))
                 .map(Boolean::parseBoolean)
-                .orElse(false);
+                .orElse(defaultValue);
+    }
+
+    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
+        return isEvaluatorEnabled(session, evaluatorFactory, true);
     }
 
     public static void setEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, boolean enabled) {
