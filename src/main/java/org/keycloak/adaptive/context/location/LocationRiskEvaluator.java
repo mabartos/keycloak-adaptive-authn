@@ -37,7 +37,7 @@ public class LocationRiskEvaluator implements RiskEvaluator {
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, LocationRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.isEvaluatorEnabled(session, LocationRiskEvaluatorFactory.class);
     }
 
     @Override

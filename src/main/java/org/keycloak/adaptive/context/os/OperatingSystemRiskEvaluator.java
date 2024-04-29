@@ -23,12 +23,12 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.class);
     }
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, OperatingSystemRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.isEvaluatorEnabled(session, OperatingSystemRiskEvaluatorFactory.class);
     }
 
     @Override

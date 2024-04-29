@@ -27,14 +27,14 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
     default List<ProviderConfigProperty> getConfigProperties() {
         return ProviderConfigurationBuilder.create()
                 .property()
-                .name(isEnabledConfig(getName()))
+                .name(isEnabledConfig(getClass()))
                 .label(getName() + " Enabled")
                 .helpText(ENABLED_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
                 .add()
                 .property()
-                .name(getWeightConfig(getName()))
+                .name(getWeightConfig(getClass()))
                 .label(getName() + " Risk Weight")
                 .helpText(WEIGHT_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.STRING_TYPE)
@@ -62,11 +62,11 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
         return true;
     }
 
-    static String isEnabledConfig(String evaluatorName) {
-        return ENABLED_CONFIG + "-" + evaluatorName;
+    static String isEnabledConfig(Class<? extends RiskEvaluatorFactory> factory) {
+        return ENABLED_CONFIG + "-" + factory.getSimpleName();
     }
 
-    static String getWeightConfig(String evaluatorName) {
-        return WEIGHT_CONFIG + "-" + evaluatorName;
+    static String getWeightConfig(Class<? extends RiskEvaluatorFactory> factory) {
+        return WEIGHT_CONFIG + "-" + factory.getSimpleName();
     }
 }

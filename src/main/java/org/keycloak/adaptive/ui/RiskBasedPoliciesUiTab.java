@@ -76,12 +76,12 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         riskEvaluatorFactories.forEach(f -> {
             var provider = f.create(session);
 
-            model.put(isEnabledConfig(f.getName()), provider.isEnabled());
-            EvaluatorUtils.setEvaluatorEnabled(session, f.getName(), Boolean.parseBoolean(model.get(isEnabledConfig(f.getName()))));
+            model.put(isEnabledConfig(f.getClass()), provider.isEnabled());
+            EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), Boolean.parseBoolean(model.get(isEnabledConfig(f.getClass()))));
             logger.debugf("stored state '%s' for evaluator '%s'", provider.isEnabled(), f.getName());
 
-            model.put(getWeightConfig(f.getName()), Double.toString(provider.getWeight()));
-            EvaluatorUtils.storeEvaluatorWeight(session, f.getName(), Double.parseDouble(model.get(getWeightConfig(f.getName()))));
+            model.put(getWeightConfig(f.getClass()), Double.toString(provider.getWeight()));
+            EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(model.get(getWeightConfig(f.getClass()))));
             logger.debugf("putting weight '%f' for evaluator '%s'", provider.getWeight(), f.getName());
         });
     }
@@ -96,19 +96,19 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         realm.setAttribute(EVALUATOR_RETRIES_CONFIG, newModel.get(EVALUATOR_RETRIES_CONFIG));
 
         riskEvaluatorFactories.forEach(f -> {
-            var oldEnabled = oldModel.get(isEnabledConfig(f.getName()));
-            var newEnabled = oldModel.get(isEnabledConfig(f.getName()));
+            var oldEnabled = oldModel.get(isEnabledConfig(f.getClass()));
+            var newEnabled = oldModel.get(isEnabledConfig(f.getClass()));
             if (!Objects.equals(oldEnabled, newEnabled) && newEnabled != null) {
                 var enabled = Boolean.parseBoolean(newEnabled);
-                logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.getName()), enabled);
-                EvaluatorUtils.setEvaluatorEnabled(session, f.getName(), enabled);
+                logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.getClass()), enabled);
+                EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), enabled);
             }
 
-            var oldWeight = oldModel.get(getWeightConfig(f.getName()));
-            var newWeight = newModel.get(getWeightConfig(f.getName()));
+            var oldWeight = oldModel.get(getWeightConfig(f.getClass()));
+            var newWeight = newModel.get(getWeightConfig(f.getClass()));
             if (!Objects.equals(oldWeight, newWeight) && newWeight != null) {
-                logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getName()), newWeight);
-                EvaluatorUtils.storeEvaluatorWeight(session, f.getName(), Double.parseDouble(newWeight));
+                logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getClass()), newWeight);
+                EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(newWeight));
             }
         });
     }
@@ -122,7 +122,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         riskEvaluatorFactories.forEach(f -> {
             try {
-                var value = Double.parseDouble(model.get(getWeightConfig(f.getName())));
+                var value = Double.parseDouble(model.get(getWeightConfig(f.getClass())));
                 if (!RiskEngine.isValidValue(value)) {
                     throw new NumberFormatException();
                 }

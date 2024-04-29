@@ -33,12 +33,12 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, LoginFailuresRiskEvaluatorFactory.NAME, Weight.IMPORTANT);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, LoginFailuresRiskEvaluatorFactory.class, Weight.IMPORTANT);
     }
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, LoginFailuresRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.isEvaluatorEnabled(session, LoginFailuresRiskEvaluatorFactory.class);
     }
 
     @Override

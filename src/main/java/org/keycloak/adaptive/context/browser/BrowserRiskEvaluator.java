@@ -26,12 +26,12 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, BrowserRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, BrowserRiskEvaluatorFactory.class);
     }
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, BrowserRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.isEvaluatorEnabled(session, BrowserRiskEvaluatorFactory.class);
     }
 
     @Override

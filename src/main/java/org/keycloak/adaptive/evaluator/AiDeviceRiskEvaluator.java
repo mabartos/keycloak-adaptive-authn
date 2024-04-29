@@ -34,12 +34,12 @@ public class AiDeviceRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, AiDeviceRiskEvaluatorFactory.NAME, Weight.IMPORTANT);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, AiDeviceRiskEvaluatorFactory.class, Weight.IMPORTANT);
     }
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, AiDeviceRiskEvaluatorFactory.NAME);
+        return EvaluatorUtils.isEvaluatorEnabled(session, AiDeviceRiskEvaluatorFactory.class);
     }
 
     @Override
