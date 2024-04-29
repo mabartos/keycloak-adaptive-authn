@@ -2,6 +2,7 @@ package org.keycloak.adaptive.engine;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.TimeoutException;
+import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
@@ -55,25 +56,42 @@ public class DefaultRiskEngine implements RiskEngine {
         var timeout = getNumberRealmAttribute(EVALUATOR_TIMEOUT_CONFIG, Long::parseLong).orElse(DEFAULT_EVALUATOR_TIMEOUT);
         var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
 
+        final Function<RiskEvaluator, Uni<RiskEvaluator>> processEvaluator = (re) -> {
+            System.err.println("PROCESS");
+            System.err.println(re.getClass().getSimpleName());
+            return Uni.createFrom()
+                    .item(re)
+                    .onItem()
+                    .invoke(f -> {
+                        //KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
+                            f.evaluate();
+                        //});
+                    })
+                    .onFailure()
+                    .retry()
+                    .atMost(retries)
+                    .ifNoItem()
+                    .after(Duration.ofMillis(timeout))
+                    .fail()
+                    .onFailure(TimeoutException.class)
+                    .recoverWithItem(() -> re)
+                    .emitOn(exec);
+        };
+        //;
+
         final var evaluators = Multi.createFrom()
                 .items(getRiskEvaluators())
                 .onItem()
                 .transformToIterable(f -> f)
                 .filter(RiskEvaluator::isEnabled)
                 .filter(f -> f.requiresUser() == this.requiresUser)
-                .ifNoItem()
-                .after(Duration.ofMillis(timeout))
-                .fail()
-                .onFailure(TimeoutException.class)
-                .retry()
-                .atMost(retries)
+                .onItem()
+                .transformToUniAndConcatenate(processEvaluator::apply)
                 .collect()
                 .asSet()
                 .runSubscriptionOn(exec);
 
-        evaluators.subscribe().with(e -> KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            e.forEach(RiskEvaluator::evaluate);
-
+        evaluators.subscribe().with(e -> {
             var filteredEvaluators = e.stream()
                     .filter(f -> RiskEngine.isValidValue(f.getWeight()))
                     .filter(f -> RiskEngine.isValidValue(f.getRiskValue()))
@@ -95,7 +113,7 @@ public class DefaultRiskEngine implements RiskEngine {
             logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
 
             storedRiskProvider.storeRisk(risk, riskPhase);
-        }), failure -> logger.error(failure.getMessage()));
+        }, failure -> logger.error(failure.getMessage()));
         logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
     }
 
