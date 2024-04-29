@@ -13,10 +13,6 @@ public interface RiskEvaluator extends Provider {
 
     boolean requiresUser();
 
-    default Set<UserContext<?>> getUserContexts() {
-        return Collections.emptySet();
-    }
-
     void evaluate();
 
     default boolean isEnabled() {

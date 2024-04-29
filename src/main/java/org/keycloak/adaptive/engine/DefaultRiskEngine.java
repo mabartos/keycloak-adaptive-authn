@@ -4,7 +4,6 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.TimeoutException;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
-import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -19,7 +18,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
@@ -104,13 +102,6 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public Double getRisk() {
         return risk;
-    }
-
-    @Override
-    public Set<UserContext<?>> getRiskFactors() {
-        return riskFactorEvaluators.stream()
-                .flatMap(f -> f.getUserContexts().stream())
-                .collect(Collectors.toSet());
     }
 
     @Override

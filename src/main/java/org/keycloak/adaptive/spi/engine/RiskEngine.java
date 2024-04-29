@@ -13,8 +13,6 @@ import java.util.Set;
 public interface RiskEngine extends Authenticator {
     Double getRisk();
 
-    Set<UserContext<?>> getRiskFactors();
-
     Set<RiskEvaluator> getRiskEvaluators();
 
     void evaluateRisk();

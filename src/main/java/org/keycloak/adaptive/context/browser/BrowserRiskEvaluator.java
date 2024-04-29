@@ -40,11 +40,6 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Set<UserContext<?>> getUserContexts() {
-        return browserCondition.getUserContexts();
-    }
-
-    @Override
     public void evaluate() {
         var isKnown = browserCondition.isDefaultKnownBrowser();
 

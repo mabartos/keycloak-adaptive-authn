@@ -27,11 +27,6 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Set<UserContext<?>> getUserContexts() {
-        return Set.of(context);
-    }
-
-    @Override
     public double getWeight() {
         return EvaluatorUtils.getStoredEvaluatorWeight(session, DefaultUserRoleEvaluatorFactory.class, Weight.NEGLIGIBLE); // Just like that until it's fixed
     }
