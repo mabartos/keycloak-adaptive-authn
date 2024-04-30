@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.policy;
 
+import org.keycloak.adaptive.spi.engine.ConfigurableRequirements;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -82,15 +83,22 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
 
     @Override
     public Stream<AuthenticationFlowModel> getAllStream(boolean requiresUser) {
-        final Predicate<Stream<Authenticator>> OPERATION = requiresUser ?
-                s -> s.anyMatch(Authenticator::requiresUser) :
-                s -> s.noneMatch(Authenticator::requiresUser);
+        final Predicate<Stream<Boolean>> OPERATION = requiresUser ?
+                s -> s.anyMatch(f -> f) :
+                s -> s.noneMatch(f -> f);
 
-        final Predicate<AuthenticationFlowModel> FILTER = f -> OPERATION.test(
-                getAllAuthenticationExecutionsStream(f.getId()).map(g -> getAuthenticator(session, g.getAuthenticator()))
-        );
+        final Predicate<AuthenticationFlowModel> REQUIRES_USER = f -> OPERATION.test(
+                getAllAuthenticationExecutionsStream(f.getId()).map(g -> {
+                            var authenticator = getAuthenticator(session, g.getAuthenticator());
+                            if (authenticator instanceof ConfigurableRequirements configurable) {
+                                return configurable.requiresUser(realm.getAuthenticatorConfigById(g.getAuthenticatorConfig()));
+                            } else {
+                                return authenticator.requiresUser();
+                            }
+                        }
+                ));
 
-        return getAllStream().filter(FILTER);
+        return getAllStream().filter(REQUIRES_USER);
     }
 
     private Stream<AuthenticationExecutionModel> getAllAuthenticationExecutionsStream(String flowId) {

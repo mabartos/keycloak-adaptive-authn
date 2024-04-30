@@ -1,7 +1,6 @@
 package org.keycloak.adaptive.policy;
 
 import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -10,7 +9,6 @@ import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventBuilder;
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -21,7 +19,6 @@ import java.util.Optional;
 
 // Custom authenticator for evaluating authn policies - handle whole flows
 public class AuthnPolicyAuthenticator implements Authenticator {
-    private static final Logger logger = Logger.getLogger(AuthnPolicyAuthenticator.class);
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
@@ -43,11 +40,6 @@ public class AuthnPolicyAuthenticator implements Authenticator {
 
         final AuthenticationProcessor processor = createProcessor(session, realm, context);
 
-        var parent = provider.getParentPolicy();
-        if (parent == null) {
-            throw new IllegalStateException("Parent flow for authentication policies does not exist");
-        }
-
         var policies = provider.getAllStream(requiresUser).toList();
 
         for (var policy : policies) {
@@ -57,7 +49,6 @@ public class AuthnPolicyAuthenticator implements Authenticator {
             Response response = flow.processFlow();
 
             if (flow.isSuccessful()) {
-                //context.success();
                 continue;
             }
 
@@ -107,7 +98,6 @@ public class AuthnPolicyAuthenticator implements Authenticator {
 
     @Override
     public void action(AuthenticationFlowContext context) {
-        System.err.println("HERE");
     }
 
     @Override

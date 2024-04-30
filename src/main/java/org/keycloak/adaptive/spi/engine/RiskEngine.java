@@ -1,16 +1,16 @@
 package org.keycloak.adaptive.spi.engine;
 
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
-import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
 import java.util.Set;
 
-public interface RiskEngine extends Authenticator {
+public interface RiskEngine extends Authenticator, ConfigurableRequirements {
     Double getRisk();
 
     Set<RiskEvaluator> getRiskEvaluators();
@@ -19,6 +19,11 @@ public interface RiskEngine extends Authenticator {
 
     @Override
     default void action(AuthenticationFlowContext context) {
+    }
+
+    @Override
+    default boolean requiresUser(AuthenticatorConfigModel config) {
+        return requiresUser();
     }
 
     @Override
