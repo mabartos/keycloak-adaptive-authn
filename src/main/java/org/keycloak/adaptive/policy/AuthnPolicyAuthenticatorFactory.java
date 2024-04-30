@@ -26,6 +26,8 @@ public class AuthnPolicyAuthenticatorFactory implements AuthenticatorFactory {
     protected static final String USER_REQUIRED_SUFFIX = "User required";
 
     public static final String PROVIDER_ID = "advanced-authn-policy-authenticator";
+    public static final String AUTOMATICALLY_ADD_AUTHENTICATORS = "authn-policy-add-authenticators";
+
     static final String REQUIRES_USER_CONFIG = "requires-user-config";
     private static final AuthnPolicyAuthenticator SINGLETON = new AuthnPolicyAuthenticator();
 
@@ -102,7 +104,11 @@ public class AuthnPolicyAuthenticatorFactory implements AuthenticatorFactory {
     protected void handleEvents(ProviderEvent event) {
         if (event instanceof RealmModel.RealmPostCreateEvent realmEvent) {
             logger.debugf("Handling RealmPostCreateEvent");
-            configureAuthenticationFlows(realmEvent.getCreatedRealm());
+
+            var addAuthenticators = Boolean.getBoolean(AUTOMATICALLY_ADD_AUTHENTICATORS);
+            if (addAuthenticators) {
+                configureAuthenticationFlows(realmEvent.getCreatedRealm());
+            }
         }
     }
 
