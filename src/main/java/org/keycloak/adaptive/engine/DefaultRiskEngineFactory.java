@@ -152,10 +152,9 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
             return;
         }
 
-        // Parent Risk-based Policy
         AuthenticationFlowModel policy = new AuthenticationFlowModel();
-        policy.setAlias(DEFAULT_RISK_BASED_POLICY_ALIAS);
-        policy.setDescription("Policy leveraging risk-based authentication");
+        policy.setAlias("Evaluate risk score - no user");
+        policy.setDescription("Evaluate risk score - no user");
         policy.setProviderId(BASIC_FLOW);
         policy.setTopLevel(false);
         policy.setBuiltIn(false);
@@ -176,23 +175,14 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
         execution.setAuthenticatorConfig(configModel.getId());
         realm.addAuthenticatorExecution(execution);
 
-        // Conditional policy
-        AuthenticationFlowModel conditionalPolicy = new AuthenticationFlowModel();
-        conditionalPolicy.setAlias("Risk-based");
-        conditionalPolicy.setDescription("Policy leveraging risk-based authentication");
-        conditionalPolicy.setProviderId(BASIC_FLOW);
-        conditionalPolicy.setTopLevel(false);
-        conditionalPolicy.setBuiltIn(false);
-        conditionalPolicy = realm.addAuthenticationFlow(conditionalPolicy);
-
-        // Conditional policy execution
-        var conditionalPolicyExecution = new AuthenticationExecutionModel();
-        conditionalPolicyExecution.setParentFlow(policy.getId());
-        conditionalPolicyExecution.setRequirement(AuthenticationExecutionModel.Requirement.DISABLED); // Admins needs to explicitly enable it
-        conditionalPolicyExecution.setFlowId(conditionalPolicy.getId());
-        conditionalPolicyExecution.setPriority(0);
-        conditionalPolicyExecution.setAuthenticatorFlow(true);
-        realm.addAuthenticatorExecution(conditionalPolicyExecution);
+        // Parent Risk-based Policy
+        policy = new AuthenticationFlowModel();
+        policy.setAlias(DEFAULT_RISK_BASED_POLICY_ALIAS);
+        policy.setDescription("Policy leveraging risk-based authentication");
+        policy.setProviderId(BASIC_FLOW);
+        policy.setTopLevel(false);
+        policy.setBuiltIn(false);
+        policy = authnPolicyProvider.addPolicy(policy);
 
         // Evaluate risk provider
         configModel = new AuthenticatorConfigModel();
@@ -201,7 +191,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
         configModel = realm.addAuthenticatorConfig(configModel);
 
         execution = new AuthenticationExecutionModel();
-        execution.setParentFlow(conditionalPolicy.getId());
+        execution.setParentFlow(policy.getId());
         execution.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
         execution.setAuthenticator(DefaultRiskEngineFactory.PROVIDER_ID);
         execution.setPriority(20);
@@ -221,7 +211,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
             levelFlow.setProviderId(BASIC_FLOW);
             levelFlow = realm.addAuthenticationFlow(levelFlow);
             var levelFlowExecution = new AuthenticationExecutionModel();
-            levelFlowExecution.setParentFlow(conditionalPolicy.getId());
+            levelFlowExecution.setParentFlow(policy.getId());
             levelFlowExecution.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL);
             levelFlowExecution.setFlowId(levelFlow.getId());
             levelFlowExecution.setPriority(priority.getAndAdd(10));
