@@ -3,11 +3,12 @@ package org.keycloak.adaptive.spi.context;
 import org.keycloak.provider.Provider;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 public interface RiskEvaluator extends Provider {
 
-    Double getRiskValue();
+    Optional<Double> getRiskValue();
 
     double getWeight();
 

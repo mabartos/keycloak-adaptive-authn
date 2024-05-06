@@ -27,8 +27,8 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Double getRiskValue() {
-        return risk;
+    public Optional<Double> getRiskValue() {
+        return Optional.ofNullable(risk);
     }
 
     @Override

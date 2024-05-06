@@ -5,11 +5,10 @@ import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
-import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
-import java.util.Set;
+import java.util.Optional;
 
 public class DefaultUserRoleEvaluator implements RiskEvaluator {
     private final KeycloakSession session;
@@ -22,8 +21,8 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Double getRiskValue() {
-        return risk;
+    public Optional<Double> getRiskValue() {
+        return Optional.ofNullable(risk);
     }
 
     @Override

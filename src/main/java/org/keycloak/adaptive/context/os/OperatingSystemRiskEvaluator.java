@@ -6,6 +6,8 @@ import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
+import java.util.Optional;
+
 public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     private final KeycloakSession session;
     private final OperatingSystemCondition condition;
@@ -17,8 +19,8 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Double getRiskValue() {
-        return risk;
+    public Optional<Double> getRiskValue() {
+        return Optional.ofNullable(risk);
     }
 
     @Override

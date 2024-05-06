@@ -89,15 +89,17 @@ public class DefaultRiskEngine implements RiskEngine {
                     .items(e.stream())
                     .onItem()
                     .transformToUniAndConcatenate(processEvaluator::apply)
-                    .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue()))
+                    .filter(f -> f.getRiskValue().isPresent())
+                    .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue().get()))
                     .collect()
                     .asSet();
 
             evaluatedRisks.subscribe().with(risks -> {
                 var weightedRisk = risks.stream()
+                        .filter(g -> g.getRiskValue().isPresent())
                         .peek(g -> logger.debugf("Evaluator: %s", g.getClass().getSimpleName()))
-                        .peek(g -> logger.debugf("Risk evaluated: %f (weight %f)", g.getRiskValue(), g.getWeight()))
-                        .mapToDouble(g -> g.getRiskValue() * g.getWeight())
+                        .peek(g -> logger.debugf("Risk evaluated: %f (weight %f)", g.getRiskValue().get(), g.getWeight()))
+                        .mapToDouble(g -> g.getRiskValue().get() * g.getWeight())
                         .sum();
 
                 var weights = risks.stream()

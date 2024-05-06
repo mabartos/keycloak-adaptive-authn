@@ -7,6 +7,7 @@ import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.models.KeycloakSession;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class BrowserRiskEvaluator implements RiskEvaluator {
@@ -20,8 +21,8 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Double getRiskValue() {
-        return risk;
+    public Optional<Double> getRiskValue() {
+        return Optional.ofNullable(risk);
     }
 
     @Override

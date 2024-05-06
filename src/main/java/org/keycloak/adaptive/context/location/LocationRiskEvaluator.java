@@ -10,6 +10,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.util.Optional;
+
 public class LocationRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(LocationRiskEvaluator.class);
 
@@ -26,8 +28,8 @@ public class LocationRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public Double getRiskValue() {
-        return risk;
+    public Optional<Double> getRiskValue() {
+        return Optional.ofNullable(risk);
     }
 
     @Override
