@@ -2,7 +2,7 @@ package org.keycloak.adaptive.engine;
 
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
-import org.keycloak.adaptive.level.RiskLevelConditionFactory;
+import org.keycloak.adaptive.level.SimpleRiskLevelConditionFactory;
 import org.keycloak.adaptive.level.SimpleRiskLevelsFactory;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.RiskEngineFactory;
@@ -220,14 +220,14 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
             // Condition for level
             configModel = new AuthenticatorConfigModel();
-            configModel.setConfig(Map.of(RiskLevelConditionFactory.LEVEL_CONFIG, level.getName()));
+            configModel.setConfig(Map.of(SimpleRiskLevelConditionFactory.LEVEL_CONFIG, level.getName()));
             configModel.setAlias(level.getName());
             configModel = realm.addAuthenticatorConfig(configModel);
 
             var levelCondition = new AuthenticationExecutionModel();
             levelCondition.setParentFlow(levelFlow.getId());
             levelCondition.setRequirement(AuthenticationExecutionModel.Requirement.REQUIRED);
-            levelCondition.setAuthenticator(RiskLevelConditionFactory.PROVIDER_ID);
+            levelCondition.setAuthenticator(SimpleRiskLevelConditionFactory.PROVIDER_ID);
             levelCondition.setPriority(priority.getAndAdd(5));
             levelCondition.setAuthenticatorFlow(false);
             levelCondition.setAuthenticatorConfig(configModel.getId());

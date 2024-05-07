@@ -2,13 +2,11 @@ package org.keycloak.adaptive.level;
 
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.level.RiskLevel;
+import org.keycloak.adaptive.spi.level.RiskLevelsFactory;
 import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
-import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.KeycloakContext;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
@@ -16,33 +14,25 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import java.util.List;
 import java.util.Optional;
 
-import static org.keycloak.adaptive.ui.RiskBasedPoliciesUiTab.RISK_LEVEL_PROVIDER_CONFIG;
-
-public class RiskLevelConditionFactory implements ConditionalAuthenticatorFactory {
-    public static final String PROVIDER_ID = "risk-level-condition-factory";
+public abstract class AbstractRiskLevelConditionFactory implements ConditionalAuthenticatorFactory {
     public static final String LEVEL_CONFIG = "level-config";
+    private static ConditionalAuthenticator RISK_LEVELS_CONDITION;
 
-    private RiskLevelsProvider riskLevelsProvider;
+    private RiskLevelsFactory riskLevelsfactory;
 
-    @Override
-    public Authenticator create(KeycloakSession session) {
-        var riskLevelProviderId = Optional.ofNullable(session.getContext())
-                .map(KeycloakContext::getRealm)
-                .map(f -> f.getAttribute(RISK_LEVEL_PROVIDER_CONFIG))
-                .orElse(SimpleRiskLevelsFactory.PROVIDER_ID);
-
-        this.riskLevelsProvider = session.getProvider(RiskLevelsProvider.class, riskLevelProviderId);
-        return new RiskLevelCondition(riskLevelsProvider);
-    }
+    public abstract String getRiskLevelProviderId();
 
     @Override
     public ConditionalAuthenticator getSingleton() {
-        return null;
+        if (RISK_LEVELS_CONDITION == null) {
+            RISK_LEVELS_CONDITION = new RiskLevelCondition(riskLevelsfactory.getSingleton());
+        }
+        return RISK_LEVELS_CONDITION;
     }
 
     @Override
     public String getDisplayType() {
-        return "Condition - Risk Level";
+        return String.format("Condition - Risk Level (%s)", riskLevelsfactory.getName());
     }
 
     @Override
@@ -67,7 +57,7 @@ public class RiskLevelConditionFactory implements ConditionalAuthenticatorFactor
 
     @Override
     public String getHelpText() {
-        return null;
+        return riskLevelsfactory.getHelpText();
     }
 
     @Override
@@ -75,7 +65,7 @@ public class RiskLevelConditionFactory implements ConditionalAuthenticatorFactor
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(LEVEL_CONFIG)
-                .options(riskLevelsProvider.getRiskLevels().stream().map(RiskLevel::getName).toList())
+                .options(riskLevelsfactory.getSingleton().getRiskLevels().stream().map(RiskLevel::getName).toList())
                 .label(LEVEL_CONFIG)
                 .helpText(LEVEL_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.LIST_TYPE)
@@ -89,16 +79,14 @@ public class RiskLevelConditionFactory implements ConditionalAuthenticatorFactor
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-        riskLevelsProvider = factory.getProviderFactory(RiskLevelsProvider.class, SimpleRiskLevelsFactory.PROVIDER_ID).create(null);
+        this.riskLevelsfactory = Optional.ofNullable(factory.getProviderFactory(RiskLevelsProvider.class, getRiskLevelProviderId()))
+                .filter(f -> f instanceof RiskLevelsFactory)
+                .map(f -> (RiskLevelsFactory) f)
+                .orElseThrow(() -> new IllegalStateException(String.format("Cannot find Risk Level Factory '%s'", getRiskLevelProviderId())));
     }
 
     @Override
     public void close() {
 
-    }
-
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
     }
 }

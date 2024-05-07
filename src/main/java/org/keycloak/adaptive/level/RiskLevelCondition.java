@@ -36,7 +36,7 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
                 throw new IllegalStateException("Risk Level Provider is not found");
             }
 
-            var level = Optional.ofNullable(authConfig.getConfig().get(RiskLevelConditionFactory.LEVEL_CONFIG))
+            var level = Optional.ofNullable(authConfig.getConfig().get(AbstractRiskLevelConditionFactory.LEVEL_CONFIG))
                     .filter(StringUtil::isNotBlank)
                     .flatMap(f -> riskLevelsProvider.getRiskLevels().stream().filter(g -> g.getName().equals(f)).findAny())
                     .orElseThrow(() -> new IllegalStateException("Cannot find specified level for provider: " + riskLevelsProvider));

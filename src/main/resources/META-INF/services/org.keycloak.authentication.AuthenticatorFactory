@@ -5,4 +5,5 @@ org.keycloak.adaptive.context.ip.IpAddressConditionFactory
 org.keycloak.adaptive.context.location.LocationConditionFactory
 org.keycloak.adaptive.policy.AuthnPolicyAuthenticatorFactory
 org.keycloak.adaptive.engine.DefaultRiskEngineFactory
-org.keycloak.adaptive.level.RiskLevelConditionFactory
+org.keycloak.adaptive.level.SimpleRiskLevelConditionFactory
+org.keycloak.adaptive.level.AdvancedRiskLevelsConditionFactory
