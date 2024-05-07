@@ -37,7 +37,7 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new PhoneCondition(session, getRules());
+        return new PhoneCondition(session, getOperations());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
     }
 
     @Override
-    public List<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initOperations() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                 .operationKey(DefaultOperation.IS)

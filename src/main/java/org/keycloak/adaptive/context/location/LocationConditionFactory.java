@@ -35,11 +35,11 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
 
     @Override
     public LocationCondition create(KeycloakSession session) {
-        return new LocationCondition(session, getRules());
+        return new LocationCondition(session, getOperations());
     }
 
     @Override
-    public List<Operation<LocationContext>> initRules() {
+    public List<Operation<LocationContext>> initOperations() {
         return List.of(CONTINENT_IS, CONTINENT_IS_NOT, COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
     }
 

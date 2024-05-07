@@ -11,7 +11,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
-import java.util.Set;
 
 public class BrowserConditionFactory extends UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-user-agent-authenticator";
@@ -23,11 +22,11 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new BrowserCondition(session, getRules());
+        return new BrowserCondition(session, getOperations());
     }
 
     @Override
-    public List<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initOperations() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
@@ -64,7 +63,7 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(OPERATION_CONFIG)
-                .options(getRulesTexts())
+                .options(getOperationsTexts())
                 .label(OPERATION_CONFIG)
                 .helpText(OPERATION_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.LIST_TYPE)

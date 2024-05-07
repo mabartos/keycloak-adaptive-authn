@@ -39,7 +39,7 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
 
     @Override
     public Authenticator create(KeycloakSession session) {
-        return new OperatingSystemCondition(session, getRules());
+        return new OperatingSystemCondition(session, getOperations());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(OPERATION_CONFIG)
-                .options(getRulesTexts())
+                .options(getOperationsTexts())
                 .label(OPERATION_CONFIG)
                 .helpText(OPERATION_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.LIST_TYPE)
@@ -71,7 +71,7 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
     }
 
     @Override
-    public List<Operation<DeviceContext>> initRules() {
+    public List<Operation<DeviceContext>> initOperations() {
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)

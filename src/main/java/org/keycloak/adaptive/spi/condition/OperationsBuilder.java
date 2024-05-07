@@ -1,6 +1,7 @@
 package org.keycloak.adaptive.spi.condition;
 
 import org.keycloak.adaptive.policy.DefaultOperation;
+import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,14 +9,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
-public class OperationsBuilder<T> {
+public class OperationsBuilder<T extends UserContext<?>> {
     private final List<Operation<T>> operations;
 
     private OperationsBuilder() {
         this.operations = new ArrayList<>();
     }
 
-    public static <U> OperationsBuilder<U> builder(Class<U> ignore) {
+    public static <U extends UserContext<?>> OperationsBuilder<U> builder(Class<U> ignore) {
         return new OperationsBuilder<>();
     }
 

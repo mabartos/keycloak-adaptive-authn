@@ -8,29 +8,28 @@ import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSessionFactory;
 
 import java.util.List;
-import java.util.Set;
 
-public abstract class UserContextConditionFactory<T extends UserContext<?>> implements ConditionalAuthenticatorFactory {
+public abstract class UserContextConditionFactory<T extends UserContext<?>> implements VerifiableUserContextFactory<T>, ConditionalAuthenticatorFactory {
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
             AuthenticationExecutionModel.Requirement.DISABLED
     };
 
-    private List<Operation<T>> rules;
+    private List<Operation<T>> operations;
 
     @Override
     public void init(Config.Scope config) {
-        this.rules = initRules();
+        this.operations = initOperations();
     }
 
-    abstract public List<Operation<T>> initRules();
-
-    public List<Operation<T>> getRules() {
-        return rules;
+    @Override
+    public List<Operation<T>> getOperations() {
+        return operations;
     }
 
-    public List<String> getRulesTexts() {
-        return getRules().stream().map(Operation::getText).toList();
+    @Override
+    public List<String> getOperationsTexts() {
+        return getOperations().stream().map(Operation::getText).toList();
     }
 
     @Override
