@@ -38,14 +38,14 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
     }
 
     @Override
-    public void storeRisk(Double risk) {
+    public void storeRisk(double risk) {
         storeRisk(risk, RiskPhase.OVERALL);
     }
 
     @Override
-    public void storeRisk(Double risk, RiskPhase riskPhase) {
+    public void storeRisk(double risk, RiskPhase riskPhase) {
         Optional.ofNullable(session.getContext().getAuthenticationSession())
-                .ifPresentOrElse(f -> f.setAuthNote(getConfigProperty(riskPhase), risk.toString()),
+                .ifPresentOrElse(f -> f.setAuthNote(getConfigProperty(riskPhase), Double.toString(risk)),
                         () -> {
                             throw new IllegalArgumentException("Authentication session is null");
                         });

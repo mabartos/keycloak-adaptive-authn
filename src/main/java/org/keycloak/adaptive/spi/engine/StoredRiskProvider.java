@@ -10,9 +10,9 @@ public interface StoredRiskProvider extends Provider {
 
     Optional<Double> getStoredRisk(RiskPhase riskPhase);
 
-    void storeRisk(Double risk);
+    void storeRisk(double risk);
 
-    void storeRisk(Double risk, RiskPhase riskPhase);
+    void storeRisk(double risk, RiskPhase riskPhase);
 
     enum RiskPhase {
         NO_USER,
