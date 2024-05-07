@@ -38,6 +38,7 @@ public class SimpleRiskLevel implements RiskLevel {
 
     @Override
     public boolean matchesRisk(double riskValue) {
-        return riskValue >= getLowestRiskValue() && riskValue <= getHighestRiskValue();
+        if (getLowestRiskValue() == 0.0f && riskValue == getLowestRiskValue()) return true;
+        return riskValue > getLowestRiskValue() && riskValue <= getHighestRiskValue();
     }
 }

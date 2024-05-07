@@ -7,8 +7,8 @@ import java.util.List;
 
 public class SimpleRiskLevelsProvider implements RiskLevelsProvider {
     static final RiskLevel LOW = new SimpleRiskLevel("LOW", 0.0, 0.3);
-    static final RiskLevel MEDIUM = new SimpleRiskLevel("MEDIUM", 0.31, 0.75);
-    static final RiskLevel HIGH = new SimpleRiskLevel("HIGH", 0.76, 1.0);
+    static final RiskLevel MEDIUM = new SimpleRiskLevel("MEDIUM", 0.3, 0.75);
+    static final RiskLevel HIGH = new SimpleRiskLevel("HIGH", 0.75, 1.0);
 
     @Override
     public List<RiskLevel> getRiskLevels() {
