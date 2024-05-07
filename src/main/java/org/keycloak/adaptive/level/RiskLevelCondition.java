@@ -44,7 +44,7 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
             var matches = level.matchesRisk(risk);
 
             if (matches) {
-                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f <= %f <= %f", level.getName(), level.getLowestRiskValue(), risk, level.getHighestRiskValue());
+                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.getName(), level.getLowestRiskValue(), risk, level.getHighestRiskValue());
                 return true;
             } else {
                 logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.getName(), risk);
