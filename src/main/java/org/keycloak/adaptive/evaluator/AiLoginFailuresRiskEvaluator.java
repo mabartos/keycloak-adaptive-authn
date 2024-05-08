@@ -6,7 +6,7 @@ import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.level.Weight;
-import org.keycloak.adaptive.spi.ai.AiEngine;
+import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
@@ -20,13 +20,13 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
 
     private final KeycloakSession session;
     private final IpAddressContext ipAddressContext;
-    private final AiEngine aiEngine;
+    private final AiNlpEngine aiEngine;
     private Double risk;
 
     public AiLoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
-        this.aiEngine = session.getProvider(AiEngine.class);
+        this.aiEngine = session.getProvider(AiNlpEngine.class);
     }
 
     @Override

@@ -6,7 +6,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.spi.ai.AiEngine;
+import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.quarkus.runtime.configuration.Configuration;
@@ -20,7 +20,7 @@ import static org.keycloak.adaptive.ai.OpenAiEngineFactory.ORGANIZATION_PROPERTY
 import static org.keycloak.adaptive.ai.OpenAiEngineFactory.PROJECT_PROPERTY;
 import static org.keycloak.adaptive.ai.OpenAiEngineFactory.URL_PROPERTY;
 
-public class OpenAiEngine implements AiEngine {
+public class OpenAiEngine implements AiNlpEngine {
     private static final Logger logger = Logger.getLogger(OpenAiEngine.class);
 
     private final KeycloakSession session;
