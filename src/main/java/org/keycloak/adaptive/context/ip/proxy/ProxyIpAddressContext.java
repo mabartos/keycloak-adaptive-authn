@@ -33,6 +33,11 @@ public class ProxyIpAddressContext implements IpProxyContext {
     }
 
     @Override
+    public Set<IPAddress> getData() {
+        return data;
+    }
+
+    @Override
     public void initData() {
         var result = Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)
@@ -68,10 +73,5 @@ public class ProxyIpAddressContext implements IpProxyContext {
                 .filter(StringUtil::isNotBlank)
                 .map(IpAddressUtils::getIpAddress)
                 .flatMap(Optional::stream);
-    }
-
-    @Override
-    public Set<IPAddress> getData() {
-        return data;
     }
 }

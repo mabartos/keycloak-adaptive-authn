@@ -65,7 +65,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 .collect()
                 .asSet();
 
-        // Evaluate factors with no user in parallel, otherwise in blocking manner
+        // Evaluate factors with no user in a different worker thread, otherwise in the main thread
         evaluators = requiresUser ? evaluators : evaluators.runSubscriptionOn(exec);
 
         final Function<RiskEvaluator, Uni<RiskEvaluator>> processEvaluator = (re) -> {
@@ -75,12 +75,7 @@ public class DefaultRiskEngine implements RiskEngine {
                     .invoke(RiskEvaluator::evaluate)
                     .onFailure()
                     .retry()
-                    .atMost(retries)
-                    .ifNoItem()
-                    .after(Duration.ofMillis(timeout))
-                    .fail()
-                    .onFailure(TimeoutException.class)
-                    .recoverWithItem(() -> re);
+                    .atMost(retries);
             return requiresUser ? item : item.emitOn(exec);
         };
 
@@ -89,6 +84,9 @@ public class DefaultRiskEngine implements RiskEngine {
                     .items(e.stream())
                     .onItem()
                     .transformToUniAndConcatenate(processEvaluator::apply)
+                    .ifNoItem()
+                    .after(Duration.ofMillis(timeout))
+                    .recoverWithCompletion()
                     .filter(f -> f.getRiskValue().isPresent())
                     .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue().get()))
                     .collect()
@@ -106,7 +104,7 @@ public class DefaultRiskEngine implements RiskEngine {
                         .mapToDouble(RiskEvaluator::getWeight)
                         .sum();
 
-                // Weighted mean
+                // Weighted arithmetic mean
                 this.risk = weightedRisk / weights;
                 logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
 

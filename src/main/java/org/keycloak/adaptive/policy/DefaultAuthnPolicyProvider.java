@@ -11,6 +11,7 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -83,20 +84,19 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
 
     @Override
     public Stream<AuthenticationFlowModel> getAllStream(boolean requiresUser) {
-        final Predicate<Stream<Boolean>> OPERATION = requiresUser ?
+        Predicate<Stream<Boolean>> OPERATION = requiresUser ?
                 s -> s.anyMatch(f -> f) :
                 s -> s.noneMatch(f -> f);
 
-        final Predicate<AuthenticationFlowModel> REQUIRES_USER = f -> OPERATION.test(
+        Predicate<AuthenticationFlowModel> REQUIRES_USER = f -> OPERATION.test(
                 getAllAuthenticationExecutionsStream(f.getId()).map(g -> {
-                            var authenticator = getAuthenticator(session, g.getAuthenticator());
-                            if (authenticator instanceof ConfigurableRequirements configurable) {
-                                return configurable.requiresUser(realm.getAuthenticatorConfigById(g.getAuthenticatorConfig()));
-                            } else {
-                                return authenticator.requiresUser();
-                            }
-                        }
-                ));
+                    var authenticator = getAuthenticator(session, g.getAuthenticator());
+                    if (authenticator instanceof ConfigurableRequirements configurable) {
+                        return configurable.requiresUser(realm.getAuthenticatorConfigById(g.getAuthenticatorConfig()));
+                    } else {
+                        return authenticator.requiresUser();
+                    }
+                }));
 
         return getAllStream().filter(REQUIRES_USER);
     }

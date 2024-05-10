@@ -4,6 +4,8 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
+import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
@@ -18,12 +20,12 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(LoginFailuresRiskEvaluator.class);
 
     private final KeycloakSession session;
-    private final DeviceContext deviceContext;
+    private final IpAddressContext ipAddressContext;
     private Double risk;
 
     public LoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
+        this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
     }
 
     @Override
@@ -32,18 +34,25 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
+    public boolean requiresUser() {
+        return true;
+    }
+
+    @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, LoginFailuresRiskEvaluatorFactory.class, Weight.IMPORTANT);
+        return EvaluatorUtils.getStoredEvaluatorWeight(
+                session,
+                LoginFailuresRiskEvaluatorFactory.class,
+                Weight.IMPORTANT
+        );
     }
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, LoginFailuresRiskEvaluatorFactory.class);
-    }
-
-    @Override
-    public boolean requiresUser() {
-        return true;
+        return EvaluatorUtils.isEvaluatorEnabled(
+                session,
+                LoginFailuresRiskEvaluatorFactory.class
+        );
     }
 
     @Override
@@ -66,8 +75,16 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
             logger.debug("Cannot obtain login failures");
             return;
         }
+        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(f->f.toFullString()).orElse("");
+        var lastIpFailure = loginFailures.getLastIPFailure();
+        if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
+            if (!currentIp.equals(lastIpFailure)) {
+                this.risk = Math.max(risk, Risk.INTERMEDIATE);
+                logger.debug("Request from different IP address");
+            }
+        }
 
-        // Num of failures
+        // Number of failures
         var numFailures = loginFailures.getNumFailures();
         if (numFailures <= 2) {
             this.risk = Risk.NONE;
@@ -82,7 +99,11 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
         }
 
         // Different IP address
-        var currentIp = Optional.ofNullable(deviceContext.getData()).map(DeviceRepresentation::getIpAddress).orElse("");
+        if (!currentIp.equals(lastIpFailure)) {
+            this.risk = Math.max(risk, Risk.INTERMEDIATE);
+        }
+
+        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(f->f.toFullString()).orElse("");
         var lastIpFailure = loginFailures.getLastIPFailure();
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
             if (!currentIp.equals(lastIpFailure)) {
