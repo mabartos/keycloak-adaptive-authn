@@ -1,5 +1,6 @@
 package org.keycloak.adaptive.evaluator;
 
+import inet.ipaddr.IPAddress;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
@@ -75,14 +76,6 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
             logger.debug("Cannot obtain login failures");
             return;
         }
-        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(f->f.toFullString()).orElse("");
-        var lastIpFailure = loginFailures.getLastIPFailure();
-        if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
-            if (!currentIp.equals(lastIpFailure)) {
-                this.risk = Math.max(risk, Risk.INTERMEDIATE);
-                logger.debug("Request from different IP address");
-            }
-        }
 
         // Number of failures
         var numFailures = loginFailures.getNumFailures();
@@ -98,13 +91,9 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
             this.risk = Risk.HIGH;
         }
 
-        // Different IP address
-        if (!currentIp.equals(lastIpFailure)) {
-            this.risk = Math.max(risk, Risk.INTERMEDIATE);
-        }
-
-        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(f->f.toFullString()).orElse("");
+        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toFullString).orElse("");
         var lastIpFailure = loginFailures.getLastIPFailure();
+
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
             if (!currentIp.equals(lastIpFailure)) {
                 this.risk = Math.max(risk, Risk.INTERMEDIATE);

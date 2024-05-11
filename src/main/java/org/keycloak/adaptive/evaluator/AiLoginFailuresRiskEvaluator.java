@@ -52,9 +52,9 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
     protected String request(UserLoginFailureModel loginFailures) {
         // we should be careful about the message poisoning
         var request = String.format("""
-                        Give me the overall risk that the user trying to authenticate is fraud based on its parameters.
-                        These parameters shows the metrics about login failures for the particular user.
-                        Used for detection of the brute force attacks.
+                        Give me the overall risk that the user trying to authenticate is a fraud based on its parameters.
+                        These parameters show the metrics about login failures for the particular user.
+                        Used for detection of brute force attacks.
                         After each successful login, these metrics are reset.
                         -----
                         Number of login failures for the user: %d
@@ -96,7 +96,7 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
             return;
         }
 
-        Optional<Double> evaluatedRisk = EvaluatorUtils.getRiskFromAi(aiEngine, request(loginFailures));
+        Optional<Double> evaluatedRisk = aiEngine.getRisk(request(loginFailures));
         evaluatedRisk.ifPresent(risk -> {
             logger.debugf("AI request was successful. Evaluated risk: %f", risk);
             this.risk = risk;

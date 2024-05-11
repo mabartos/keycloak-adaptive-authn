@@ -85,7 +85,7 @@ public class AiDeviceRiskEvaluator implements RiskEvaluator {
             return;
         }
 
-        Optional<Double> evaluatedRisk = EvaluatorUtils.getRiskFromAi(aiEngine, request(deviceRepresentation));
+        Optional<Double> evaluatedRisk = aiEngine.getRisk(request(deviceRepresentation));
         evaluatedRisk.ifPresent(risk -> {
             logger.debugf("AI request was successful. Evaluated risk: %f", risk);
             this.risk = risk;

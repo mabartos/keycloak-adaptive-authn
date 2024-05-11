@@ -11,6 +11,14 @@ public interface AiRiskEvaluatorMessages {
                 - Values close to 1 mean the risk of user fraud is high.
                                
             You need to analyze the data I provide to you and return risk values.
-            The message MUST contain only the double value, no text around - gave me only the number without further explanations.
+            The message MUST be in JSON format, with two items - 'risk', and 'reason'.
+            The 'risk' item MUST contain the evaluated risk double value described above.
+            The 'reason' item MUST briefly describe the reason why it was evaluated like that.
+                        
+            f.e.
+             {
+               "risk": 0.7,
+               "reason": "Many login failures, with a high probability of brute-force attack."
+             }
             """;
 }

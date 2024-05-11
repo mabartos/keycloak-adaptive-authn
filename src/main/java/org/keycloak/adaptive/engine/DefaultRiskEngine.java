@@ -129,10 +129,6 @@ public class DefaultRiskEngine implements RiskEngine {
         return Optional.ofNullable(configModel)
                 .map(AuthenticatorConfigModel::getConfig)
                 .map(f -> f.get(DefaultRiskEngineFactory.REQUIRES_USER_CONFIG))
-                .map(f -> {
-                    logger.warnf("Cannot find config '%s'", DefaultRiskEngineFactory.REQUIRES_USER_CONFIG);
-                    return f;
-                })
                 .map(Boolean::parseBoolean)
                 .orElse(false);
     }

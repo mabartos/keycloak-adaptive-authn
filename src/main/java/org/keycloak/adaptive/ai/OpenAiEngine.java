@@ -7,6 +7,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiRiskEvaluatorMessages;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.quarkus.runtime.configuration.Configuration;
@@ -14,6 +15,8 @@ import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Objects;
+import java.util.Optional;
 
 import static org.keycloak.adaptive.ai.OpenAiEngineFactory.KEY_PROPERTY;
 import static org.keycloak.adaptive.ai.OpenAiEngineFactory.ORGANIZATION_PROPERTY;
@@ -68,6 +71,25 @@ public class OpenAiEngine implements AiNlpEngine {
         } catch (URISyntaxException | IOException | RuntimeException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Optional<Double> getRisk(String context, String message) {
+        var response = getResult(context, message, OpenAiDataResponse.class);
+
+        var data = Optional.ofNullable(response)
+                .flatMap(f -> f.choices().stream().findAny())
+                .map(OpenAiDataResponse.Choice::message)
+                .map(OpenAiDataResponse.Choice.Message::content);
+
+        data.ifPresent(f -> logger.debugf("Evaluated risk: %f. Reason: %s", f.risk(), f.reason()));
+
+        return data.map(f -> f.risk());
+    }
+
+    @Override
+    public Optional<Double> getRisk(String message) {
+        return getRisk(AiRiskEvaluatorMessages.CONTEXT_MESSAGE, message);
     }
 
     @Override
