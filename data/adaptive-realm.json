@@ -1390,7 +1390,7 @@
     "builtIn" : false,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "HIGH",
-      "authenticator" : "risk-level-condition-factory",
+      "authenticator" : "simple-risk-levels-condition",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 70,
@@ -1428,7 +1428,7 @@
     "builtIn" : false,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "LOW",
-      "authenticator" : "risk-level-condition-factory",
+      "authenticator" : "simple-risk-levels-condition",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 40,
@@ -1444,7 +1444,7 @@
     "builtIn" : false,
     "authenticationExecutions" : [ {
       "authenticatorConfig" : "MEDIUM",
-      "authenticator" : "risk-level-condition-factory",
+      "authenticator" : "simple-risk-levels-condition",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 55,
