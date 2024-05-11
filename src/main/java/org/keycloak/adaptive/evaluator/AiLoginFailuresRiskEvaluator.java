@@ -66,7 +66,7 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
                         """,
                 loginFailures.getNumFailures(),
                 loginFailures.getLastIPFailure(),
-                Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toFullString).orElse("unknown"),
+                Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toString).orElse("unknown"),
                 loginFailures.getNumTemporaryLockouts(),
                 Time.currentTimeMillis() - loginFailures.getLastFailure()
         );

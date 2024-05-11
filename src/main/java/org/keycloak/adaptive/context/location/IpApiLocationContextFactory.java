@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public class IpApiLocationContextFactory implements UserContextFactory<LocationContext> {
     public static final String PROVIDER_ID = "ip-api-location-context";
-    public static final Function<IPAddress, String> SERVICE_URL = ip -> String.format("https://ipapi.co/%s/json", ip.toFullString());
+    public static final Function<IPAddress, String> SERVICE_URL = ip -> String.format("https://ipapi.co/%s/json", ip.toString());
 
     @Override
     public LocationContext create(KeycloakSession session) {

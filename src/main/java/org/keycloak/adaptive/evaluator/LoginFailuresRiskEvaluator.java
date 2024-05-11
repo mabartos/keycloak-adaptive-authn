@@ -91,7 +91,7 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
             this.risk = Risk.HIGH;
         }
 
-        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toFullString).orElse("");
+        var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toString).orElse("");
         var lastIpFailure = loginFailures.getLastIPFailure();
 
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
