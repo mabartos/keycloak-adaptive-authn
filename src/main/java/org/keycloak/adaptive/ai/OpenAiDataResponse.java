@@ -21,16 +21,7 @@ public record OpenAiDataResponse(
     public record Choice(String finish_reason, Message message) {
 
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public record Message(String role, Data content) {
-
-            @JsonCreator
-            public Message(@JsonProperty("role") String role, @JsonProperty("content") String content) throws IOException {
-                this(role, JsonSerialization.readValue(content, Data.class));
-            }
-
-            @JsonIgnoreProperties(ignoreUnknown = true)
-            public record Data(Double risk, String reason) {
-            }
+        public record Message(String role, String content) {
         }
     }
 }

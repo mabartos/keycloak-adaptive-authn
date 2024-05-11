@@ -43,14 +43,14 @@ public class OpenAiEngine implements AiNlpEngine {
             final var project = Configuration.getOptionalValue(PROJECT_PROPERTY);
 
             if (url.isEmpty() || key.isEmpty() || organization.isEmpty() || project.isEmpty()) {
-                logger.error("Some of these required environment variables is missing: OPEN_AI_API_URL, OPEN_AI_API_KEY, OPEN_AI_API_ORGANIZATION, OPEN_AI_API_PROJECT");
+                logger.error("Some of these required environment variables are missing: OPEN_AI_API_URL, OPEN_AI_API_KEY, OPEN_AI_API_ORGANIZATION, OPEN_AI_API_PROJECT");
                 return null;
             }
 
             var client = httpClientProvider.getHttpClient();
 
             var request = new HttpPost(new URIBuilder(url.get()).build());
-            request.setHeader("Content-Type", "application/json");
+            request.setHeader("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
             request.setHeader("Authorization", String.format("Bearer %s", key.get()));
             request.setHeader("OpenAI-Organization", organization.get());
             request.setHeader("OpenAI-Project", project.get());
@@ -80,7 +80,14 @@ public class OpenAiEngine implements AiNlpEngine {
         var data = Optional.ofNullable(response)
                 .flatMap(f -> f.choices().stream().findAny())
                 .map(OpenAiDataResponse.Choice::message)
-                .map(OpenAiDataResponse.Choice.Message::content);
+                .map(OpenAiDataResponse.Choice.Message::content)
+                .map(f -> {
+                    try {
+                        return JsonSerialization.readValue(f, OpenAiRiskData.class);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
         data.ifPresent(f -> logger.debugf("Evaluated risk: %f. Reason: %s", f.risk(), f.reason()));
 
