@@ -7,6 +7,8 @@ import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
 import org.keycloak.adaptive.context.DeviceContextFactory;
 import org.keycloak.adaptive.context.ip.IpAddressUtils;
+import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
+import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
@@ -21,14 +23,14 @@ import java.util.Optional;
 public class IpApiLocationContext implements LocationContext {
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
-    private final DeviceContext deviceContext; // use IpAddressContext later
+    private final IpAddressContext ipAddressContext;
     private boolean isInitialized = false;
     private IpApiLocationData data;
 
     public IpApiLocationContext(KeycloakSession session) {
         this.session = session;
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
-        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
+        this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
         initData();
     }
 
@@ -42,11 +44,9 @@ public class IpApiLocationContext implements LocationContext {
         try {
             var client = httpClientProvider.getHttpClient();
 
-            var uriString = Optional.ofNullable(deviceContext)
+            var uriString = Optional.ofNullable(ipAddressContext)
                     .map(UserContext::getData)
-                    .map(DeviceRepresentation::getIpAddress)
-                    .filter(StringUtil::isNotBlank)
-                    .flatMap(IpAddressUtils::getIpAddress)
+                    .flatMap(f->f.stream().findAny())
                     .map(IpApiLocationContextFactory.SERVICE_URL)
                     .filter(StringUtil::isNotBlank)
                     .orElseThrow(() -> new IllegalStateException("Cannot obtain full URL for IP API"));
