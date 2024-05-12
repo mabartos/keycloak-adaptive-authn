@@ -4,7 +4,7 @@ import RealmRepresentation from "@keycloak/keycloak-admin-client/lib/defs/realmR
 import {
   AlertVariant,
   Button,
-  ButtonVariant, EmptyState, EmptyStateActions, EmptyStateBody, EmptyStateFooter, EmptyStateHeader, EmptyStateIcon,
+  ButtonVariant,
   Label,
   PageSection,
   Tab,
@@ -15,8 +15,6 @@ import { sortBy } from "lodash-es";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-
-import { adminClient } from "../admin-client";
 import { useAlerts } from "../components/alert/Alerts";
 import { useConfirmDialog } from "../components/confirm-dialog/ConfirmDialog";
 import { KeycloakSpinner } from "../components/keycloak-spinner/KeycloakSpinner";
@@ -42,9 +40,9 @@ import { Policies } from "./policies/Policies";
 import { AuthenticationTab, toAuthentication } from "./routes/Authentication";
 import { toCreateFlow } from "./routes/CreateFlow";
 import { toFlow } from "./routes/Flow";
-import {toCreateAuthenticationPolicy} from "./routes/CreateAuthenticationPolicy";
+import { useAdminClient } from "../admin-client";
 import {toAuthenticationPolicy} from "./routes/AuthenticationPolicy";
-import {PlusCircleIcon} from "@patternfly/react-icons";
+import AuthenticationPolicyDetails from "./AuthenticationPolicyDetails";
 
 type UsedBy = "SPECIFIC_CLIENTS" | "SPECIFIC_PROVIDERS" | "DEFAULT";
 
@@ -109,6 +107,7 @@ const AliasAuthPolicyRenderer = ({id, alias}: AuthenticationPolicyType) => {
 };
 
 export default function AuthenticationSection() {
+  const { adminClient } = useAdminClient();
   const { t } = useTranslation();
   const { realm: realmName } = useRealm();
   const [key, setKey] = useState(0);
@@ -139,13 +138,11 @@ export default function AuthenticationSection() {
         headers: getAuthorizationHeaders(await adminClient.getAccessToken()),
       },
     );
-    const flowsJson = await flowsRequest.json();
+    const flows = await flowsRequest.json();
 
-    if (!flowsJson) {
+    if (!flows) {
       return [];
     }
-
-    const flows = flowsJson.filter((item: AuthenticationPolicyType) => !item.alias?.startsWith("POLICY - "));
 
     return sortBy(
       localeSort<AuthenticationType>(flows, mapByKey("alias")),
@@ -341,70 +338,7 @@ export default function AuthenticationSection() {
               title={<TabTitleText>{t("authnPolicies")}</TabTitleText>}
               {...authnPoliciesTab}
           >
-            <KeycloakDataTable
-                key={key}
-                loader={loaderAuthnPolicies}
-                ariaLabelKey="titleAuthentication"
-                searchPlaceholderKey="searchForAuthnPolicy"
-                toolbarItem={
-                  <ToolbarItem>
-                    <Button
-                        component={(props) => (
-                            <Link
-                                {...props}
-                                to={toCreateAuthenticationPolicy({realm: realmName})}
-                            />
-                        )}
-                    >
-                      {t("createAuthnPolicy")}
-                    </Button>
-                  </ToolbarItem>
-                }
-                actionResolver={({data}) => [
-                  {
-                    title: t("duplicate"),
-                    onClick: () => {
-                      toggleOpen();
-                      setSelectedAuthPolicy(data);
-                    },
-                  }
-                ]}
-                columns={[
-                  {
-                    name: "alias",
-                    displayKey: "authnPolicyName",
-                    cellRenderer: (row) => <AliasAuthPolicyRenderer {...row} />,
-                  },
-                  {
-                    name: "description",
-                    displayKey: "description",
-                  },
-                ]}
-                emptyState={
-                  <EmptyState data-testid="empty-state" variant="lg">
-                    <EmptyStateHeader
-                        titleText={<>{t("noAuthenticationPolicies")}</>}
-                        icon={<EmptyStateIcon icon={PlusCircleIcon}/>}
-                        headingLevel="h1"
-                    />
-                    <EmptyStateBody>{t("noAuthenticationPoliciesInstructions")}</EmptyStateBody>
-                    <EmptyStateFooter>
-                      <EmptyStateActions>
-                        <Button
-                            component={(props) => (
-                                <Link
-                                    {...props}
-                                    to={toCreateAuthenticationPolicy({realm: realmName})}
-                                />
-                            )}
-                        >
-                          {t("createAuthnPolicy")}
-                        </Button>
-                      </EmptyStateActions>
-                    </EmptyStateFooter>
-                  </EmptyState>
-                }
-            />
+            <AuthenticationPolicyDetails isParentPolicy={true}/>
           </Tab>
         </RoutableTabs>
       </PageSection>

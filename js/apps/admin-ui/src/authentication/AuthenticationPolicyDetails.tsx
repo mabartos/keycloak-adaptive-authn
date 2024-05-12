@@ -20,7 +20,7 @@ import { DomainIcon, TableIcon } from "@patternfly/react-icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { adminClient } from "../admin-client";
+import {useAdminClient} from "../admin-client";
 import { useAlerts } from "../components/alert/Alerts";
 import { useConfirmDialog } from "../components/confirm-dialog/ConfirmDialog";
 import { ViewHeader } from "../components/view-header/ViewHeader";
@@ -32,7 +32,6 @@ import { DuplicateFlowModal } from "./DuplicateFlowModal";
 import { EditFlowModal } from "./EditFlowModal";
 import { FlowDiagram } from "./components/FlowDiagram";
 import { FlowHeader } from "./components/FlowHeader";
-import { FlowRow } from "./components/FlowRow";
 import { AddStepModal } from "./components/modals/AddStepModal";
 import {
     ExecutionList,
@@ -44,17 +43,23 @@ import { toAuthentication } from "./routes/Authentication";
 import {EmptyAuthenticationPolicy} from "./EmptyAuthenticationPolicy";
 import {AddSubPolicyModal, Policy} from "./components/modals/AddSubPolicyModal";
 import {AuthenticationPolicyParams, toAuthenticationPolicy} from "./routes/AuthenticationPolicy";
+import {PolicyRow} from "./components/PolicyRow";
 
 export const providerConditionFilter = (
     value: AuthenticationProviderRepresentation,
 ) => value.displayName?.startsWith("Condition ");
 
-export default function AuthenticationPolicyDetails() {
+type AuthenticationPolicyDetailsProps = {
+    isParentPolicy?: boolean
+};
+export default function AuthenticationPolicyDetails({isParentPolicy = false}: AuthenticationPolicyDetailsProps) {
+    const {adminClient} = useAdminClient();
     const { t } = useTranslation();
     const { realm } = useRealm();
     const { addAlert, addError } = useAlerts();
-    const {id} = useParams<AuthenticationPolicyParams>();
+    const {id: paramId} = useParams<AuthenticationPolicyParams>();
     const navigate = useNavigate();
+    const [id, setId] = useState("");
     const [key, setKey] = useState(0);
     const refresh = () => setKey(new Date().getTime());
 
@@ -63,8 +68,7 @@ export default function AuthenticationPolicyDetails() {
     const [conditionList, setConditionList] = useState<ExecutionList>();
     const [liveText, setLiveText] = useState("");
 
-    const [showAddExecutionDialog, setShowAddExecutionDialog] =
-        useState<boolean>();
+    const [showAddExecutionDialog, setShowAddExecutionDialog] = useState<boolean>();
     const [showAddSubFlowDialog, setShowSubFlowDialog] = useState<boolean>();
     const [selectedExecution, setSelectedExecution] =
         useState<ExpandableExecution>();
@@ -74,16 +78,21 @@ export default function AuthenticationPolicyDetails() {
 
     useFetch(
         async () => {
-            const policies = await adminClient.authenticationPolicies.getPolicies();
-            const policy = policies.find((f) => f.id === id);
+            const policy = isParentPolicy ?
+                await adminClient.authenticationPolicies.getParentPolicy() :
+                await adminClient.authenticationPolicies.getPolicy({id: paramId!});
+
             if (!policy) {
+                console.warn("cannot find authentication policy")
                 throw new Error(t("notFound"));
             }
 
-            const executions =
-                await adminClient.authenticationManagement.getExecutions({
-                    flow: policy.alias!,
-                });
+            setId(policy.id!);
+
+            const executions = isParentPolicy ?
+                await adminClient.authenticationPolicies.getPolicies() :
+                await adminClient.authenticationManagement.getExecutions({flow: policy.alias!});
+
             return { policy, executions};
         },
         ({ policy, executions }) => {
@@ -201,15 +210,13 @@ export default function AuthenticationPolicyDetails() {
 
     const addPolicy = async (
         flow: string,
-        {name, description = "", type = "basic-flow", provider}: Policy,
+        {name, description = "", providerId = "basic-flow"}: Policy,
     ) => {
         try {
-            await adminClient.authenticationManagement.addFlowToFlow({
-                flow,
+            await adminClient.authenticationPolicies.createPolicy({
                 alias: name,
                 description,
-                provider,
-                type,
+                providerId
             });
             refresh();
             addAlert(t("updateFlowSuccess"), AlertVariant.success);
@@ -325,10 +332,15 @@ export default function AuthenticationPolicyDetails() {
             )}
             <DeleteFlowConfirm />
 
-            <ViewHeader
-                titleKey={policy?.alias || ""}
-                dropdownItems={dropdownItems}
-            />
+            {!isParentPolicy && (
+                <>
+                    <ViewHeader
+                        titleKey={policy?.alias || ""}
+                        dropdownItems={dropdownItems}
+                    />
+                </>
+            )}
+
             <PageSection variant="light">
                 {conditionList && hasExecutions && (
                     <>
@@ -352,22 +364,24 @@ export default function AuthenticationPolicyDetails() {
                                         />
                                     </ToggleGroup>
                                 </ToolbarItem>
+                                {!isParentPolicy && (
+                                    <ToolbarItem>
+                                        <Button
+                                            data-testid="addStep"
+                                            variant="secondary"
+                                            onClick={() => setShowAddExecutionDialog(true)}
+                                        >
+                                            {t("addStep")}
+                                        </Button>
+                                    </ToolbarItem>
+                                )}
                                 <ToolbarItem>
                                     <Button
-                                        data-testid="addStep"
-                                        variant="secondary"
-                                        onClick={() => setShowAddExecutionDialog(true)}
-                                    >
-                                        {t("addStep")}
-                                    </Button>
-                                </ToolbarItem>
-                                <ToolbarItem>
-                                    <Button
-                                        data-testid="addSubFlow"
+                                        data-testid="addPolicy"
                                         variant="secondary"
                                         onClick={() => setShowSubFlowDialog(true)}
                                     >
-                                        {t("addSubFlow")}
+                                        {t("addPolicy")}
                                     </Button>
                                 </ToolbarItem>
                             </ToolbarContent>
@@ -412,7 +426,7 @@ export default function AuthenticationPolicyDetails() {
                                         <FlowHeader />
                                         <>
                                             {conditionList.expandableList.map((execution) => (
-                                                <FlowRow
+                                                <PolicyRow
                                                     builtIn={false}
                                                     key={execution.id}
                                                     execution={execution}
@@ -421,11 +435,12 @@ export default function AuthenticationPolicyDetails() {
                                                         setConditionList(conditionList.clone());
                                                     }}
                                                     onRowChange={update}
-                                                    onAddExecution={(execution, type) =>
-                                                        addExecution(execution.displayName!, type)
-                                                    }
                                                     onAddFlow={(execution, flow) =>
-                                                        addPolicy(execution.displayName!, flow as Policy)
+                                                        addPolicy(execution.displayName!, {
+                                                            name: flow.name,
+                                                            description: flow.description,
+                                                            providerId: flow.type
+                                                        })
                                                     }
                                                     onDelete={(execution) => {
                                                         setSelectedExecution(execution);
@@ -440,7 +455,7 @@ export default function AuthenticationPolicyDetails() {
                         )}
                         {policy && (
                             <>
-                                {showAddExecutionDialog && (
+                                {!isParentPolicy && showAddExecutionDialog && (
                                     <AddStepModal
                                         name={policy.alias!}
                                         type={"condition"}
@@ -476,7 +491,6 @@ export default function AuthenticationPolicyDetails() {
                     (policy && !hasExecutions && (
                         <EmptyAuthenticationPolicy
                             policy={policy}
-                            onAddCondition={(type) => addExecution(policy.alias!, type)}
                             onAddSubPolicy={(newFlow) => addPolicy(policy.alias!, newFlow)}
                         />
                     ))}

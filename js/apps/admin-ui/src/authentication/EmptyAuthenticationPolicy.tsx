@@ -9,52 +9,33 @@ import {
 } from "@patternfly/react-core";
 
 import type AuthenticationFlowRepresentation from "@keycloak/keycloak-admin-client/lib/defs/authenticationFlowRepresentation";
-import type { AuthenticationProviderRepresentation } from "@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation";
 import { ListEmptyState } from "../components/list-empty-state/ListEmptyState";
-import { AddStepModal } from "./components/modals/AddStepModal";
-import { AddSubFlowModal, Flow } from "./components/modals/AddSubFlowModal";
 
 import "./empty-execution-state.css";
 import {AddSubPolicyModal, Policy} from "./components/modals/AddSubPolicyModal";
 
-const SECTIONS = ["addCondition", "addSubPolicy"] as const;
-type SectionType = (typeof SECTIONS)[number] | undefined;
-
 type EmptyAuthenticationPolicyProps = {
     policy: AuthenticationFlowRepresentation;
-    onAddCondition: (type: AuthenticationProviderRepresentation) => void;
     onAddSubPolicy: (flow: Policy) => void;
 };
 
 export const EmptyAuthenticationPolicy = ({
                                         policy,
-                                        onAddCondition,
                                         onAddSubPolicy,
                                     }: EmptyAuthenticationPolicyProps) => {
+    const section = "addPolicy";
     const { t } = useTranslation();
-    const [show, setShow] = useState<SectionType>();
+    const [show, setShow] = useState(false);
 
     return (
         <>
-            {show === "addCondition" && (
-                <AddStepModal
-                    name={policy.alias!}
-                    type={"condition"}
-                    onSelect={(type) => {
-                        if (type) {
-                            onAddCondition(type);
-                        }
-                        setShow(undefined);
-                    }}
-                />
-            )}
-            {show === "addSubPolicy" && (
+            {show && (
                 <AddSubPolicyModal
                     name={policy.alias!}
-                    onCancel={() => setShow(undefined)}
+                    onCancel={() => setShow(false)}
                     onConfirm={(newFlow) => {
                         onAddSubPolicy(newFlow);
-                        setShow(undefined);
+                        setShow(false);
                     }}
                 />
             )}
@@ -64,7 +45,6 @@ export const EmptyAuthenticationPolicy = ({
             />
 
             <div className="keycloak__empty-execution-state__block">
-                {SECTIONS.map((section) => (
                     <Flex key={section} className="keycloak__empty-execution-state__help">
                         <FlexItem flex={{ default: "flex_1" }}>
                             <Title headingLevel="h2" size={TitleSizes.md}>
@@ -77,14 +57,13 @@ export const EmptyAuthenticationPolicy = ({
                                 <Button
                                     data-testid={section}
                                     variant="tertiary"
-                                    onClick={() => setShow(section)}
+                                    onClick={() => setShow(true)}
                                 >
                                     {t(section)}
                                 </Button>
                             </FlexItem>
                         </Flex>
                     </Flex>
-                ))}
             </div>
         </>
     );

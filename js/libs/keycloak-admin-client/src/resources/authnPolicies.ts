@@ -10,12 +10,20 @@ export class AuthenticationPolicies extends Resource<{ realm?: string }> {
     });
 
     public getPolicy = this.makeRequest<
+        { id: string },
+        AuthenticationFlowRepresentation
+    >({
+        method: "GET",
+        path: "/authn-policies/{id}",
+        urlParamKeys: ["id"],
+    });
+
+    public getParentPolicy = this.makeRequest<
         { flowId: string },
         AuthenticationFlowRepresentation
     >({
         method: "GET",
-        path: "/authn-policies/{flowId}",
-        urlParamKeys: ["flowId"],
+        path: "/authn-policies/parent"
     });
 
     public createPolicy = this.makeRequest<

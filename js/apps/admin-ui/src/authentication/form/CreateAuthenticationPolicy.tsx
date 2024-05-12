@@ -4,7 +4,7 @@ import {ActionGroup, AlertVariant, Button, PageSection,} from "@patternfly/react
 import {FormProvider, useForm} from "react-hook-form";
 import {useTranslation} from "react-i18next";
 import {Link, useNavigate} from "react-router-dom";
-import {adminClient} from "../../admin-client";
+import {useAdminClient} from "../../admin-client";
 import {useAlerts} from "../../components/alert/Alerts";
 import {FormAccess} from "../../components/form/FormAccess";
 import {ViewHeader} from "../../components/view-header/ViewHeader";
@@ -14,6 +14,7 @@ import {NameDescription} from "./NameDescription";
 import {toAuthenticationPolicy} from "../routes/AuthenticationPolicy";
 
 export default function CreateAuthenticationPolicy() {
+    const { adminClient } = useAdminClient();
     const {t} = useTranslation();
     const navigate = useNavigate();
     const {realm} = useRealm();
@@ -31,8 +32,9 @@ export default function CreateAuthenticationPolicy() {
         };
 
         try {
-            const {id} =
-                await adminClient.authenticationPolicies.createPolicy(flow);
+            /*TODO change*/
+            //const {id} = await adminClient.authenticationManagement.createFlow(flow);
+            const {id} = await adminClient.authenticationPolicies.createPolicy(flow);
             addAlert(t("authnPolicyCreatedSuccess"), AlertVariant.success);
             navigate(
                 toAuthenticationPolicy({

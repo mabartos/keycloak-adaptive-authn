@@ -1,17 +1,7 @@
-import type { AuthenticationProviderRepresentation } from "@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation";
-import {
-    Button,
-    ButtonVariant,
-    Form,
-    Modal,
-    ModalVariant,
-} from "@patternfly/react-core";
-import { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
-import {SelectControl, TextControl} from "@keycloak/keycloak-ui-shared";
-import { adminClient } from "../../../admin-client";
-import { useFetch } from "../../../utils/useFetch";
+import {Button, ButtonVariant, Form, Modal, ModalVariant,} from "@patternfly/react-core";
+import {FormProvider, useForm} from "react-hook-form";
+import {useTranslation} from "react-i18next";
+import {TextControl} from "@keycloak/keycloak-ui-shared";
 
 type AddSubPolicyProps = {
     name: string;
@@ -22,8 +12,7 @@ type AddSubPolicyProps = {
 export type Policy = {
     name: string;
     description: string;
-    type: "basic-flow";
-    provider: string;
+    providerId: string;
 };
 
 export const AddSubPolicyModal = ({
@@ -33,25 +22,11 @@ export const AddSubPolicyModal = ({
                                 }: AddSubPolicyProps) => {
     const { t } = useTranslation();
     const form = useForm<Policy>();
-    const [formProviders, setFormProviders] =
-        useState<AuthenticationProviderRepresentation[]>();
-
-    useFetch(
-        () => adminClient.authenticationManagement.getFormProviders(),
-        setFormProviders,
-        [],
-    );
-
-    useEffect(() => {
-        if (formProviders?.length === 1) {
-            form.setValue("provider", formProviders[0].id!);
-        }
-    }, [formProviders]);
 
     return (
         <Modal
             variant={ModalVariant.medium}
-            title={t("addStepTo", { name })}
+            title={t("addPolicy", {name})}
             onClose={onCancel}
             actions={[
                 <Button
@@ -90,18 +65,6 @@ export const AddSubPolicyModal = ({
                         label={t("description")}
                         labelIcon={t("flowNameDescriptionHelp")}
                     />
-                    {formProviders && formProviders.length > 1 && (
-                        <SelectControl
-                            name="provider"
-                            label={t("provider")}
-                            labelIcon={t("authenticationFlowTypeHelp")}
-                            options={formProviders.map((provider) => ({
-                                key: provider.id!,
-                                value: provider.displayName!,
-                            }))}
-                            controller={{ defaultValue: "" }}
-                        />
-                    )}
                 </FormProvider>
             </Form>
         </Modal>
