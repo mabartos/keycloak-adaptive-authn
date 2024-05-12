@@ -38,6 +38,8 @@ public class AuthnPolicyResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public AuthenticationFlowRepresentation getPolicy() {
+        // TESTING PURPOSE
+        session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
         return ModelToRepresentation.toRepresentation(session, realm, policy);
     }
 
@@ -45,6 +47,9 @@ public class AuthnPolicyResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePolicy(AuthenticationFlowRepresentation update) {
+        // TESTING PURPOSE
+        session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
+
         if (StringUtil.isBlank(update.getAlias())) {
             throw ErrorResponse.exists("Failed to update policy with empty alias name");
         }
@@ -60,6 +65,9 @@ public class AuthnPolicyResource {
 
     @DELETE
     public void removePolicy() {
+        // TESTING PURPOSE
+        session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
+
         KeycloakModelUtils.deepDeleteAuthenticationFlow(session, realm, policy,
                 () -> {
                 }, // allow deleting even with missing references

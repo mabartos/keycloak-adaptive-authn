@@ -197,7 +197,7 @@
                                 <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                 <argument>--debug</argument>
                                 <argument>start-dev</argument>
-                                <argument>--log-level=org.keycloak.adaptive:debug,org.keycloak.services:debug</argument>
+                                <argument>--log-level=org.keycloak.adaptive:debug</argument>
                             </arguments>
                         </configuration>
                     </execution>

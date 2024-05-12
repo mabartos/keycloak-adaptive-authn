@@ -1,9 +1,9 @@
 package org.keycloak.adaptive.services;
 
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.OPTIONS;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -19,11 +19,13 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.services.ErrorResponse;
+import org.keycloak.services.cors.Cors;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.utils.ReservedCharValidator;
 import org.keycloak.utils.StringUtil;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,9 +41,24 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
         this.provider = session.getProvider(AuthnPolicyProvider.class);
     }
 
+    @Path("/parent")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public AuthenticationFlowRepresentation getParentPolicy() {
+        // TESTING PURPOSE
+        session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
+
+        return Optional.ofNullable(provider.getOrCreateParentPolicy())
+                .map(f -> ModelToRepresentation.toRepresentation(session, realm, f))
+                .orElseThrow(() -> new NotFoundException("Cannot find parent policy"));
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Set<AuthenticationFlowRepresentation> getPolicies() {
+        // TESTING PURPOSE
+        session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
+
         return provider.getAllStream()
                 .map(f -> ModelToRepresentation.toRepresentation(session, realm, f))
                 .collect(Collectors.toSet());
@@ -50,6 +67,9 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addPolicy(AuthenticationFlowRepresentation policy) {
+        // TESTING PURPOSE
+        session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
+
         if (StringUtil.isBlank(policy.getAlias())) {
             throw ErrorResponse.exists("Failed to create policy with empty alias name");
         }
@@ -63,10 +83,6 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
             policy.setDescription("");
         }
 
-        if (!policy.isTopLevel()) {
-            throw new BadRequestException("Authentication policy must be top level flow");
-        }
-
         ReservedCharValidator.validate(policy.getAlias());
 
         AuthenticationFlowModel createdModel = provider.addPolicy(RepresentationToModel.toModel(policy));
@@ -78,6 +94,13 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
     public AuthnPolicyResource forwardToPolicyResource(@PathParam("policyId") String policyId) {
         var policy = provider.getById(policyId).orElseThrow(() -> new NotFoundException("Could not find policy by id"));
         return new AuthnPolicyResource(session, provider, policy);
+    }
+
+    @Path("{any:.*}")
+    @OPTIONS
+    public Response policyPreflight(@PathParam("any") String any) {
+        System.err.println("PREFLIGHT:" + any);
+        return Cors.builder().auth().preflight().allowAllOrigins().allowedMethods().add(Response.ok());
     }
 
     @Override
