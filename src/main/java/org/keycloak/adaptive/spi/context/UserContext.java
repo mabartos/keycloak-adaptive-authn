@@ -10,6 +10,10 @@ public abstract class UserContext<T> implements Provider {
         return false;
     }
 
+    public int getPriority() {
+        return 0;
+    }
+
     public boolean isInitialized() {
         return isInitialized;
     }

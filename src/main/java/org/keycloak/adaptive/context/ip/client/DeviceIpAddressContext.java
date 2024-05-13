@@ -19,6 +19,11 @@ public class DeviceIpAddressContext extends IpAddressContext {
     }
 
     @Override
+    public int getPriority() {
+        return 10;
+    }
+
+    @Override
     public void initData() {
         var ip = Optional.ofNullable(deviceContext.getData())
                 .map(DeviceRepresentation::getIpAddress)
