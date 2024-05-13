@@ -1,6 +1,5 @@
 package org.keycloak.adaptive.context.ip.client;
 
-import inet.ipaddr.IPAddress;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 
@@ -10,15 +9,11 @@ import static org.keycloak.adaptive.context.ip.IpAddressUtils.FORWARDED_FOR_PATT
 import static org.keycloak.adaptive.context.ip.IpAddressUtils.IP_PATTERN;
 import static org.keycloak.adaptive.context.ip.IpAddressUtils.getIpAddressFromHeader;
 
-public class HeaderIpAddressContext implements IpAddressContext {
+public class HeaderIpAddressContext extends IpAddressContext {
     private final KeycloakSession session;
-
-    private IPAddress data;
-    private boolean isInitialized;
 
     public HeaderIpAddressContext(KeycloakSession session) {
         this.session = session;
-        initData();
     }
 
     @Override
@@ -36,15 +31,5 @@ public class HeaderIpAddressContext implements IpAddressContext {
         } else {
             this.isInitialized = false;
         }
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return isInitialized;
-    }
-
-    @Override
-    public IPAddress getData() {
-        return data;
     }
 }

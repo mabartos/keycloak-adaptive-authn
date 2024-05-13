@@ -5,5 +5,5 @@ import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.Set;
 
-public interface IpProxyContext extends UserContext<Set<IPAddress>> {
+public abstract class IpProxyContext extends UserContext<Set<IPAddress>> {
 }

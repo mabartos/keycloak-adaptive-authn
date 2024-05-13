@@ -2,18 +2,28 @@ package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.provider.Provider;
 
-public interface UserContext<T> extends Provider {
+public abstract class UserContext<T> implements Provider {
+    protected T data;
+    protected boolean isInitialized;
 
-    default boolean requiresUser() {
+    public boolean requiresUser() {
         return false;
     }
 
-    boolean isInitialized();
+    public boolean isInitialized() {
+        return isInitialized;
+    }
 
-    void initData();
+    public abstract void initData();
 
-    T getData();
+    public T getData() {
+        if (!isInitialized()) {
+            initData();
+        }
+        return data;
+    }
 
-    default void close() {
+    @Override
+    public void close() {
     }
 }

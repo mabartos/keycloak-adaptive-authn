@@ -4,15 +4,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.util.EntityUtils;
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
-import org.keycloak.adaptive.context.ip.IpAddressUtils;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
@@ -20,23 +16,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-public class IpApiLocationContext implements LocationContext {
+public class IpApiLocationContext extends LocationContext {
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
     private final IpAddressContext ipAddressContext;
-    private boolean isInitialized = false;
-    private IpApiLocationData data;
-
     public IpApiLocationContext(KeycloakSession session) {
         this.session = session;
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
         this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
-        initData();
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return isInitialized;
     }
 
     @Override
@@ -66,10 +53,5 @@ public class IpApiLocationContext implements LocationContext {
             this.isInitialized = false;
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public LocationData getData() {
-        return data;
     }
 }

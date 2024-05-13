@@ -11,30 +11,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.keycloak.adaptive.context.ip.IpAddressUtils.IP_PATTERN;
 
-public class ProxyIpAddressContext implements IpProxyContext {
+public class ProxyIpAddressContext extends IpProxyContext {
     private final KeycloakSession session;
-    private Set<IPAddress> data;
-    private boolean isInitialized;
 
     public ProxyIpAddressContext(KeycloakSession session) {
         this.session = session;
-        initData();
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return isInitialized;
-    }
-
-    @Override
-    public Set<IPAddress> getData() {
-        return data;
     }
 
     @Override
