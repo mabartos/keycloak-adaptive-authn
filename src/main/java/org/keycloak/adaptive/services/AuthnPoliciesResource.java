@@ -28,11 +28,14 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
+import org.keycloak.authentication.AuthenticationFlow;
+import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.RepresentationToModel;
+import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.cors.Cors;
@@ -40,9 +43,12 @@ import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.utils.ReservedCharValidator;
 import org.keycloak.utils.StringUtil;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Provider
@@ -55,6 +61,12 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.provider = session.getProvider(AuthnPolicyProvider.class);
+    }
+
+    @Path("/parent")
+    @OPTIONS
+    public Response parentPreflight() {
+        return Cors.builder().auth().preflight().allowAllOrigins().allowedMethods().add(Response.ok());
     }
 
     @Path("/parent")
@@ -71,12 +83,32 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<AuthenticationFlowRepresentation> getPolicies() {
+    public Set<AuthenticationExecutionInfoRepresentation> getPolicies() {
         // TESTING PURPOSE
         session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
 
+        AtomicInteger index = new AtomicInteger(0);
         return provider.getAllStream()
-                .map(f -> ModelToRepresentation.toRepresentation(session, realm, f))
+                .map(policy -> {
+                    var execution = realm.getAuthenticationExecutionByFlowId(policy.getId());
+                    var rep = new AuthenticationExecutionInfoRepresentation();
+
+                    rep.setLevel(0);
+                    rep.setIndex(index.getAndIncrement());
+                    rep.setRequirementChoices(List.of(
+                            AuthenticationExecutionModel.Requirement.CONDITIONAL.name(),
+                            AuthenticationExecutionModel.Requirement.DISABLED.name())
+                    );
+                    rep.setDisplayName(policy.getAlias());
+                    rep.setDescription(policy.getDescription());
+                    rep.setConfigurable(false);
+                    rep.setId(execution.getId());
+                    rep.setAuthenticationFlow(true);
+                    rep.setRequirement(execution.getRequirement().name());
+                    rep.setFlowId(execution.getFlowId());
+
+                    return rep;
+                })
                 .collect(Collectors.toSet());
     }
 
@@ -108,7 +140,7 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
 
     @Path("/{policyId}")
     public AuthnPolicyResource forwardToPolicyResource(@PathParam("policyId") String policyId) {
-        var policy = provider.getById(policyId).orElseThrow(() -> new NotFoundException("Could not find policy by id"));
+        var policy = provider.getByExecutionId(policyId).orElseThrow(() -> new NotFoundException("Could not find policy by id"));
         return new AuthnPolicyResource(session, provider, policy);
     }
 
@@ -127,10 +159,5 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
     @Override
     public void close() {
 
-    }
-
-    public static int getNextPriority(RealmModel realm, AuthenticationFlowModel parentPolicy) {
-        var conditions = realm.getAuthenticationExecutionsStream(parentPolicy.getId()).toList();
-        return conditions.isEmpty() ? 0 : conditions.get(conditions.size() - 1).getPriority() + 1;
     }
 }
