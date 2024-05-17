@@ -38,6 +38,7 @@ async function startServer() {
   const child = spawn(
     path.join(SERVER_DIR, `bin/kc${SCRIPT_EXTENSION}`),
     [
+      "--debug",
       "start-dev",
       "--http-port=8180",
       `--features="login2,account3,admin-fine-grained-authz,transient-users"`,

@@ -1,10 +1,11 @@
 import Resource from "./resource.js";
 import type {KeycloakAdminClient} from "../client.js";
 import type AuthenticationFlowRepresentation from "../defs/authenticationFlowRepresentation.js";
+import type AuthenticationExecutionInfoRepresentation from "../defs/authenticationExecutionInfoRepresentation.js";
 
 export class AuthenticationPolicies extends Resource<{ realm?: string }> {
 
-    public getPolicies = this.makeRequest<{}, AuthenticationFlowRepresentation[]>({
+    public getPolicies = this.makeRequest<{}, AuthenticationExecutionInfoRepresentation[]>({
         method: "GET",
         path: "/authn-policies",
     });
