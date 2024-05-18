@@ -45,6 +45,7 @@ import {AddSubPolicyModal, Policy} from "./components/modals/AddSubPolicyModal";
 import {AuthenticationPolicyParams, toAuthenticationPolicy} from "./routes/AuthenticationPolicy";
 import {PolicyRow} from "./components/PolicyRow";
 import {Flow} from "./components/modals/AddSubFlowModal";
+import {AuthenticationPolicyHeader} from "./components/AuthenticationPolicyHeader";
 
 export const providerConditionFilter = (
     value: AuthenticationProviderRepresentation,
@@ -455,7 +456,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                             >
                                 <Droppable hasNoWrapper>
                                     <DataList aria-label={t("flows")}>
-                                        <FlowHeader />
+                                        <AuthenticationPolicyHeader isParentPolicy={isParentPolicy} />
                                         <>
                                             {conditionList.expandableList.map((execution) => (
                                                 <PolicyRow

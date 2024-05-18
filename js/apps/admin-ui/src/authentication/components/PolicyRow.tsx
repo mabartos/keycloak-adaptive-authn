@@ -6,7 +6,7 @@ import {
     DataListItem,
     DataListItemCells,
     DataListItemRow, DataListToggle,
-    Draggable,
+    Draggable, Switch,
     Text,
     TextVariants,
     Tooltip,
@@ -29,6 +29,8 @@ import type {
     AuthenticationProviderRepresentation
 } from "@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation";
 import {FlowRow} from "./FlowRow";
+import {toKey} from "../../util";
+import {useState} from "react";
 
 type PolicyRowProps = {
     builtIn: boolean;
@@ -56,6 +58,7 @@ export const PolicyRow = ({
     const {realm} = useRealm();
     const navigate = useNavigate();
     const hasSubList = !!execution.executionList?.length;
+    const [enabled, setEnabled] = useState(execution.requirement !== "disabled");
 
     return (
         <>
@@ -93,27 +96,54 @@ export const PolicyRow = ({
                                             </Text>
                                         </>
                                 </DataListCell>,
-                                <DataListCell key={`${execution.id}-requirement`}>
-                                    <FlowRequirementDropdown
-                                        flow={execution}
-                                        onChange={onRowChange}
-                                    />
-                                </DataListCell>,
-
-                                <DataListCell key={`${execution.id}-detail`}>
+                                <>
                                     {isParentPolicy && (
-                                        <Button
-                                            data-testid="policyDetail"
-                                            variant="secondary"
-                                            onClick={() => navigate(toAuthenticationPolicy({
-                                                realm,
-                                                id: execution.id!
-                                            }))}
-                                        >
-                                            {t("details")}
-                                        </Button>
+                                        <DataListCell key={`${execution.id}-enabled`}>
+                                            <Switch
+                                                id={`enable-${toKey(execution.id!)}`}
+                                                label={t("on")}
+                                                labelOff={t("off")}
+                                                isChecked={enabled}
+                                                onChange={() => {
+                                                    setEnabled(prevState => !prevState);
+                                                    if (enabled) {
+                                                        execution.requirement = "CONDITIONAL"
+                                                    } else {
+                                                        execution.requirement = "DISABLED"
+                                                    }
+                                                    onRowChange(execution);
+                                                }}
+                                                aria-label={toKey(execution.id!)}
+                                            />
+                                        </DataListCell>
                                     )}
-                                </DataListCell>,
+                                </>,
+                                <>
+                                    {!isParentPolicy && (
+                                        <DataListCell key={`${execution.id}-requirement`}>
+                                            <FlowRequirementDropdown
+                                                flow={execution}
+                                                onChange={onRowChange}
+                                            />
+                                        </DataListCell>
+                                    )}
+                                </>,
+                                <>
+                                    {isParentPolicy && (
+                                        <DataListCell key={`${execution.id}-detail`}>
+                                            <Button
+                                                data-testid="policyDetail"
+                                                variant="secondary"
+                                                onClick={() => navigate(toAuthenticationPolicy({
+                                                    realm,
+                                                    id: execution.id!
+                                                }))}
+                                            >
+                                                {t("details")}
+                                            </Button>
+                                        </DataListCell>
+                                    )}
+                                </>,
                                 <DataListCell key={`${execution.id}-config`}>
                                     {!isParentPolicy && (
                                         <>
@@ -127,18 +157,16 @@ export const PolicyRow = ({
                                             />
                                         </>
                                     )}
-                                    {!builtIn && (
-                                        <Tooltip content={t("delete")}>
-                                            <Button
-                                                variant="plain"
-                                                data-testid={`${execution.displayName}-delete`}
-                                                aria-label={t("delete")}
-                                                onClick={() => onDelete(execution)}
-                                            >
-                                                <TrashIcon />
-                                            </Button>
-                                        </Tooltip>
-                                    )}
+                                    <Tooltip content={t("delete")}>
+                                        <Button
+                                            variant="plain"
+                                            data-testid={`${execution.displayName}-delete`}
+                                            aria-label={t("delete")}
+                                            onClick={() => onDelete(execution)}
+                                        >
+                                            <TrashIcon/>
+                                        </Button>
+                                    </Tooltip>
                                 </DataListCell>,
                             ]}
                         />
