@@ -1,5 +1,5 @@
-org.keycloak.adaptive.context.DeviceContextFactory
-org.keycloak.adaptive.context.role.UserRoleContextFactory
+org.keycloak.adaptive.context.DefaultDeviceContextFactory
+org.keycloak.adaptive.context.role.KcUserRoleContextFactory
 org.keycloak.adaptive.context.ip.proxy.ProxyIpAddressContextFactory
 org.keycloak.adaptive.context.location.IpApiLocationContextFactory
 org.keycloak.adaptive.context.ip.client.DeviceIpAddressContextFactory

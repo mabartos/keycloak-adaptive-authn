@@ -33,7 +33,7 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
 
     public DefaultUserRoleEvaluator(KeycloakSession session) {
         this.session = session;
-        this.context = ContextUtils.getContext(session, UserRoleContextFactory.PROVIDER_ID);
+        this.context = ContextUtils.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
     }
 
     @Override

@@ -35,16 +35,16 @@ import java.util.Optional;
 public class IpApiLocationContext extends LocationContext {
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
-    private final IpAddressContext ipAddressContext;
     public IpApiLocationContext(KeycloakSession session) {
         this.session = session;
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
-        this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
     }
 
     @Override
     public void initData() {
         try {
+            final IpAddressContext ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
+
             var client = httpClientProvider.getHttpClient();
 
             var uriString = Optional.ofNullable(ipAddressContext)

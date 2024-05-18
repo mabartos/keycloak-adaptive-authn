@@ -16,18 +16,19 @@
  */
 package org.keycloak.adaptive.context;
 
-import org.keycloak.device.DeviceRepresentationProvider;
+import org.keycloak.adaptive.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class DeviceContextProvider extends DeviceContext {
-    private final KeycloakSession session;
-    public DeviceContextProvider(KeycloakSession session) {
-        this.session = session;
+public class DefaultDeviceContextFactory implements UserContextFactory<DeviceContext> {
+    public static final String PROVIDER_ID = "kc-device-context";
+
+    @Override
+    public DeviceContext create(KeycloakSession session) {
+        return new DefaultDeviceContext(session);
     }
 
     @Override
-    public void initData() {
-        this.data = session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation();
-        this.isInitialized = true;
+    public String getId() {
+        return PROVIDER_ID;
     }
 }

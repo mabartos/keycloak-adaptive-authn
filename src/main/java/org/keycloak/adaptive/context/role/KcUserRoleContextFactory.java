@@ -19,12 +19,12 @@ package org.keycloak.adaptive.context.role;
 import org.keycloak.adaptive.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class UserRoleContextFactory implements UserContextFactory<UserRoleContext> {
+public class KcUserRoleContextFactory implements UserContextFactory<UserRoleContext> {
     public static final String PROVIDER_ID = "kc-user-role-risk-factor";
 
     @Override
     public UserRoleContext create(KeycloakSession session) {
-        return new UserRoleContextProvider(session);
+        return new KcUserRoleContext(session);
     }
 
     @Override

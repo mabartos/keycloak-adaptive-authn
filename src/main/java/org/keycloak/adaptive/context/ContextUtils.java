@@ -25,9 +25,10 @@ import java.util.List;
 
 public class ContextUtils {
 
-    public static <T extends UserContext<?>> List<T> getSortedContexts(KeycloakSession session, Class<T> context) {
-        return session.getAllProviders(UserContext.class)
-                .stream()
+    public static <T extends UserContext<?>> List<T> getSortedContexts(KeycloakSession session, Class<T> context, String excludedProviderId) {
+        return session.getKeycloakSessionFactory().getProviderFactoriesStream(UserContext.class)
+                .filter(f -> !f.getId().equals(excludedProviderId))
+                .map(f -> f.create(session))
                 .filter(f -> context.isAssignableFrom(f.getClass()))
                 .map(f -> (T) f)
                 .sorted(Comparator.comparingInt(f -> ((UserContext<?>) f).getPriority()).reversed())

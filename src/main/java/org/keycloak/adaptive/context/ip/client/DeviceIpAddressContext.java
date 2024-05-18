@@ -18,7 +18,7 @@ package org.keycloak.adaptive.context.ip.client;
 
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.context.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.ip.IpAddressUtils;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
@@ -27,11 +27,9 @@ import java.util.Optional;
 
 public class DeviceIpAddressContext extends IpAddressContext {
     private final KeycloakSession session;
-    private final DeviceContext deviceContext;
 
     public DeviceIpAddressContext(KeycloakSession session) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
     }
 
     @Override
@@ -41,6 +39,8 @@ public class DeviceIpAddressContext extends IpAddressContext {
 
     @Override
     public void initData() {
+        final DeviceContext deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+
         var ip = Optional.ofNullable(deviceContext.getData())
                 .map(DeviceRepresentation::getIpAddress)
                 .flatMap(IpAddressUtils::getIpAddress);

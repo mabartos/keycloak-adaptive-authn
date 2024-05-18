@@ -19,7 +19,7 @@ package org.keycloak.adaptive.evaluator;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.context.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
@@ -39,7 +39,7 @@ public class AiDeviceRiskEvaluator implements RiskEvaluator {
 
     public AiDeviceRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiNlpEngine.class);
     }
 

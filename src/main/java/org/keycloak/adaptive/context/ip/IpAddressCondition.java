@@ -18,7 +18,7 @@ package org.keycloak.adaptive.context.ip;
 
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DeviceContextFactory;
+import org.keycloak.adaptive.context.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.spi.condition.Operation;
 import org.keycloak.adaptive.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -36,7 +36,7 @@ public class IpAddressCondition implements UserContextCondition, ConditionalAuth
 
     public IpAddressCondition(KeycloakSession session, List<Operation<DeviceContext>> rules) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 

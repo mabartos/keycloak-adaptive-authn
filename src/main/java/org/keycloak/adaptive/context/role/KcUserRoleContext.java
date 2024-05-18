@@ -25,10 +25,10 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class UserRoleContextProvider extends UserRoleContext {
+public class KcUserRoleContext extends UserRoleContext {
     private final KeycloakSession session;
 
-    public UserRoleContextProvider(KeycloakSession session) {
+    public KcUserRoleContext(KeycloakSession session) {
         this.session = session;
     }
 
