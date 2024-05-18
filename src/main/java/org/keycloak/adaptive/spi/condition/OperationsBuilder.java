@@ -20,11 +20,14 @@ import org.keycloak.adaptive.policy.DefaultOperation;
 import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiPredicate;
 
+/**
+ * Builder for the {@link Operation} model
+ *
+ * @param <T> evaluated user context
+ */
 public class OperationsBuilder<T extends UserContext<?>> {
     private final List<Operation<T>> operations;
 

@@ -20,19 +20,48 @@ import org.keycloak.provider.Provider;
 
 import java.util.Optional;
 
+/**
+ * Provider for storing the evaluated overall risk score through the authentication flow processing
+ * The overall risk score is calculated in several phases and then aggregated
+ */
 public interface StoredRiskProvider extends Provider {
 
+    /**
+     * Get evaluated overall stored risk score
+     *
+     * @return overall risk score in range (0,1>
+     */
     Optional<Double> getStoredRisk();
 
+    /**
+     * Get evaluated stored risk score for the specific phase
+     *
+     * @param riskPhase phase of the evaluation
+     * @return overall risk score in range (0,1>
+     */
     Optional<Double> getStoredRisk(RiskPhase riskPhase);
 
+    /**
+     * Store the overall risk score
+     *
+     * @param risk overall risk score in range (0,1>
+     */
     void storeRisk(double risk);
 
+    /**
+     * Store the overall risk score for the specific phase
+     *
+     * @param risk      overall risk score in range (0,1>
+     * @param riskPhase phase of the evaluation
+     */
     void storeRisk(double risk, RiskPhase riskPhase);
 
+    /**
+     * Individual risk score phases
+     */
     enum RiskPhase {
-        NO_USER,
-        REQUIRES_USER,
-        OVERALL
+        NO_USER, // Phase for evaluated risk score based on evaluators that do NOT REQUIRE user
+        REQUIRES_USER, // Phase for evaluated risk score based on evaluators that do REQUIRE user
+        OVERALL // Phase for the overall risk score aggregating the NO_USER and REQUIRES_USER scores
     }
 }

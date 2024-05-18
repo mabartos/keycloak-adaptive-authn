@@ -25,7 +25,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 
 import java.util.List;
 
-public abstract class UserContextConditionFactory<T extends UserContext<?>> implements VerifiableUserContextFactory<T>, ConditionalAuthenticatorFactory {
+public abstract class UserContextConditionFactory<T extends UserContext<?>> implements VerifiableUserContext<T>, ConditionalAuthenticatorFactory {
     private static final AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
             AuthenticationExecutionModel.Requirement.DISABLED

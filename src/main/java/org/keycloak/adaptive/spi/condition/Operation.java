@@ -21,6 +21,11 @@ import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.function.BiPredicate;
 
+/**
+ * Generic operation, that can be used during evaluating user context in conditions included in authentication flows
+ *
+ * @param <T> evaluated user context
+ */
 public class Operation<T extends UserContext<?>> {
     private final String symbol;
     private final String text;

@@ -20,11 +20,31 @@ import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.List;
 
-public interface VerifiableUserContextFactory<T extends UserContext<?>> {
+/**
+ * User context verifiable by the included operations
+ *
+ * @param <T> user context
+ */
+public interface VerifiableUserContext<T extends UserContext<?>> {
 
+    /**
+     * Initialize user context operations
+     *
+     * @return list of initialized operations
+     */
     List<Operation<T>> initOperations();
 
+    /**
+     * Retrieve user context operations
+     *
+     * @return list of operations
+     */
     List<Operation<T>> getOperations();
 
+    /**
+     * Retrieve names of operations to be shown to user
+     *
+     * @return list of operations' names
+     */
     List<String> getOperationsTexts();
 }

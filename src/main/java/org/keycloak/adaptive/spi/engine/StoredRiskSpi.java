@@ -20,6 +20,9 @@ import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
+/**
+ * SPI for the Stored risk functionality
+ */
 public class StoredRiskSpi implements Spi {
     public static final String SPI_NAME = "stored-risk-spi";
 

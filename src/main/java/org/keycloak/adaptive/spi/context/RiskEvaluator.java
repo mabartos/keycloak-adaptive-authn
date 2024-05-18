@@ -22,16 +22,44 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Risk evaluator for calculating risk that the authentication user is fraud
+ * All risk scores retrieved from evaluators are aggregated in the {@link org.keycloak.adaptive.spi.engine.RiskEngine}
+ * Evaluates risk based on provided {@link UserContext} data
+ */
 public interface RiskEvaluator extends Provider {
 
+    /**
+     * Get evaluated risk score
+     *
+     * @return (optional) risk score in range (0,1>
+     */
     Optional<Double> getRiskValue();
 
+    /**
+     * Get weight of the evaluation claims how much the evaluations should influence the overall risk score
+     *
+     * @return weight of the evaluation in range (0,1>
+     */
     double getWeight();
 
+    /**
+     * Flag to determine whether the evaluator requires user information to properly calculate the risk score
+     *
+     * @return true if the user info is required, otherwise false
+     */
     boolean requiresUser();
 
+    /**
+     * Execute evaluation of the risk score
+     */
     void evaluate();
 
+    /**
+     * Flag to determine whether the evaluator should evaluate the risk score
+     *
+     * @return true if is enabled, otherwise false
+     */
     default boolean isEnabled() {
         return true;
     }

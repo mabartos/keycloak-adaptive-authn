@@ -18,10 +18,14 @@ package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.Config;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 
-public interface UserContextFactory<T extends Provider> extends ProviderFactory<T> {
+/**
+ * Factory interface for the {@link UserContext} provider
+ *
+ * @param <T> user context
+ */
+public interface UserContextFactory<T extends UserContext<?>> extends ProviderFactory<T> {
 
     @Override
     default void init(Config.Scope config) {

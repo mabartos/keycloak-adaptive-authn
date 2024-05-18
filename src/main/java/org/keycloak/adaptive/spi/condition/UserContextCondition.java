@@ -23,6 +23,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
+/**
+ * Authentication condition for particular user context
+ */
 public interface UserContextCondition extends Provider, ConditionalAuthenticator {
     @Override
     default void close() {

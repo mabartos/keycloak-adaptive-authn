@@ -20,6 +20,9 @@ import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
+/**
+ * SPI for creating generic conditions related to user context
+ */
 public class UserContextConditionSpi implements Spi {
     public static final String SPI_NAME = "user-context-condition-spi";
 

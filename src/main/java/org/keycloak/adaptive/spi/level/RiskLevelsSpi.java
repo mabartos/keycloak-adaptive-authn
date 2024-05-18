@@ -20,6 +20,9 @@ import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
+/**
+ * SPI for the Risk levels scale functionality
+ */
 public class RiskLevelsSpi implements Spi {
     public static final String SPI_NAME = "risk-levels";
 

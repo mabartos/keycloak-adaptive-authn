@@ -18,7 +18,16 @@ package org.keycloak.adaptive.spi.engine;
 
 import org.keycloak.models.AuthenticatorConfigModel;
 
+/**
+ * Dynamic configurable requirements that can be changed in runtime
+ */
 public interface ConfigurableRequirements {
 
+    /**
+     * Dynamically check whether the authenticator requires user information
+     *
+     * @param config authenticator configuration
+     * @return true if the user is required, otherwise false
+     */
     boolean requiresUser(AuthenticatorConfigModel config);
 }

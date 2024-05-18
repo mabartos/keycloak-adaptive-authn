@@ -27,11 +27,17 @@ import org.keycloak.provider.ProviderFactory;
 
 import java.util.List;
 
+/**
+ * Generic factory for the risk evaluators with the predefined attributes
+ */
 public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, EnvironmentDependentProviderFactory, ConfiguredProvider {
     String NAME_PREFIX = "Risk Evaluator - ";
     String WEIGHT_CONFIG = "riskEvaluatorWeightConfig";
     String ENABLED_CONFIG = "riskEvaluatorEnabledConfig";
 
+    /**
+     * Get display name of the risk evaluator
+     */
     String getName();
 
     @Override

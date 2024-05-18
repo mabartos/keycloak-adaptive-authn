@@ -16,13 +16,15 @@
  */
 package org.keycloak.adaptive.spi.policy;
 
-import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.provider.Provider;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * DAO for authentication policies
+ */
 public interface AuthnPolicyProvider extends Provider {
     String POLICY_PREFIX = "POLICY - ";
 

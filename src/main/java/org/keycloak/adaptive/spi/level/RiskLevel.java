@@ -16,13 +16,37 @@
  */
 package org.keycloak.adaptive.spi.level;
 
+/**
+ * Specific category representing a risk score in a specified range, in order to react on the risk scores
+ */
 public interface RiskLevel {
 
+    /**
+     * Get name of the risk level category
+     *
+     * @return name
+     */
     String getName();
 
+    /**
+     * Get the lowest risk score value for the category
+     *
+     * @return risk score in range (0,1>
+     */
     double getLowestRiskValue();
 
+    /**
+     * Get the highest risk score value for the category
+     *
+     * @return risk score in range (0,1>
+     */
     double getHighestRiskValue();
 
+    /**
+     * Check whether the provided `riskValue` matches the risk level category
+     *
+     * @param riskValue risk score to be checked
+     * @return true if the `riskValue` complies with the risk level score range
+     */
     boolean matchesRisk(double riskValue);
 }

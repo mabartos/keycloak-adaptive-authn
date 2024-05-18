@@ -26,11 +26,28 @@ import org.keycloak.models.UserModel;
 
 import java.util.Set;
 
+/**
+ * Risk engine for aggregating risk scores from the {@link RiskEvaluator}s and calculating the overall risk score for
+ * the whole authentication request.
+ */
 public interface RiskEngine extends Authenticator, ConfigurableRequirements {
+    /**
+     * Get the overall risk score for the authentication request
+     *
+     * @return risk score in range (0,1>
+     */
     Double getRisk();
 
+    /**
+     * Risk evaluators that contributes to the overall risk score calculations
+     *
+     * @return set of risk evaluators
+     */
     Set<RiskEvaluator> getRiskEvaluators();
 
+    /**
+     * Start the overall risk score evaluation
+     */
     void evaluateRisk();
 
     @Override

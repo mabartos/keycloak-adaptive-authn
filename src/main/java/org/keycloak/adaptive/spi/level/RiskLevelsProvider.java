@@ -20,8 +20,17 @@ import org.keycloak.provider.Provider;
 
 import java.util.List;
 
+/**
+ * Risk levels scale representing the whole spectrum of the risk score values
+ * The whole interval (0,1> should be covered
+ */
 public interface RiskLevelsProvider extends Provider {
 
+    /**
+     * Get risk levels categories to match a part of the scale
+     *
+     * @return list of risk levels
+     */
     List<RiskLevel> getRiskLevels();
 
     @Override

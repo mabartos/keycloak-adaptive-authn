@@ -27,10 +27,19 @@ import org.keycloak.provider.ProviderFactory;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Generic factory for the {@link RiskLevelsProvider}
+ */
 public interface RiskLevelsFactory extends ProviderFactory<RiskLevelsProvider>, ConfiguredProvider, EnvironmentDependentProviderFactory {
 
+    /**
+     * Get name of the risk levels scale
+     */
     String getName();
 
+    /**
+     * Get singleton instance of the provider
+     */
     RiskLevelsProvider getSingleton();
 
     @Override
