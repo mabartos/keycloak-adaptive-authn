@@ -5,7 +5,7 @@ import {
     DataListDragButton,
     DataListItem,
     DataListItemCells,
-    DataListItemRow,
+    DataListItemRow, DataListToggle,
     Draggable,
     Text,
     TextVariants,
@@ -22,34 +22,48 @@ import {useNavigate} from "react-router-dom";
 import {useRealm} from "../../context/realm-context/RealmContext";
 import {toFlow} from "../routes/Flow";
 import {toAuthenticationPolicy} from "../routes/AuthenticationPolicy";
+import {AddFlowDropdown} from "./AddFlowDropdown";
+import {EditFlow} from "./EditFlow";
+import {AddPolicyFlowDropdown} from "./AddPolicyFlowDropdown";
+import type {
+    AuthenticationProviderRepresentation
+} from "@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation";
+import {FlowRow} from "./FlowRow";
 
 type PolicyRowProps = {
     builtIn: boolean;
     execution: ExpandableExecution;
+    isParentPolicy: boolean;
     onRowClick: (execution: ExpandableExecution) => void;
     onRowChange: (execution: ExpandableExecution) => void;
-    onAddFlow: (execution: ExpandableExecution, flow: Flow) => void;
+    onAddExecution: (
+        execution: ExpandableExecution,
+        type: AuthenticationProviderRepresentation,
+    ) => void;
     onDelete: (execution: ExpandableExecution) => void;
 };
 
 export const PolicyRow = ({
                             builtIn,
                             execution,
+                            isParentPolicy,
                             onRowClick,
                             onRowChange,
-                            onAddFlow,
+                            onAddExecution,
                             onDelete,
                         }: PolicyRowProps) => {
     const { t } = useTranslation();
     const {realm} = useRealm();
     const navigate = useNavigate();
+    const hasSubList = !!execution.executionList?.length;
+
     return (
         <>
             <Draggable key={`draggable-${execution.id}`} hasNoWrapper>
                 <DataListItem
                     className="keycloak__authentication__flow-item"
                     id={execution.id}
-                    isExpanded={false}
+                    isExpanded={!isParentPolicy && !execution.isCollapsed}
                     aria-labelledby={`title-id-${execution.id}`}
                 >
                     <DataListItemRow
@@ -61,6 +75,14 @@ export const PolicyRow = ({
                         <DataListControl>
                             <DataListDragButton aria-label={t("dragHelp")} />
                         </DataListControl>
+                        {!isParentPolicy && hasSubList && (
+                            <DataListToggle
+                                onClick={() => onRowClick(execution)}
+                                isExpanded={!execution.isCollapsed}
+                                id={`toggle1-${execution.id}`}
+                                aria-controls={execution.executionList![0].id}
+                            />
+                        )}
                         <DataListItemCells
                             dataListCells={[
                                 <DataListCell key={`${execution.id}-name`}>
@@ -77,26 +99,34 @@ export const PolicyRow = ({
                                         onChange={onRowChange}
                                     />
                                 </DataListCell>,
+
                                 <DataListCell key={`${execution.id}-detail`}>
-                                    <Button
-                                        data-testid="policyDetail"
-                                        variant="secondary"
-                                        /*TODO change*/
-                                        /*onClick={() => navigate(toFlow({
-                                            realm,
-                                            id: execution.id!,
-                                            usedBy: "notInUse",
-                                            builtIn: undefined
-                                        }))}*/
-                                        onClick={() => navigate(toAuthenticationPolicy({
-                                            realm,
-                                            id: execution.id!
-                                        }))}
-                                    >
-                                        {t("details")}
-                                    </Button>
+                                    {isParentPolicy && (
+                                        <Button
+                                            data-testid="policyDetail"
+                                            variant="secondary"
+                                            onClick={() => navigate(toAuthenticationPolicy({
+                                                realm,
+                                                id: execution.id!
+                                            }))}
+                                        >
+                                            {t("details")}
+                                        </Button>
+                                    )}
                                 </DataListCell>,
                                 <DataListCell key={`${execution.id}-config`}>
+                                    {!isParentPolicy && (
+                                        <>
+                                            <AddPolicyFlowDropdown
+                                                execution={execution}
+                                                onAddExecution={onAddExecution}
+                                            />
+                                            <EditFlow
+                                                execution={execution}
+                                                onRowChange={onRowChange}
+                                            />
+                                        </>
+                                    )}
                                     {!builtIn && (
                                         <Tooltip content={t("delete")}>
                                             <Button
@@ -115,6 +145,21 @@ export const PolicyRow = ({
                     </DataListItemRow>
                 </DataListItem>
             </Draggable>
+            {!isParentPolicy &&
+                !execution.isCollapsed &&
+                hasSubList &&
+                execution.executionList?.map((ex) => (
+                    <FlowRow
+                        builtIn={builtIn}
+                        key={ex.id}
+                        execution={ex}
+                        onRowClick={onRowClick}
+                        onRowChange={onRowChange}
+                        onAddExecution={onAddExecution}
+                        onAddFlow={() => null}
+                        onDelete={onDelete}
+                    />
+                ))}
         </>
     );
 };
