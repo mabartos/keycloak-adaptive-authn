@@ -21,6 +21,9 @@ import org.keycloak.models.RoleModel;
 
 import java.util.Set;
 
+/**
+ * Context for obtaining all roles of the authentication user
+ */
 public abstract class UserRoleContext extends UserContext<Set<RoleModel>> {
 
     @Override

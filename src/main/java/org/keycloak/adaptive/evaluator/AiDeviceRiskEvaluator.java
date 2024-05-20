@@ -28,6 +28,9 @@ import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for checking device properties evaluated by AI NLP engine
+ */
 public class AiDeviceRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiDeviceRiskEvaluator.class);
 

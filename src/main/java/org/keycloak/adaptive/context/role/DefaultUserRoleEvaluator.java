@@ -27,6 +27,9 @@ import org.keycloak.models.RoleModel;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for user role properties
+ */
 public class DefaultUserRoleEvaluator implements RiskEvaluator {
     private final KeycloakSession session;
     private final UserRoleContext context;

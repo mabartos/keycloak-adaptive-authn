@@ -18,6 +18,9 @@ package org.keycloak.adaptive.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Custom OpenAI ChatGPT data specified in the NLP query
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OpenAiRiskData(Double risk, String reason) {
 }

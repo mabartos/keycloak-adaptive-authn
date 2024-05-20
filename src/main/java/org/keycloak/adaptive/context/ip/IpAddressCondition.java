@@ -29,6 +29,9 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.List;
 
+/**
+ * Condition for checking IP address properties
+ */
 public class IpAddressCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
     private final DeviceContext deviceContext;

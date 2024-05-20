@@ -16,6 +16,9 @@
  */
 package org.keycloak.adaptive.level;
 
+/**
+ * Common risk values
+ */
 public interface Risk {
     double NONE = 0.01;
     double SMALL = 0.3;

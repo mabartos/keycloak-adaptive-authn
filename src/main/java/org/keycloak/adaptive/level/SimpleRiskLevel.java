@@ -18,6 +18,9 @@ package org.keycloak.adaptive.level;
 
 import org.keycloak.adaptive.spi.level.RiskLevel;
 
+/**
+ * Fundamental implementation of the risk level properties
+ */
 public class SimpleRiskLevel implements RiskLevel {
     private final String name;
     private double lowestRiskValue;

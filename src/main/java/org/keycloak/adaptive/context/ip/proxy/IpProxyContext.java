@@ -21,5 +21,8 @@ import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.Set;
 
+/**
+ * Obtain all IP addresses specified by proxy
+ */
 public abstract class IpProxyContext extends UserContext<Set<IPAddress>> {
 }

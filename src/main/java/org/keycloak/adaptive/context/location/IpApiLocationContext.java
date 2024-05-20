@@ -32,6 +32,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
+/**
+ * Obtain location data based on the IP address from 'ipapi.co' server
+ */
 public class IpApiLocationContext extends LocationContext {
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;

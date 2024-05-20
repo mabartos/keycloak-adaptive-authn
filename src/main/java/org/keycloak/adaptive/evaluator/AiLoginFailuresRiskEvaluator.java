@@ -31,6 +31,9 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for checking login failures properties evaluated by AI NLP engine to detect brute-force attacks
+ */
 public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiLoginFailuresRiskEvaluator.class);
 

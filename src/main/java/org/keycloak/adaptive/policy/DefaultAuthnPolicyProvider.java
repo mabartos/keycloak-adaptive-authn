@@ -33,6 +33,9 @@ import java.util.stream.Stream;
 
 import static org.keycloak.authentication.AuthenticationFlow.BASIC_FLOW;
 
+/**
+ * Default implementation of the Authentication policies DAO
+ */
 public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     private final KeycloakSession session;
     private final RealmModel realm;

@@ -19,6 +19,9 @@ package org.keycloak.adaptive.context;
 import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;
 
+/**
+ * Device context obtained from the Keycloak Device representation
+ */
 public class DefaultDeviceContext extends DeviceContext {
     private final KeycloakSession session;
     public DefaultDeviceContext(KeycloakSession session) {

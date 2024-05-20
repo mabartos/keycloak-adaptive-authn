@@ -21,6 +21,9 @@ import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
 
 import java.util.List;
 
+/**
+ * More fine-grained risk levels provider
+ */
 public class AdvancedRiskLevelsProvider implements RiskLevelsProvider {
     static final RiskLevel LOW = new SimpleRiskLevel("LOW", 0.0, 0.2);
     static final RiskLevel MILD = new SimpleRiskLevel("MILD", 0.2, 0.4);

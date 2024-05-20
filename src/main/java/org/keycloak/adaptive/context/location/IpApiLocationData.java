@@ -20,6 +20,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 
+/**
+ * Response data from the 'ipapi.co' server
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IpApiLocationData implements LocationData, Serializable {
     private String city;

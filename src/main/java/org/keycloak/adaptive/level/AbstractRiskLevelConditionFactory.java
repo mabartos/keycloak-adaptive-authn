@@ -30,6 +30,9 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Abstract factory for the risk level conditions to simplify their creation
+ */
 public abstract class AbstractRiskLevelConditionFactory implements ConditionalAuthenticatorFactory {
     public static final String LEVEL_CONFIG = "level-config";
     private static ConditionalAuthenticator RISK_LEVELS_CONDITION;

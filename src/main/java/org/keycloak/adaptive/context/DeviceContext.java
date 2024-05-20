@@ -19,5 +19,8 @@ package org.keycloak.adaptive.context;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.representations.account.DeviceRepresentation;
 
+/**
+ * Context for obtaining device properties
+ */
 public abstract class DeviceContext extends UserContext<DeviceRepresentation> {
 }

@@ -20,6 +20,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
+/**
+ * Received data from OpenAI ChatGPT
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OpenAiDataResponse(
         String id,

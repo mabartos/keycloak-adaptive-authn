@@ -16,6 +16,9 @@
  */
 package org.keycloak.adaptive.policy;
 
+/**
+ * Default common operations made on user contexts
+ */
 public class DefaultOperation {
 
     public static final OperationKey IS = new OperationKey("IS", "is");

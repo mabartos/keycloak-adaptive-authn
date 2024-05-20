@@ -25,6 +25,15 @@ import java.util.List;
 
 public class ContextUtils {
 
+    /**
+     * Retrieve user contexts sorted by their specified priority
+     *
+     * @param session            Keycloak session
+     * @param context            required user context type
+     * @param excludedProviderId excluded providerId from the retrieval
+     * @param <T>                user context type
+     * @return list of user contexts
+     */
     public static <T extends UserContext<?>> List<T> getSortedContexts(KeycloakSession session, Class<T> context, String excludedProviderId) {
         return session.getKeycloakSessionFactory().getProviderFactoriesStream(UserContext.class)
                 .filter(f -> !f.getId().equals(excludedProviderId))
@@ -35,10 +44,24 @@ public class ContextUtils {
                 .toList();
     }
 
+    /**
+     * Retrieve required context based on the providerId
+     *
+     * @param session    Keycloak session
+     * @param providerId user context provider ID
+     * @return user context
+     */
     public static <T extends UserContext<?>> T getContext(KeycloakSession session, String providerId) {
         return (T) session.getProvider(UserContext.class, providerId);
     }
 
+    /**
+     * Retrieve required context condition based on the providerId
+     *
+     * @param session    Keycloak session
+     * @param providerId user context provider ID
+     * @return user context condition
+     */
     public static <T extends UserContextCondition> T getContextCondition(KeycloakSession session, String providerId) {
         return (T) session.getProvider(UserContextCondition.class, providerId);
     }

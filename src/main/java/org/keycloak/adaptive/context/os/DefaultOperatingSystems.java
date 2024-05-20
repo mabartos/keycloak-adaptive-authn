@@ -18,7 +18,9 @@ package org.keycloak.adaptive.context.os;
 
 import java.util.Set;
 
-// TODO check values
+/**
+ * Default known operating systems
+ */
 public interface DefaultOperatingSystems {
     String LINUX = "Linux";
     String WINDOWS = "Windows";

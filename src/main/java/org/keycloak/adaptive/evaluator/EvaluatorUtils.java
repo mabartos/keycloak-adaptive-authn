@@ -26,6 +26,9 @@ import java.util.Optional;
 
 public class EvaluatorUtils {
 
+    /**
+     * Get weight of the required risk evaluator
+     */
     private static Optional<String> getWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
@@ -33,6 +36,9 @@ public class EvaluatorUtils {
                 .filter(StringUtils::isNotBlank);
     }
 
+    /**
+     * Get stored weight of the required risk evaluator
+     */
     public static double getStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, double defaultValue) {
         return getWeight(session, evaluatorFactory)
                 .map(Double::parseDouble)
@@ -47,12 +53,18 @@ public class EvaluatorUtils {
         return getWeight(session, evaluatorFactory).isPresent();
     }
 
+    /**
+     * Store risk evaluator weight in realm attributes
+     */
     public static void storeEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, double value) {
         Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
                 .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getWeightConfig(evaluatorFactory), Double.toString(value)));
     }
 
+    /**
+     * Check whether the risk evaluator is enabled on the realm level
+     */
     public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, boolean defaultValue) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)

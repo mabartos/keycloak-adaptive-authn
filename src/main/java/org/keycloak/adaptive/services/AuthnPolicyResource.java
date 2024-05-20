@@ -36,6 +36,10 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.utils.ReservedCharValidator;
 import org.keycloak.utils.StringUtil;
 
+/**
+ * REST API for specific authentication policy
+ * Path: '/authn-policies/{policyId}'
+ */
 public class AuthnPolicyResource {
     private final KeycloakSession session;
     private final RealmModel realm;

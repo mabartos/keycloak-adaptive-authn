@@ -25,6 +25,9 @@ import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.Optional;
 
+/**
+ * IP address obtained from the {@link DeviceContext}
+ */
 public class DeviceIpAddressContext extends IpAddressContext {
     private final KeycloakSession session;
 

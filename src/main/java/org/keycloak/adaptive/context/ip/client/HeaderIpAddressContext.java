@@ -25,6 +25,9 @@ import static org.keycloak.adaptive.context.ip.IpAddressUtils.FORWARDED_FOR_PATT
 import static org.keycloak.adaptive.context.ip.IpAddressUtils.IP_PATTERN;
 import static org.keycloak.adaptive.context.ip.IpAddressUtils.getIpAddressFromHeader;
 
+/**
+ * IP address obtained from the 'Forwarded' or 'X-Forwarded-For' headers
+ */
 public class HeaderIpAddressContext extends IpAddressContext {
     private final KeycloakSession session;
 

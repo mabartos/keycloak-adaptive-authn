@@ -24,6 +24,9 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Optional;
 
+/**
+ * Provider for storing risk scores in authentication session attributes
+ */
 public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
     private static final Logger logger = Logger.getLogger(AuthnSessionStoredRiskProvider.class);
 

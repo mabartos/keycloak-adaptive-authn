@@ -52,6 +52,9 @@ import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TI
 import static org.keycloak.adaptive.spi.context.RiskEvaluatorFactory.getWeightConfig;
 import static org.keycloak.adaptive.spi.context.RiskEvaluatorFactory.isEnabledConfig;
 
+/**
+ * Custom UI tab in administrator console to configure risk-based authentication properties
+ */
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private static final Logger logger = Logger.getLogger(RiskBasedPoliciesUiTab.class);
 

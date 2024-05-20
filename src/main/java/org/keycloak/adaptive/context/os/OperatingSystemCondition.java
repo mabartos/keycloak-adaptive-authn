@@ -29,6 +29,9 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.List;
 
+/**
+ * Condition for checking OS properties
+ */
 public class OperatingSystemCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
     private final DeviceContext deviceContext;

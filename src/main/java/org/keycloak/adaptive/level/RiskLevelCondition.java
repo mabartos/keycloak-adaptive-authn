@@ -29,6 +29,9 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Optional;
 
+/**
+ * Condition for checking the evaluated overall risk score
+ */
 public class RiskLevelCondition implements ConditionalAuthenticator {
     private static final Logger logger = Logger.getLogger(RiskLevelCondition.class);
 

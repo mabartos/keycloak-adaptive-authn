@@ -30,6 +30,9 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for checking login failures properties to detect brute-force attacks
+ */
 public class LoginFailuresRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(LoginFailuresRiskEvaluator.class);
 

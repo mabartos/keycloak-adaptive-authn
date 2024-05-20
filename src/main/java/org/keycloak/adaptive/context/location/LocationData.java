@@ -16,6 +16,9 @@
  */
 package org.keycloak.adaptive.context.location;
 
+/**
+ * General location data model
+ */
 public interface LocationData {
     String getCity();
 

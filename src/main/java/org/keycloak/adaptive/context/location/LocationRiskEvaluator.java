@@ -27,6 +27,9 @@ import org.keycloak.models.UserModel;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for location properties
+ */
 public class LocationRiskEvaluator implements RiskEvaluator {
     private static final Logger logger = Logger.getLogger(LocationRiskEvaluator.class);
 

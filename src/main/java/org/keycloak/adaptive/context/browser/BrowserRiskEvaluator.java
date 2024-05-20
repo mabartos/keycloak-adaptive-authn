@@ -24,6 +24,9 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for browser properties
+ */
 public class BrowserRiskEvaluator implements RiskEvaluator {
     private final KeycloakSession session;
     private final BrowserCondition browserCondition;

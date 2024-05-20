@@ -40,6 +40,9 @@ import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVAL
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 
+/**
+ * Default risk engine for the overall risk score evaluation leveraging asynchronous and parallel processing
+ */
 public class DefaultRiskEngine implements RiskEngine {
     private static final Logger logger = Logger.getLogger(DefaultRiskEngine.class);
 

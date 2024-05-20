@@ -21,6 +21,9 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
 
+/**
+ * Context for aggregating all IP address contexts and evaluate them based on their priority
+ */
 public class DefaultIpAddress extends IpAddressContext {
     private final KeycloakSession session;
 

@@ -28,6 +28,9 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
 
+/**
+ * Condition for checking whether the accessing device is a phone
+ */
 public class PhoneCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
     private final DeviceContext deviceContext;

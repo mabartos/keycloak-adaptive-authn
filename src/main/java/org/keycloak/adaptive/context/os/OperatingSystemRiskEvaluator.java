@@ -24,6 +24,9 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.Optional;
 
+/**
+ * Risk evaluator for OS properties
+ */
 public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     private final KeycloakSession session;
     private final OperatingSystemCondition condition;

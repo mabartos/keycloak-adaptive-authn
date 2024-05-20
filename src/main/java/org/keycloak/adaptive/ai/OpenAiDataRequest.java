@@ -18,6 +18,9 @@ package org.keycloak.adaptive.ai;
 
 import java.util.List;
 
+/**
+ * Data for general NLP request on OpenAI ChatGPT
+ */
 public record OpenAiDataRequest(String model,
                                 List<Message> messages) {
 

@@ -25,6 +25,9 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Obtain user role from the authentication session
+ */
 public class KcUserRoleContext extends UserRoleContext {
     private final KeycloakSession session;
 

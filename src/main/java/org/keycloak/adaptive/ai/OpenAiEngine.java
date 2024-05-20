@@ -38,6 +38,9 @@ import static org.keycloak.adaptive.ai.OpenAiEngineFactory.ORGANIZATION_PROPERTY
 import static org.keycloak.adaptive.ai.OpenAiEngineFactory.PROJECT_PROPERTY;
 import static org.keycloak.adaptive.ai.OpenAiEngineFactory.URL_PROPERTY;
 
+/**
+ * OpenAI ChatGPT engine
+ */
 public class OpenAiEngine implements AiNlpEngine {
     private static final Logger logger = Logger.getLogger(OpenAiEngine.class);
 

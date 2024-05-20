@@ -25,6 +25,9 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
 
+/**
+ * Condition for checking location properties
+ */
 public class LocationCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
     private final LocationContext locationContext;

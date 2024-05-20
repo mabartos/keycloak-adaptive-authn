@@ -18,6 +18,9 @@ package org.keycloak.adaptive.context.browser;
 
 import java.util.Set;
 
+/**
+ * Default known browsers
+ */
 public interface DefaultBrowsers {
     String FIREFOX = "Firefox";
     String CHROME = "Chrome";

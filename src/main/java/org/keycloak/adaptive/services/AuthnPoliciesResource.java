@@ -27,6 +27,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
+import org.keycloak.adaptive.engine.DefaultRiskEngine;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
 import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -51,8 +53,14 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * REST API for Authentication policies
+ * Path: '/authn-policies'
+ */
 @Provider
 public class AuthnPoliciesResource implements RealmResourceProvider {
+    private static final Logger logger = Logger.getLogger(AuthnPoliciesResource.class);
+
     private final KeycloakSession session;
     private final RealmModel realm;
     private final AuthnPolicyProvider provider;
@@ -147,7 +155,7 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
     @Path("{any:.*}")
     @OPTIONS
     public Response policyPreflight(@PathParam("any") String any) {
-        System.err.println("PREFLIGHT:" + any);
+        logger.debug("PREFLIGHT:" + any);
         return Cors.builder().auth().preflight().allowAllOrigins().allowedMethods().add(Response.ok());
     }
 
