@@ -537,6 +537,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                             isParentPolicy={isParentPolicy}
                             policy={policy}
                             onAddExecution={(type) => addExecution(policy.alias!, type)}
+                            onAddCondition={(type) => addExecution(policy.alias!, type)}
                             onAddSubPolicy={(newFlow) => isParentPolicy ? addPolicy(policy.alias!, newFlow) : addFlow(policy.alias!, newFlow)}
                         />
                     ))}
