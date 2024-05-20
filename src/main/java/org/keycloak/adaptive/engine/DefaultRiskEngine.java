@@ -65,6 +65,16 @@ public class DefaultRiskEngine implements RiskEngine {
     public void evaluateRisk() {
         logger.debugf("Risk Engine - EVALUATING");
 
+        // It is not necessary to evaluate the risk multiple times for 'NO_USER' phase
+        if (!requiresUser) {
+            final var storedRisk = storedRiskProvider.getStoredRisk(StoredRiskProvider.RiskPhase.NO_USER);
+            if (storedRisk.isPresent()) {
+                logger.debugf("Risk for the phase 'NO_USER' was already evaluated (score: %f). Skipping the evaluation", storedRisk.get());
+                this.risk = storedRisk.get();
+                return;
+            }
+        }
+
         var start = Time.currentTimeMillis();
         var exec = executorsProvider.getExecutor("risk-engine");
 

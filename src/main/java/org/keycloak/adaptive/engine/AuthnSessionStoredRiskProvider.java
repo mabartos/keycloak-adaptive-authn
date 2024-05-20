@@ -17,6 +17,7 @@
 package org.keycloak.adaptive.engine;
 
 import org.jboss.logging.Logger;
+import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
@@ -60,6 +61,11 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
 
     @Override
     public void storeRisk(double risk, RiskPhase riskPhase) {
+        if (!RiskEngine.isValidValue(risk)) {
+            logger.warnf("Cannot store the invalid risk score '%f'", risk);
+            return;
+        }
+
         Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .ifPresentOrElse(f -> f.setAuthNote(getConfigProperty(riskPhase), Double.toString(risk)),
                         () -> {
@@ -68,15 +74,19 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
 
         if (riskPhase != RiskPhase.OVERALL) { // Store Overall risk
             var oppositePhase = riskPhase == RiskPhase.NO_USER ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
-            getStoredRisk(oppositePhase)
-                    .ifPresent(oppositeRisk -> {
-                        final var sum = risk + oppositeRisk;
-                        final var result = sum / 2.0f;
+            var oppositeRisk = getStoredRisk(oppositePhase);
+            var isValidOppositeRisk = oppositeRisk.filter(RiskEngine::isValidValue).isPresent();
 
-                        logger.debugf("Stored overall risk: %f ('%s') + %f ('%s') = %f / 2.0 = %f", risk, riskPhase.name(), oppositeRisk, oppositePhase.name(), sum, result);
+            var overallRisk = risk;
 
-                        storeRisk(result, RiskPhase.OVERALL);
-                    });
+            if (isValidOppositeRisk) {
+                overallRisk = Math.max(overallRisk,oppositeRisk.get());
+                logger.debugf("Stored overall risk: max(%f ('%s'), %f ('%s')) = %f", risk, riskPhase.name(), oppositeRisk.get(), oppositePhase.name(), overallRisk);
+            } else {
+                logger.debugf("Stored overall risk: %f ('%s')", risk, riskPhase.name());
+            }
+
+            storeRisk(overallRisk, RiskPhase.OVERALL);
         }
     }
 
