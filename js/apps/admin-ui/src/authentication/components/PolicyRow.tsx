@@ -14,23 +14,19 @@ import {
 import {TrashIcon} from "@patternfly/react-icons";
 import {useTranslation} from "react-i18next";
 import type {ExpandableExecution} from "../execution-model";
-import {FlowRequirementDropdown} from "./FlowRequirementDropdown";
-import type {Flow} from "./modals/AddSubFlowModal";
 
 import "./flow-row.css";
 import {useNavigate} from "react-router-dom";
 import {useRealm} from "../../context/realm-context/RealmContext";
-import {toFlow} from "../routes/Flow";
 import {toAuthenticationPolicy} from "../routes/AuthenticationPolicy";
-import {AddFlowDropdown} from "./AddFlowDropdown";
 import {EditFlow} from "./EditFlow";
 import {AddPolicyFlowDropdown} from "./AddPolicyFlowDropdown";
 import type {
     AuthenticationProviderRepresentation
 } from "@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation";
-import {FlowRow} from "./FlowRow";
 import {toKey} from "../../util";
 import {useState} from "react";
+import {ExecutionConfigModal} from "./ExecutionConfigModal";
 
 type PolicyRowProps = {
     builtIn: boolean;
@@ -96,38 +92,24 @@ export const PolicyRow = ({
                                             </Text>
                                         </>
                                 </DataListCell>,
-                                <>
-                                    {isParentPolicy && (
-                                        <DataListCell key={`${execution.id}-enabled`}>
-                                            <Switch
-                                                id={`enable-${toKey(execution.id!)}`}
-                                                label={t("on")}
-                                                labelOff={t("off")}
-                                                isChecked={enabled}
-                                                onChange={() => {
-                                                    setEnabled(prevState => !prevState);
-                                                    if (enabled) {
-                                                        execution.requirement = "CONDITIONAL"
-                                                    } else {
-                                                        execution.requirement = "DISABLED"
-                                                    }
-                                                    onRowChange(execution);
-                                                }}
-                                                aria-label={toKey(execution.id!)}
-                                            />
-                                        </DataListCell>
-                                    )}
-                                </>,
-                                <>
-                                    {!isParentPolicy && (
-                                        <DataListCell key={`${execution.id}-requirement`}>
-                                            <FlowRequirementDropdown
-                                                flow={execution}
-                                                onChange={onRowChange}
-                                            />
-                                        </DataListCell>
-                                    )}
-                                </>,
+                                <DataListCell key={`${execution.id}-enabled`}>
+                                    <Switch
+                                        id={`enable-${toKey(execution.id!)}`}
+                                        label={t("on")}
+                                        labelOff={t("off")}
+                                        isChecked={enabled}
+                                        onChange={() => {
+                                            setEnabled(prevState => !prevState);
+                                            if (enabled) {
+                                                execution.requirement = execution.authenticationFlow ? "CONDITIONAL" : "REQUIRED";
+                                            } else {
+                                                execution.requirement = "DISABLED"
+                                            }
+                                            onRowChange(execution);
+                                        }}
+                                        aria-label={toKey(execution.id!)}
+                                    />
+                                </DataListCell>,
                                 <>
                                     {isParentPolicy && (
                                         <DataListCell key={`${execution.id}-detail`}>
@@ -145,7 +127,8 @@ export const PolicyRow = ({
                                     )}
                                 </>,
                                 <DataListCell key={`${execution.id}-config`}>
-                                    {!isParentPolicy && (
+                                    <ExecutionConfigModal execution={execution}/>
+                                    {!isParentPolicy && execution.authenticationFlow && (
                                         <>
                                             <AddPolicyFlowDropdown
                                                 execution={execution}
@@ -177,14 +160,14 @@ export const PolicyRow = ({
                 !execution.isCollapsed &&
                 hasSubList &&
                 execution.executionList?.map((ex) => (
-                    <FlowRow
+                    <PolicyRow
+                        isParentPolicy={isParentPolicy}
                         builtIn={builtIn}
                         key={ex.id}
                         execution={ex}
                         onRowClick={onRowClick}
                         onRowChange={onRowChange}
                         onAddExecution={onAddExecution}
-                        onAddFlow={() => null}
                         onDelete={onDelete}
                     />
                 ))}

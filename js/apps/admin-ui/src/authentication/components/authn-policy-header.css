@@ -1,0 +1,11 @@
+.keycloak__authn__policy__header-drag-button svg {
+    fill: var(--pf-v5-global--BackgroundColor--100);
+}
+
+.keycloak__authn__policy__header .pf-v5-c-data-list__cell {
+    font-weight: 700;
+}
+
+.keycloak__authn__policy__header .margin-left {
+    margin-left: -130px;
+}

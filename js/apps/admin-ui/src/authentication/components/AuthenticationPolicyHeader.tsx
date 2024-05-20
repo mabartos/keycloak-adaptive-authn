@@ -1,13 +1,13 @@
 import {useTranslation} from "react-i18next";
 import {
-    DataListItem,
-    DataListItemRow,
-    DataListDragButton,
-    DataListItemCells,
     DataListCell,
+    DataListDragButton,
+    DataListItem,
+    DataListItemCells,
+    DataListItemRow,
 } from "@patternfly/react-core";
 
-import "./flow-header.css";
+import "./authn-policy-header.css";
 
 type AuthenticationPolicyHeaderProps = {
     isParentPolicy?: boolean
@@ -19,23 +19,18 @@ export const AuthenticationPolicyHeader = ({isParentPolicy}: AuthenticationPolic
         <DataListItem aria-labelledby="headerName" id="header">
             <DataListItemRow>
                 <DataListDragButton
-                    className="keycloak__authentication__header-drag-button"
+                    className="keycloak__authn__policy__header-drag-button"
                     aria-label={t("disabled")}
                 />
                 <DataListItemCells
-                    className="keycloak__authentication__header"
+                    className="keycloak__authn__policy__header margin-left"
                     dataListCells={[
                         <DataListCell key="step" id="headerName">
                             {t("steps")}
                         </DataListCell>,
-                        <>
-                            {isParentPolicy && (
-                                <DataListCell key="enabled">{t("enabled")}</DataListCell>
-                            )}
-                            {!isParentPolicy && (
-                                <DataListCell key="requirement">{t("requirement")}</DataListCell>
-                            )}
-                        </>,
+                        <DataListCell className={isParentPolicy ? "margin-left" : ""} key="enabled">
+                            {t("enabled")}
+                        </DataListCell>,
                         <DataListCell key="config"></DataListCell>,
                     ]}
                 />

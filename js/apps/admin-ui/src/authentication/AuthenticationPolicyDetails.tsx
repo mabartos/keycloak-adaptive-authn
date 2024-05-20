@@ -377,13 +377,15 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                                             isSelected={tableView}
                                             onChange={() => setTableView(true)}
                                         />
-                                        <ToggleGroupItem
-                                            icon={<DomainIcon />}
-                                            aria-label={t("diagramView")}
-                                            buttonId="diagramView"
-                                            isSelected={!tableView}
-                                            onChange={() => setTableView(false)}
-                                        />
+                                        {!isParentPolicy && (
+                                            <ToggleGroupItem
+                                                icon={<DomainIcon/>}
+                                                aria-label={t("diagramView")}
+                                                buttonId="diagramView"
+                                                isSelected={!tableView}
+                                                onChange={() => setTableView(false)}
+                                            />
+                                        )}
                                     </ToggleGroup>
                                 </ToolbarItem>
                                 {!isParentPolicy && (
@@ -456,7 +458,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                             >
                                 <Droppable hasNoWrapper>
                                     <DataList aria-label={t("flows")}>
-                                        <AuthenticationPolicyHeader isParentPolicy={isParentPolicy} />
+                                        <AuthenticationPolicyHeader isParentPolicy={isParentPolicy}/>
                                         <>
                                             {conditionList.expandableList.map((execution) => (
                                                 <PolicyRow
@@ -532,6 +534,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                 {!conditionList?.expandableList ||
                     (policy && !hasExecutions && (
                         <EmptyAuthenticationPolicy
+                            isParentPolicy={isParentPolicy}
                             policy={policy}
                             onAddExecution={(type) => addExecution(policy.alias!, type)}
                             onAddSubPolicy={(newFlow) => isParentPolicy ? addPolicy(policy.alias!, newFlow) : addFlow(policy.alias!, newFlow)}

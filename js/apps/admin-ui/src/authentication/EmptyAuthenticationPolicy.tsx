@@ -26,19 +26,21 @@ type EmptyAuthenticationPolicyProps = {
     policy: AuthenticationFlowRepresentation;
     onAddExecution: (type: AuthenticationProviderRepresentation) => void;
     onAddSubPolicy: (flow: Policy) => void;
+    isParentPolicy: boolean;
 };
 
 export const EmptyAuthenticationPolicy = ({
                                               policy,
                                               onAddExecution,
                                               onAddSubPolicy,
+                                              isParentPolicy
                                           }: EmptyAuthenticationPolicyProps) => {
     const {t} = useTranslation();
     const [show, setShow] = useState<SectionType>();
 
     return (
         <>
-            {show === "addExecution" && (
+            {!isParentPolicy && show === "addExecution" && (
                 <AddStepModal
                     name={policy.alias!}
                     type={"basic"}
@@ -66,7 +68,7 @@ export const EmptyAuthenticationPolicy = ({
             />
 
             <div className="keycloak__empty-execution-state__block">
-                {SECTIONS.map((section) => (
+                {SECTIONS.filter(f => !isParentPolicy || f !== "addExecution").map((section) => (
                     <Flex key={section} className="keycloak__empty-execution-state__help">
                         <FlexItem flex={{default: "flex_1"}}>
                             <Title headingLevel="h2" size={TitleSizes.md}>
