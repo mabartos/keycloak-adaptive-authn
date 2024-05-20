@@ -54,8 +54,7 @@ export const PolicyRow = ({
     const {realm} = useRealm();
     const navigate = useNavigate();
     const hasSubList = !!execution.executionList?.length;
-    const [enabled, setEnabled] = useState(execution.requirement !== "disabled");
-
+    const [enabled, setEnabled] = useState(execution.requirement !== "DISABLED");
     return (
         <>
             <Draggable key={`draggable-${execution.id}`} hasNoWrapper>
@@ -99,13 +98,16 @@ export const PolicyRow = ({
                                         labelOff={t("off")}
                                         isChecked={enabled}
                                         onChange={() => {
-                                            setEnabled(prevState => !prevState);
-                                            if (enabled) {
-                                                execution.requirement = execution.authenticationFlow ? "CONDITIONAL" : "REQUIRED";
-                                            } else {
-                                                execution.requirement = "DISABLED"
-                                            }
-                                            onRowChange(execution);
+                                            setEnabled(prevState => {
+                                                const enabled = !prevState;
+                                                if (enabled) {
+                                                    execution.requirement = execution.authenticationFlow ? "CONDITIONAL" : "REQUIRED";
+                                                } else {
+                                                    execution.requirement = "DISABLED"
+                                                }
+                                                onRowChange(execution);
+                                                return enabled;
+                                            });
                                         }}
                                         aria-label={toKey(execution.id!)}
                                     />
