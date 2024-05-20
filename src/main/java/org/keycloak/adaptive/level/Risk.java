@@ -21,5 +21,6 @@ public interface Risk {
     double SMALL = 0.3;
     double MEDIUM = 0.5;
     double INTERMEDIATE = 0.7;
-    double HIGH = 1.0;
+    double VERY_HIGH = 0.85;
+    double HIGHEST = 1.0;
 }

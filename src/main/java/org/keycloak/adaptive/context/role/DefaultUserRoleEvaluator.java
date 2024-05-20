@@ -21,6 +21,7 @@ import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.context.RiskEvaluator;
+import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
@@ -43,7 +44,7 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, DefaultUserRoleEvaluatorFactory.class, Weight.NEGLIGIBLE); // Just like that until it's fixed
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, DefaultUserRoleEvaluatorFactory.class, Weight.IMPORTANT);
     }
 
     @Override
@@ -58,11 +59,11 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
 
     @Override
     public void evaluate() {
-        // TODO
-        if (context.getData().stream().map(RoleModel::getName).anyMatch(f -> f.equals("ADMIN"))) {
-            risk = Risk.INTERMEDIATE;
-        } else {
-            risk = Risk.SMALL;
-        }
+        boolean isAdmin = context.getData()
+                .stream()
+                .map(RoleModel::getName)
+                .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
+
+        risk = isAdmin ? Risk.INTERMEDIATE : Risk.SMALL;
     }
 }

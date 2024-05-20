@@ -101,7 +101,7 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
         } else if (numFailures < 15) {
             this.risk = Risk.INTERMEDIATE;
         } else {
-            this.risk = Risk.HIGH;
+            this.risk = Risk.VERY_HIGH;
         }
 
         var currentIp = Optional.ofNullable(ipAddressContext.getData()).map(IPAddress::toString).orElse("");
