@@ -46,6 +46,8 @@ import {AuthenticationPolicyParams, toAuthenticationPolicy} from "./routes/Authe
 import {PolicyRow} from "./components/PolicyRow";
 import {Flow} from "./components/modals/AddSubFlowModal";
 import {AuthenticationPolicyHeader} from "./components/AuthenticationPolicyHeader";
+import AuthenticationExecutionInfoRepresentation
+    from "@keycloak/keycloak-admin-client/lib/defs/authenticationExecutionInfoRepresentation";
 
 export const providerConditionFilter = (
     value: AuthenticationProviderRepresentation,
@@ -54,6 +56,9 @@ export const providerConditionFilter = (
 type AuthenticationPolicyDetailsProps = {
     isParentPolicy?: boolean
 };
+
+type ExecutionConfigMap = { [key: string]: AuthenticatorConfigRepresentation };
+
 export default function AuthenticationPolicyDetails({isParentPolicy = false}: AuthenticationPolicyDetailsProps) {
     const {adminClient} = useAdminClient();
     const { t } = useTranslation();
@@ -68,6 +73,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
     const [tableView, setTableView] = useState(true);
     const [policy, setPolicy] = useState<AuthenticationFlowRepresentation>();
     const [conditionList, setConditionList] = useState<ExecutionList>();
+    const [executionConfigMap, setExecutionConfigMap] = useState<ExecutionConfigMap>();
     const [liveText, setLiveText] = useState("");
 
     const [showAddExecutionDialog, setShowAddExecutionDialog] = useState<boolean>();
@@ -92,15 +98,29 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
 
             setId(policy.id!);
 
-            const executions = isParentPolicy ?
+            const executions: AuthenticationExecutionInfoRepresentation[] = isParentPolicy ?
                 await adminClient.authenticationPolicies.getPolicies() :
                 await adminClient.authenticationManagement.getExecutions({flow: policy.alias!});
 
-            return { policy, executions};
+            // Fetch execution config for each execution
+            const configs = await Promise.all(executions.filter(f => f.authenticationConfig)
+                .map(async (execution) => {
+                    const config = await adminClient.authenticationManagement.getConfig({id: execution.authenticationConfig!});
+                    return {id: execution.id, config};
+                }));
+
+            // Create a map of execution configs
+            const configMap = configs.reduce((map, obj) => {
+                map[obj.id!] = obj.config;
+                return map;
+            }, {} as ExecutionConfigMap);
+
+            return {policy, executions, configMap};
         },
-        ({ policy, executions }) => {
+        ({policy, executions, configMap}) => {
             setPolicy(policy);
             setConditionList(new ExecutionList(executions));
+            setExecutionConfigMap(configMap);
         },
         [key],
     );
@@ -211,8 +231,23 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
         }
     };
 
+    const updateConfig = async (
+        execution: ExpandableExecution,
+        config: AuthenticatorConfigRepresentation
+    ) => {
+        try {
+            await adminClient.authenticationManagement.updateConfig(config);
+            if (executionConfigMap) {
+                executionConfigMap[execution.id!] = config;
+            }
+            refresh();
+            addAlert(t("updateFlowSuccess"), AlertVariant.success);
+        } catch (error) {
+            addError("updateFlowError", error);
+        }
+    };
+
     const addPolicy = async (
-        flow: string,
         {name, description = "", providerId = "basic-flow"}: Policy,
     ) => {
         try {
@@ -466,9 +501,15 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                                                     isParentPolicy={isParentPolicy}
                                                     key={execution.id}
                                                     execution={execution}
+                                                    config={isParentPolicy ? executionConfigMap?.[execution.id!] : undefined}
                                                     onRowClick={(execution) => {
                                                         execution.isCollapsed = !execution.isCollapsed;
                                                         setConditionList(conditionList.clone());
+                                                    }}
+                                                    onConfigChange={(execution, config) => {
+                                                        if (isParentPolicy) {
+                                                            updateConfig(execution, config);
+                                                        }
                                                     }}
                                                     onRowChange={update}
                                                     onAddExecution={(execution, type) =>
@@ -516,7 +557,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                                         name={policy.alias!}
                                         onCancel={() => setShowSubFlowDialog(false)}
                                         onConfirm={(newFlow) => {
-                                            isParentPolicy ? addPolicy(policy.alias!, newFlow) : addFlow(policy.alias!, newFlow);
+                                            isParentPolicy ? addPolicy(newFlow) : addFlow(policy.alias!, newFlow);
                                             setShowSubFlowDialog(false);
                                         }}
                                     />
@@ -538,7 +579,7 @@ export default function AuthenticationPolicyDetails({isParentPolicy = false}: Au
                             policy={policy}
                             onAddExecution={(type) => addExecution(policy.alias!, type)}
                             onAddCondition={(type) => addExecution(policy.alias!, type)}
-                            onAddSubPolicy={(newFlow) => isParentPolicy ? addPolicy(policy.alias!, newFlow) : addFlow(policy.alias!, newFlow)}
+                            onAddSubPolicy={(newFlow) => isParentPolicy ? addPolicy(newFlow) : addFlow(policy.alias!, newFlow)}
                         />
                     ))}
             </PageSection>

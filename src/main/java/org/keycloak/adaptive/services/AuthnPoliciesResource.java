@@ -91,7 +91,7 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<AuthenticationExecutionInfoRepresentation> getPolicies() {
+    public List<AuthenticationExecutionInfoRepresentation> getPolicies() {
         // TESTING PURPOSE
         session.getContext().getHttpResponse().setHeader("Access-Control-Allow-Origin","*");
 
@@ -109,15 +109,15 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
                     );
                     rep.setDisplayName(policy.getAlias());
                     rep.setDescription(policy.getDescription());
-                    rep.setConfigurable(false);
+                    rep.setConfigurable(true);
                     rep.setId(execution.getId());
                     rep.setAuthenticationFlow(true);
+                    rep.setAuthenticationConfig(execution.getAuthenticatorConfig());
                     rep.setRequirement(execution.getRequirement().name());
                     rep.setFlowId(execution.getFlowId());
 
                     return rep;
-                })
-                .collect(Collectors.toSet());
+                }).toList();
     }
 
     @POST

@@ -21,7 +21,7 @@ import {useRealm} from "../../context/realm-context/RealmContext";
 import {toAuthenticationPolicy} from "../routes/AuthenticationPolicy";
 import {EditFlow} from "./EditFlow";
 import {AddPolicyFlowDropdown} from "./AddPolicyFlowDropdown";
-import type {
+import AuthenticatorConfigRepresentation, {
     AuthenticationProviderRepresentation
 } from "@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation";
 import {toKey} from "../../util";
@@ -32,8 +32,10 @@ type PolicyRowProps = {
     builtIn: boolean;
     execution: ExpandableExecution;
     isParentPolicy: boolean;
+    config?: AuthenticatorConfigRepresentation;
     onRowClick: (execution: ExpandableExecution) => void;
     onRowChange: (execution: ExpandableExecution) => void;
+    onConfigChange?: (execution: ExpandableExecution, config: AuthenticatorConfigRepresentation) => void;
     onAddExecution: (
         execution: ExpandableExecution,
         type: AuthenticationProviderRepresentation,
@@ -42,19 +44,22 @@ type PolicyRowProps = {
 };
 
 export const PolicyRow = ({
-                            builtIn,
-                            execution,
-                            isParentPolicy,
-                            onRowClick,
-                            onRowChange,
-                            onAddExecution,
-                            onDelete,
-                        }: PolicyRowProps) => {
+                              builtIn,
+                              execution,
+                              isParentPolicy,
+                              config,
+                              onRowClick,
+                              onRowChange,
+                              onConfigChange,
+                              onAddExecution,
+                              onDelete,
+                          }: PolicyRowProps) => {
     const { t } = useTranslation();
     const {realm} = useRealm();
     const navigate = useNavigate();
     const hasSubList = !!execution.executionList?.length;
     const [enabled, setEnabled] = useState(execution.requirement !== "DISABLED");
+    const [requiresUser, setRequiresUser] = useState(config?.config?.["requires.user"] !== "false");
     return (
         <>
             <Draggable key={`draggable-${execution.id}`} hasNoWrapper>
@@ -84,12 +89,12 @@ export const PolicyRow = ({
                         <DataListItemCells
                             dataListCells={[
                                 <DataListCell key={`${execution.id}-name`}>
-                                        <>
-                                            {execution.displayName} <br />{" "}
-                                            <Text component={TextVariants.small}>
-                                                {execution.alias} {execution.description}
-                                            </Text>
-                                        </>
+                                    <>
+                                        {execution.displayName} <br />{" "}
+                                        <Text component={TextVariants.small}>
+                                            {execution.alias} {execution.description}
+                                        </Text>
+                                    </>
                                 </DataListCell>,
                                 <DataListCell key={`${execution.id}-enabled`}>
                                     <Switch
@@ -114,6 +119,32 @@ export const PolicyRow = ({
                                 </DataListCell>,
                                 <>
                                     {isParentPolicy && (
+                                        <DataListCell key={`${execution.id}-requires-user`}>
+                                            <Switch
+                                                id={`requires-user-${toKey(execution.id!)}`}
+                                                label={t("yes")}
+                                                labelOff={t("no")}
+                                                isChecked={requiresUser}
+                                                onChange={() => {
+                                                    setRequiresUser(prevState => {
+                                                        const requires = !prevState;
+                                                        if (!config) return requires;
+
+                                                        config!.config!['requires.user'] = requires ? 'true' : 'false';
+
+                                                        if (onConfigChange) {
+                                                            onConfigChange(execution, config!);
+                                                        }
+                                                        return requires;
+                                                    });
+                                                }}
+                                                aria-label={toKey(execution.id!)}
+                                            />
+                                        </DataListCell>
+                                    )}
+                                </>,
+                                <>
+                                    {isParentPolicy && (
                                         <DataListCell key={`${execution.id}-detail`}>
                                             <Button
                                                 data-testid="policyDetail"
@@ -129,7 +160,9 @@ export const PolicyRow = ({
                                     )}
                                 </>,
                                 <DataListCell key={`${execution.id}-config`}>
-                                    <ExecutionConfigModal execution={execution}/>
+                                    {!isParentPolicy && (
+                                        <ExecutionConfigModal execution={execution}/>
+                                    )}
                                     {!isParentPolicy && execution.authenticationFlow && (
                                         <>
                                             <AddPolicyFlowDropdown

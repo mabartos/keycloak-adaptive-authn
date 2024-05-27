@@ -31,6 +31,13 @@ export const AuthenticationPolicyHeader = ({isParentPolicy}: AuthenticationPolic
                         <DataListCell className={isParentPolicy ? "margin-left" : ""} key="enabled">
                             {t("enabled")}
                         </DataListCell>,
+                        <>
+                            {isParentPolicy && (
+                                <DataListCell className={"margin-left"} key="requires-user">
+                                    {t("requires-user-config")}
+                                </DataListCell>
+                            )}
+                        </>,
                         <DataListCell key="config"></DataListCell>,
                     ]}
                 />

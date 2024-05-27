@@ -16,19 +16,18 @@
  */
 package org.keycloak.adaptive.policy;
 
-import org.keycloak.adaptive.spi.engine.ConfigurableRequirements;
 import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
-import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
+import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.utils.StringUtil;
 
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.keycloak.authentication.AuthenticationFlow.BASIC_FLOW;
@@ -37,6 +36,8 @@ import static org.keycloak.authentication.AuthenticationFlow.BASIC_FLOW;
  * Default implementation of the Authentication policies DAO
  */
 public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
+    public static final String REQUIRES_USER_CONFIG = "requires.user";
+
     private final KeycloakSession session;
     private final RealmModel realm;
     private AuthenticationFlowModel parent;
@@ -106,12 +107,18 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
         flow.setProviderId(policy.getProviderId());
         flow = realm.addAuthenticationFlow(flow);
 
+        var config = new AuthenticatorConfigModel();
+        config.setAlias("authn-policy-config-" + flow.getId());
+        config.getConfig().put(REQUIRES_USER_CONFIG, "false");
+        config = realm.addAuthenticatorConfig(config);
+
         var execution = new AuthenticationExecutionModel();
         execution.setParentFlow(parentFlow.getId());
         execution.setRequirement(AuthenticationExecutionModel.Requirement.CONDITIONAL);
         execution.setPriority(getNextPriority(realm, parentFlow));
         execution.setFlowId(flow.getId());
         execution.setAuthenticatorFlow(true);
+        execution.setAuthenticatorConfig(config.getId());
 
         realm.addAuthenticatorExecution(execution);
 
@@ -122,41 +129,20 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
     public Stream<AuthenticationFlowModel> getAllStream() {
         return realm.getAuthenticationExecutionsStream(getOrCreateParentPolicy().getId())
                 .filter(AuthenticationExecutionModel::isAuthenticatorFlow)
+                .sorted(Comparator.comparingInt(AuthenticationExecutionModel::getPriority))
                 .map(f -> realm.getAuthenticationFlowById(f.getFlowId()))
                 .filter(Objects::nonNull);
     }
 
     @Override
     public Stream<AuthenticationFlowModel> getAllStream(boolean requiresUser) {
-        Predicate<Stream<Boolean>> OPERATION = requiresUser ?
-                s -> s.anyMatch(f -> f) :
-                s -> s.noneMatch(f -> f);
-
-        Predicate<AuthenticationFlowModel> REQUIRES_USER = f -> OPERATION.test(
-                getAllAuthenticationExecutionsStream(f.getId()).map(g -> {
-                    var authenticator = getAuthenticator(session, g.getAuthenticator());
-                    if (authenticator instanceof ConfigurableRequirements configurable) {
-                        return configurable.requiresUser(realm.getAuthenticatorConfigById(g.getAuthenticatorConfig()));
-                    } else {
-                        return authenticator.requiresUser();
-                    }
-                }));
-
-        return getAllStream().filter(REQUIRES_USER);
-    }
-
-    private Stream<AuthenticationExecutionModel> getAllAuthenticationExecutionsStream(String flowId) {
-        return realm.getAuthenticationExecutionsStream(flowId).flatMap(g -> {
-            if (g.isAuthenticatorFlow()) {
-                return getAllAuthenticationExecutionsStream(g.getFlowId());
-            } else {
-                return Stream.of(g);
-            }
-        });
-    }
-
-    private Authenticator getAuthenticator(KeycloakSession session, String authenticator) {
-        return session.getProvider(Authenticator.class, authenticator);
+        return getAllStream().filter(f -> Optional.ofNullable(realm.getAuthenticationExecutionByFlowId(f.getId()))
+                .map(g -> realm.getAuthenticatorConfigById(g.getAuthenticatorConfig()))
+                .map(AuthenticatorConfigModel::getConfig)
+                .map(g -> g.get(REQUIRES_USER_CONFIG))
+                .map(Boolean::parseBoolean)
+                .map(g -> g == requiresUser)
+                .orElse(false));
     }
 
     @Override
