@@ -199,6 +199,7 @@
                                 <argument>start-dev</argument>
                                 <argument>--log-level=org.keycloak.adaptive:debug</argument>
                                 <argument>--features=declarative-ui</argument>
+                                <argument>--features-disabled=login2</argument>
                             </arguments>
                         </configuration>
                     </execution>
