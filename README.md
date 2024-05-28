@@ -8,6 +8,12 @@
 
 You can use the container image by running:
 
+    podman run -p 8080:8080 quay.io/mabartos/keycloak:adaptive start
+
+This command starts Keycloak exposed on the local port 8080 (`localhost:8080`).
+
+NOTE: If you have installed Docker, use `docker` instead of `podman`.
+
 ### Building from Source
 
 To build from source, refer to the [building and working with the code base](docs/building-source.md) guide.
