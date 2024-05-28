@@ -2,54 +2,17 @@
 
 # Keycloak Adaptive Authentication Extension
 
-### Build the project
+## Getting started
 
-```shell
-./mvnw clean install -DskipTests
-```
+### Container
 
-or
+You can use the container image by running:
 
-```shell
-./mvnw exec:exec@compile
-```
+### Building from Source
 
-### Start Keycloak server with the extension
+To build from source, refer to the [building and working with the code base](docs/building-source.md) guide.
 
-```shell
-./mvnw exec:exec@start-server
-```
-
-### Import Keycloak Adaptive realm
-
-It will import realm with data for the adaptive authentication
-
-```shell
-./mvnw exec:exec@import-realm
-```
-
-### Export Keycloak Adaptive realm
-
-It will export realm with data for the adaptive authentication
-
-```shell
-./mvnw exec:exec@export-realm
-```
-
-### Common process of full execution
-
-```shell
-./mvnw exec:exec@compile exec:exec@import-realm exec:exec@start-server
-```
-
-#### Execute with specific version of Keycloak (f.e with 24.0.1)
-
-```shell
-./mvnw clean install -DskipTests -Dkeycloak.version=24.0.1
-./mvnw exec:exec@start-server -Dkeycloak.version=24.0.1
-```
-
-### Integration with OpenAI
+## Integration with OpenAI
 In order to use the default OpenAI engine for risk scoring, create `.env` file in the working directory, or set following environment variables:
 
 - `OPEN_AI_API_KEY` - OpenAI API key
