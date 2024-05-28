@@ -152,6 +152,10 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
         authnPolicyProvider.getOrCreateParentPolicy();
 
+        if (!Boolean.getBoolean("createRiskBasedPolicy")) {
+            return;
+        }
+
         final var existing = Optional.ofNullable(realm.getFlowByAlias(DEFAULT_RISK_BASED_POLICY_ALIAS));
         if (existing.isPresent()) {
             logger.warnf("Default policy '%s' already exists", DEFAULT_RISK_BASED_POLICY_ALIAS);
