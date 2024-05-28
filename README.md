@@ -1,3 +1,5 @@
+![Keycloak](docs/img/keycloak-adaptive-colored.png)
+
 # Keycloak Adaptive Authentication Extension
 
 ### Build the project
