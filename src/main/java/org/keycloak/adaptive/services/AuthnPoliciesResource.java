@@ -109,7 +109,7 @@ public class AuthnPoliciesResource implements RealmResourceProvider {
                     );
                     rep.setDisplayName(policy.getAlias());
                     rep.setDescription(policy.getDescription());
-                    rep.setConfigurable(true);
+                    rep.setConfigurable(false);
                     rep.setId(execution.getId());
                     rep.setAuthenticationFlow(true);
                     rep.setAuthenticationConfig(execution.getAuthenticatorConfig());
