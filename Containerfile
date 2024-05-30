@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi9 AS ubi-micro-build
 ADD /target/unpacked/ /tmp/keycloak/
 ADD /data/adaptive-realm.json /tmp/keycloak/
 
-RUN mv /tmp/keycloak/keycloak-* /opt/keycloak
+RUN mv /tmp/keycloak/keycloak-* /opt/keycloak && mkdir -p /opt/keycloak/data
 RUN mv /tmp/keycloak/adaptive-realm.json /opt/keycloak
 RUN chmod -R g+rwX /opt/keycloak
 
