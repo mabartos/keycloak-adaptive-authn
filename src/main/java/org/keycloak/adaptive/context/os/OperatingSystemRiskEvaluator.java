@@ -44,7 +44,7 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.class);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.class, 0.3);
     }
 
     @Override
@@ -60,9 +60,9 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     @Override
     public void evaluate() {
         if (condition.isOs(DefaultOperatingSystems.LINUX)) {
-            this.risk = Risk.INTERMEDIATE; // they say that the probability of attacks is higher from Linux devices xD
+            this.risk = Risk.MEDIUM; // they say that the probability of attacks is higher from Linux devices xD
         } else if (condition.isDefaultKnownOs()) {
-            this.risk = Risk.SMALL;
+            this.risk = Risk.NONE;
         } else {
             this.risk = Risk.INTERMEDIATE;
         }

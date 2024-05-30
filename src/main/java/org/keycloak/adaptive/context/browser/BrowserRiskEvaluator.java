@@ -62,7 +62,7 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
         var isKnown = browserCondition.isDefaultKnownBrowser();
 
         if (isKnown) {
-            this.risk = Risk.SMALL;
+            this.risk = Risk.NONE;
         } else {
             this.risk = Risk.INTERMEDIATE;
         }
