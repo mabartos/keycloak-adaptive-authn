@@ -1,5 +1,9 @@
 ## Build the project
 
+Before building the whole extension, you need to rebuild Keycloak itself with
+branch [adaptive](https://github.com/mabartos/keycloak/tree/adaptive-authn) with version `888.0.0-SNAPSHOT`.
+To experiment with the approach, the recommended way is to run the container image for now.
+
 ```shell
 ./mvnw clean install -DskipTests
 ```

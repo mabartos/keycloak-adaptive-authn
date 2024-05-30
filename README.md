@@ -11,6 +11,7 @@ You can use the container image by running:
     podman run -p 8080:8080 quay.io/mabartos/keycloak:adaptive start
 
 This command starts Keycloak exposed on the local port 8080 (`localhost:8080`).
+In order to see the functionality in action, navigate to `localhost:8080/realms/adaptive/account`.
 
 NOTE: If you have installed Docker, use `docker` instead of `podman`.
 
