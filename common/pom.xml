@@ -9,8 +9,13 @@
         <version>999.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>authn-policy</artifactId>
-    <name>Keycloak Authentication Policies Extension</name>
+    <groupId>org.keycloak.adaptive</groupId>
+    <artifactId>common</artifactId>
 
-    <packaging>jar</packaging>
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
 </project>

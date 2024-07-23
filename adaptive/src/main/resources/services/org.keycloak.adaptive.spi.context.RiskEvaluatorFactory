@@ -1,0 +1,7 @@
+ org.keycloak.adaptive.evaluator.BrowserRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.DefaultUserRoleEvaluatorFactory
+ org.keycloak.adaptive.evaluator.LoginFailuresRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.OperatingSystemRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.LocationRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.AiDeviceRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.AiLoginFailuresRiskEvaluatorFactory
