@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.services;
+package org.keycloak.authn.policy.services;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -28,9 +28,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.engine.DefaultRiskEngine;
-import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
-import org.keycloak.authentication.AuthenticationFlow;
+import org.keycloak.authn.policy.spi.AuthnPolicyProvider;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.KeycloakSession;
@@ -45,13 +43,10 @@ import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.utils.ReservedCharValidator;
 import org.keycloak.utils.StringUtil;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * REST API for Authentication policies

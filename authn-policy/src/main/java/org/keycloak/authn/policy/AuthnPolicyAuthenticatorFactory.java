@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.policy;
+package org.keycloak.authn.policy;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticatorFactory;

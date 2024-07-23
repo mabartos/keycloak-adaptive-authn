@@ -14,35 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.authn.policy.spi;
 
-import org.keycloak.provider.Provider;
+import org.keycloak.Config;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderFactory;
-import org.keycloak.provider.Spi;
 
-/**
- * SPI for the authentication policies functionality
- */
-public class AuthnPolicySpi implements Spi {
-    public static final String SPI_NAME = "authentication-policy-spi";
+public interface AuthnPolicyProviderFactory extends ProviderFactory<AuthnPolicyProvider>, EnvironmentDependentProviderFactory {
+
+    AuthnPolicyProvider create(KeycloakSession session, RealmModel realm);
 
     @Override
-    public boolean isInternal() {
-        return false;
+    default boolean isSupported(Config.Scope config) {
+        //return Profile.isFeatureEnabled(Profile.Feature.AUTHN_POLICY); // TODO feature
+        return true;
     }
 
-    @Override
-    public String getName() {
-        return SPI_NAME;
-    }
-
-    @Override
-    public Class<? extends Provider> getProviderClass() {
-        return AuthnPolicyProvider.class;
-    }
-
-    @Override
-    public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return AuthnPolicyProviderFactory.class;
-    }
 }

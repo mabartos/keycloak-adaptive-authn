@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.policy;
+package org.keycloak.authn.policy;
 
-import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
+import org.keycloak.authn.policy.spi.AuthnPolicyProvider;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -90,8 +90,8 @@ public class DefaultAuthnPolicyProvider implements AuthnPolicyProvider {
         if (StringUtil.isBlank(policy.getAlias()))
             throw new IllegalArgumentException("Cannot create an authentication policy with an empty alias");
 
-        if (!policy.getAlias().startsWith(POLICY_PREFIX)) {
-            policy.setAlias(POLICY_PREFIX + policy.getAlias());
+        if (!policy.getAlias().startsWith(AuthnPolicyProvider.POLICY_PREFIX)) {
+            policy.setAlias(AuthnPolicyProvider.POLICY_PREFIX + policy.getAlias());
         }
 
         final var existing = getByAlias(policy.getAlias());
