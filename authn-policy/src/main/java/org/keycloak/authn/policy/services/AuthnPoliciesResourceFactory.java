@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.policy;
+package org.keycloak.authn.policy.services;
 
 import org.keycloak.Config;
-import org.keycloak.adaptive.spi.policy.AuthnPolicyProvider;
-import org.keycloak.adaptive.spi.policy.AuthnPolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.RealmModel;
+import org.keycloak.services.resource.RealmResourceProvider;
+import org.keycloak.services.resource.RealmResourceProviderFactory;
 
-public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
-    public static final String PROVIDER_ID = "default";
-    public static final String DEFAULT_AUTHN_POLICIES_FLOW_ALIAS = "Authentication policies - PARENT";
-
-    @Override
-    public AuthnPolicyProvider create(KeycloakSession session) {
-        return new DefaultAuthnPolicyProvider(session);
-    }
+public class AuthnPoliciesResourceFactory implements RealmResourceProviderFactory {
+    public static final String PROVIDER_ID = "authn-policies";
 
     @Override
-    public AuthnPolicyProvider create(KeycloakSession session, RealmModel realm) {
-        return new DefaultAuthnPolicyProvider(session, realm);
+    public RealmResourceProvider create(KeycloakSession session) {
+        return new AuthnPoliciesResource(session);
     }
 
     @Override
@@ -44,6 +37,7 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
+
     }
 
     @Override
@@ -55,5 +49,4 @@ public class DefaultAuthnPolicyFactory implements AuthnPolicyProviderFactory {
     public String getId() {
         return PROVIDER_ID;
     }
-
 }

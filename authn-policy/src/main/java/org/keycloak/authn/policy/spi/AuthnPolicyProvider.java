@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.spi.policy;
+package org.keycloak.authn.policy.spi;
 
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.provider.Provider;
