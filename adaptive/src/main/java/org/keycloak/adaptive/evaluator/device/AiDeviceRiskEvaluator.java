@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.device;
 
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DefaultDeviceContextFactory;
+import org.keycloak.adaptive.context.device.DeviceContext;
+import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
+import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;

@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.os;
 
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.os.DefaultOperatingSystems;
 import org.keycloak.adaptive.context.os.OperatingSystemCondition;
 import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
+import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;

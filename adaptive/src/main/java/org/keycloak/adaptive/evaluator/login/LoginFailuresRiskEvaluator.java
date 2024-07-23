@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.login;
 
 import inet.ipaddr.IPAddress;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
+import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;

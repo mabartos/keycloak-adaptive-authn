@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.device;
 
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class AiLoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
-    public static final String PROVIDER_ID = "ai-login-failures-risk-evaluator";
-    public static final String NAME = "AI Login failures";
+public class AiDeviceRiskEvaluatorFactory implements RiskEvaluatorFactory {
+    public static final String PROVIDER_ID = "ai-device-risk-evaluator";
+    public static final String NAME = "AI Device";
 
     @Override
     public String getName() {
@@ -31,7 +31,7 @@ public class AiLoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
-        return new AiLoginFailuresRiskEvaluator(session);
+        return new AiDeviceRiskEvaluator(session);
     }
 
     @Override

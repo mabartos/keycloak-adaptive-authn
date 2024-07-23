@@ -17,8 +17,8 @@
 package org.keycloak.adaptive.context.browser;
 
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DefaultDeviceContextFactory;
+import org.keycloak.adaptive.context.device.DeviceContext;
+import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.spi.condition.Operation;
 import org.keycloak.adaptive.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
