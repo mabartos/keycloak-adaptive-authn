@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.context.device;
 
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
+import org.keycloak.adaptive.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class LocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
-    public static final String PROVIDER_ID = "location-risk-evaluator";
-
-    public static final String NAME = "Location IP API";
-    public static final long CACHE_LIFESPAN_SECONDS = 90;
+public class DefaultDeviceContextFactory implements UserContextFactory<DeviceContext> {
+    public static final String PROVIDER_ID = "kc-device-context";
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public RiskEvaluator create(KeycloakSession session) {
-        return new LocationRiskEvaluator(session);
+    public DeviceContext create(KeycloakSession session) {
+        return new DefaultDeviceContext(session);
     }
 
     @Override

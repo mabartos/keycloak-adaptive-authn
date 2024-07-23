@@ -14,30 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.context.device;
 
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
+import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;
 
-public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
-
-    public static final String PROVIDER_ID = "default-browser-risk-factor-evaluator";
-    public static final String NAME = "Browser";
-
-    @Override
-    public RiskEvaluator create(KeycloakSession session) {
-        return new BrowserRiskEvaluator(session);
+/**
+ * Device context obtained from the Keycloak Device representation
+ */
+public class DefaultDeviceContext extends DeviceContext {
+    private final KeycloakSession session;
+    public DefaultDeviceContext(KeycloakSession session) {
+        this.session = session;
     }
 
     @Override
-    public String getId() {
-        return PROVIDER_ID;
-    }
-
-
-    @Override
-    public String getName() {
-        return NAME;
+    public void initData() {
+        this.data = session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation();
+        this.isInitialized = true;
     }
 }

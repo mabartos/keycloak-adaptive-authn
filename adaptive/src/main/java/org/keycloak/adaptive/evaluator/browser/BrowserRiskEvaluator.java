@@ -14,30 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.browser;
 
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.role.KcUserRoleContextFactory;
-import org.keycloak.adaptive.context.role.UserRoleContext;
-import org.keycloak.adaptive.level.Weight;
+import org.keycloak.adaptive.context.browser.BrowserCondition;
+import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
+import org.keycloak.adaptive.evaluator.EvaluatorUtils;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
-import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RoleModel;
 
 import java.util.Optional;
 
 /**
- * Risk evaluator for user role properties
+ * Risk evaluator for browser properties
  */
-public class DefaultUserRoleEvaluator implements RiskEvaluator {
+public class BrowserRiskEvaluator implements RiskEvaluator {
     private final KeycloakSession session;
-    private final UserRoleContext context;
+    private final BrowserCondition browserCondition;
     private Double risk;
 
-    public DefaultUserRoleEvaluator(KeycloakSession session) {
+    public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.context = ContextUtils.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
+        this.browserCondition = ContextUtils.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
     }
 
     @Override
@@ -47,26 +46,27 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, DefaultUserRoleEvaluatorFactory.class, Weight.IMPORTANT);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, BrowserRiskEvaluatorFactory.class);
     }
 
     @Override
     public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, DefaultUserRoleEvaluatorFactory.class);
+        return EvaluatorUtils.isEvaluatorEnabled(session, BrowserRiskEvaluatorFactory.class);
     }
 
     @Override
     public boolean requiresUser() {
-        return true;
+        return false;
     }
 
     @Override
     public void evaluate() {
-        boolean isAdmin = context.getData()
-                .stream()
-                .map(RoleModel::getName)
-                .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
+        var isKnown = browserCondition.isDefaultKnownBrowser();
 
-        risk = isAdmin ? 0.6 : 0.1;
+        if (isKnown) {
+            this.risk = Risk.NONE;
+        } else {
+            this.risk = Risk.INTERMEDIATE;
+        }
     }
 }

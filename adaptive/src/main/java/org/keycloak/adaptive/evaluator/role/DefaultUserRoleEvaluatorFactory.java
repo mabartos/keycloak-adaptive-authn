@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.role;
 
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class LoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
-    public static final String PROVIDER_ID = "login-failures-risk-evaluator";
-    public static final String NAME = "Login failures";
+public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
+    public static final String PROVIDER_ID = "default-user-role-risk-factor";
+    public static final String NAME = "Role";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
-        return new LoginFailuresRiskEvaluator(session);
+        return new DefaultUserRoleEvaluator(session);
     }
 
     @Override

@@ -14,28 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator;
+package org.keycloak.adaptive.evaluator.browser;
 
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class AiDeviceRiskEvaluatorFactory implements RiskEvaluatorFactory {
-    public static final String PROVIDER_ID = "ai-device-risk-evaluator";
-    public static final String NAME = "AI Device";
+public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
-    @Override
-    public String getName() {
-        return NAME;
-    }
+    public static final String PROVIDER_ID = "default-browser-risk-factor-evaluator";
+    public static final String NAME = "Browser";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
-        return new AiDeviceRiskEvaluator(session);
+        return new BrowserRiskEvaluator(session);
     }
 
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 }

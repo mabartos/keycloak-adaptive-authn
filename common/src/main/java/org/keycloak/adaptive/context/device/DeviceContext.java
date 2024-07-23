@@ -14,21 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.context;
+package org.keycloak.adaptive.context.device;
 
-import org.keycloak.adaptive.spi.context.UserContextFactory;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.adaptive.spi.context.UserContext;
+import org.keycloak.representations.account.DeviceRepresentation;
 
-public class DefaultDeviceContextFactory implements UserContextFactory<DeviceContext> {
-    public static final String PROVIDER_ID = "kc-device-context";
-
-    @Override
-    public DeviceContext create(KeycloakSession session) {
-        return new DefaultDeviceContext(session);
-    }
-
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
-    }
+/**
+ * Context for obtaining device properties
+ */
+public abstract class DeviceContext extends UserContext<DeviceRepresentation> {
 }

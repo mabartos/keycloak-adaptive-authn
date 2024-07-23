@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.context;
+package org.keycloak.adaptive.evaluator.login;
 
-import org.keycloak.device.DeviceRepresentationProvider;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-/**
- * Device context obtained from the Keycloak Device representation
- */
-public class DefaultDeviceContext extends DeviceContext {
-    private final KeycloakSession session;
-    public DefaultDeviceContext(KeycloakSession session) {
-        this.session = session;
+public class AiLoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
+    public static final String PROVIDER_ID = "ai-login-failures-risk-evaluator";
+    public static final String NAME = "AI Login failures";
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
     @Override
-    public void initData() {
-        this.data = session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation();
-        this.isInitialized = true;
+    public RiskEvaluator create(KeycloakSession session) {
+        return new AiLoginFailuresRiskEvaluator(session);
+    }
+
+    @Override
+    public String getId() {
+        return PROVIDER_ID;
     }
 }

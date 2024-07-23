@@ -20,7 +20,7 @@ import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import inet.ipaddr.IncompatibleAddressException;
 import jakarta.ws.rs.core.HttpHeaders;
-import org.keycloak.adaptive.context.DeviceContext;
+import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.utils.StringUtil;
 

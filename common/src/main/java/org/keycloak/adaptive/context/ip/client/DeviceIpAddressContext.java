@@ -17,8 +17,8 @@
 package org.keycloak.adaptive.context.ip.client;
 
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.DeviceContext;
-import org.keycloak.adaptive.context.DefaultDeviceContextFactory;
+import org.keycloak.adaptive.context.device.DeviceContext;
+import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.ip.IpAddressUtils;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;

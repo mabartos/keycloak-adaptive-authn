@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.context.os;
 
-import org.keycloak.adaptive.context.DeviceContext;
+import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.spi.condition.DefaultOperation;
 import org.keycloak.adaptive.spi.condition.Operation;
 import org.keycloak.adaptive.spi.condition.OperationsBuilder;

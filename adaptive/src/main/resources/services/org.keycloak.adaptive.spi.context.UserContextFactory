@@ -1,4 +1,4 @@
-org.keycloak.adaptive.context.DefaultDeviceContextFactory
+org.keycloak.adaptive.context.device.DefaultDeviceContextFactory
 org.keycloak.adaptive.context.role.KcUserRoleContextFactory
 org.keycloak.adaptive.context.ip.proxy.ProxyIpAddressContextFactory
 org.keycloak.adaptive.context.location.IpApiLocationContextFactory
