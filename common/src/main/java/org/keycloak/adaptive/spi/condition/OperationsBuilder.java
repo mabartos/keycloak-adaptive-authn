@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.spi.condition;
 
-import org.keycloak.adaptive.policy.DefaultOperation;
+import org.keycloak.adaptive.spi.condition.DefaultOperation;
 import org.keycloak.adaptive.spi.context.UserContext;
 
 import java.util.ArrayList;

@@ -8,9 +8,10 @@
     <artifactId>keycloak-adaptive-authn</artifactId>
     <version>999.0.0-SNAPSHOT</version>
 
-    <name>Keycloak Adaptive Authentication Extension</name>
+    <name>Keycloak Adaptive Authentication Extension Parent</name>
 
     <modules>
+        <module>common</module>
         <module>adaptive</module>
         <module>authn-policy</module>
     </modules>
