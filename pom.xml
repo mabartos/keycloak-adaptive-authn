@@ -22,16 +22,20 @@
         <keycloak.version>${project.version}</keycloak.version>
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
 
-        <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
-        <maven.plugins.jar.version>3.3.0</maven.plugins.jar.version>
-        <maven.plugins.exec.version>3.2.0</maven.plugins.exec.version>
-
         <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}</keycloak.distribution.path>
 
         <keycloak.parent.path>.</keycloak.parent.path>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Maven Plugins -->
+        <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
+        <maven.plugins.jar.version>3.4.2</maven.plugins.jar.version>
+        <maven.plugins.exec.version>3.4.1</maven.plugins.exec.version>
+        <maven.plugins.resources.version>3.3.1</maven.plugins.resources.version>
+        <maven.plugins.assembly.version>3.7.1</maven.plugins.assembly.version>
+        <maven.plugins.dependency.version>3.7.1</maven.plugins.dependency.version>
     </properties>
 
     <dependencyManagement>
@@ -75,67 +79,59 @@
     </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack-server</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.keycloak</groupId>
-                                    <artifactId>keycloak-quarkus-dist</artifactId>
-                                    <version>${keycloak.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-keycloak-config-file</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${keycloak.distribution.path}/conf</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${keycloak.parent.path}/data</directory>
-                                    <includes>
-                                        <include>keycloak.conf</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.plugins.compiler.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven.plugins.jar.version}</version>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven.plugins.dependency.version}</version>
+                    <executions>
+                        <execution>
+                            <id>unpack-server</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.keycloak</groupId>
+                                        <artifactId>keycloak-quarkus-dist</artifactId>
+                                        <version>${keycloak.version}</version>
+                                        <type>zip</type>
+                                        <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>copy-extension-provider</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>${project.artifactId}</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>jar</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>keycloak-adaptive-common</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>jar</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -211,6 +207,56 @@
                                     <argument>start-dev</argument>
                                 </arguments>
                             </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.plugins.compiler.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven.plugins.resources.version}</version>
+                    <executions>
+                        <execution>
+                            <id>copy-keycloak-config-file</id>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${keycloak.distribution.path}/conf</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${keycloak.parent.path}/data</directory>
+                                        <includes>
+                                            <include>keycloak.conf</include>
+                                        </includes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${maven.plugins.assembly.version}</version>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
                         </execution>
                     </executions>
                 </plugin>
