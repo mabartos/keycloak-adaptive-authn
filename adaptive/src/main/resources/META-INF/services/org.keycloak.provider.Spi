@@ -1,5 +1,5 @@
 org.keycloak.adaptive.spi.context.UserContextSpi
-org.keycloak.adaptive.spi.context.RiskEvaluatorSpi
+org.keycloak.adaptive.spi.evaluator.RiskEvaluatorSpi
 org.keycloak.adaptive.spi.level.RiskLevelsSpi
 org.keycloak.adaptive.spi.engine.RiskEngineSpi
 org.keycloak.adaptive.spi.condition.UserContextConditionSpi
