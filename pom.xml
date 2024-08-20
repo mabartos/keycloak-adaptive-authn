@@ -19,6 +19,8 @@
     <packaging>pom</packaging>
 
     <properties>
+        <realm.example.name/>
+
         <keycloak.version>${project.version}</keycloak.version>
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
 
@@ -173,7 +175,7 @@
                                     <argument>export</argument>
                                     <argument>--dir=${keycloak.parent.path}/data</argument>
                                     <argument>--users=realm_file</argument>
-                                    <argument>--realm=adaptive</argument>
+                                    <argument>--realm=${realm.example.name}</argument>
                                 </arguments>
                             </configuration>
                         </execution>
@@ -235,7 +237,7 @@
                                     <resource>
                                         <directory>${keycloak.parent.path}/data</directory>
                                         <includes>
-                                            <include>adaptive-realm.json</include>
+                                            <include>${realm.example.name}-realm.json</include>
                                         </includes>
                                     </resource>
                                 </resources>

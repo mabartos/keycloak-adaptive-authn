@@ -16,6 +16,7 @@
 
     <properties>
         <keycloak.parent.path>../</keycloak.parent.path>
+        <realm.example.name>adaptive</realm.example.name>
     </properties>
 
     <dependencies>
