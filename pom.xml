@@ -22,9 +22,12 @@
         <realm.example.name/>
 
         <keycloak.version>${project.version}</keycloak.version>
+        <keycloak.dist.version>${keycloak.version}</keycloak.dist.version>
+
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
 
-        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}</keycloak.distribution.path>
+        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.dist.version}
+        </keycloak.distribution.path>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -79,6 +82,16 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- To obtain custom Keycloak distribution build with authn-policies UI changes -->
+    <!-- Generated PAT token with the 'read:packages' permission for the whole world -->
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages Repository</name>
+            <url>https://mabartos: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@maven.pkg.github.com/mabartos/keycloak</url>
+        </repository>
+    </repositories>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -98,7 +111,7 @@
                                     <artifactItem>
                                         <groupId>org.keycloak</groupId>
                                         <artifactId>keycloak-quarkus-dist</artifactId>
-                                        <version>${keycloak.version}</version>
+                                        <version>${keycloak.dist.version}</version>
                                         <type>zip</type>
                                         <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
                                     </artifactItem>
