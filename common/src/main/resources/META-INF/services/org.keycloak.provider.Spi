@@ -1,0 +1,2 @@
+org.keycloak.adaptive.spi.context.UserContextSpi
+org.keycloak.adaptive.spi.condition.UserContextConditionSpi
