@@ -15,6 +15,7 @@ import { sortBy } from "lodash-es";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { useAdminClient } from "../admin-client";
 import { useAlerts } from "../components/alert/Alerts";
 import { useConfirmDialog } from "../components/confirm-dialog/ConfirmDialog";
 import { KeycloakSpinner } from "../components/keycloak-spinner/KeycloakSpinner";
@@ -29,7 +30,6 @@ import { useRealm } from "../context/realm-context/RealmContext";
 import helpUrls from "../help-urls";
 import { addTrailingSlash } from "../util";
 import { getAuthorizationHeaders } from "../utils/getAuthorizationHeaders";
-import { useFetch } from "../utils/useFetch";
 import useLocaleSort, { mapByKey } from "../utils/useLocaleSort";
 import useToggle from "../utils/useToggle";
 import { BindFlowDialog } from "./BindFlowDialog";
@@ -40,7 +40,6 @@ import { Policies } from "./policies/Policies";
 import { AuthenticationTab, toAuthentication } from "./routes/Authentication";
 import { toCreateFlow } from "./routes/CreateFlow";
 import { toFlow } from "./routes/Flow";
-import { useAdminClient } from "../admin-client";
 import {toAuthenticationPolicy} from "./routes/AuthenticationPolicy";
 import AuthenticationPolicyDetails from "./AuthenticationPolicyDetails";
 
@@ -109,24 +108,15 @@ const AliasAuthPolicyRenderer = ({id, alias}: AuthenticationPolicyType) => {
 export default function AuthenticationSection() {
   const { adminClient } = useAdminClient();
   const { t } = useTranslation();
-  const { realm: realmName } = useRealm();
+  const { realm: realmName, realmRepresentation: realm } = useRealm();
   const [key, setKey] = useState(0);
-  const refresh = () => {
-    setRealm(undefined);
-    setKey(key + 1);
-  };
+  const refresh = () => setKey(key + 1);
   const { addAlert, addError } = useAlerts();
   const localeSort = useLocaleSort();
   const [selectedFlow, setSelectedFlow] = useState<AuthenticationType>();
   const [selectedAuthPolicy, setSelectedAuthPolicy] = useState<AuthenticationPolicyType>();
   const [open, toggleOpen] = useToggle();
   const [bindFlowOpen, toggleBindFlow] = useToggle();
-
-  const [realm, setRealm] = useState<RealmRepresentation>();
-
-  useFetch(() => adminClient.realms.findOne({ realm: realmName }), setRealm, [
-    key,
-  ]);
 
   const loader = async () => {
     const flowsRequest = await fetchWithError(
@@ -302,9 +292,7 @@ export default function AuthenticationSection() {
                 {
                   name: "usedBy",
                   displayKey: "usedBy",
-                  cellRenderer: (row) => (
-                    <UsedBy authType={row} realm={realm} />
-                  ),
+                  cellRenderer: (row) => <UsedBy authType={row} />,
                 },
                 {
                   name: "description",
