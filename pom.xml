@@ -161,22 +161,6 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>import-realm</id>
-                            <phase>none</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <executable>bash</executable>
-                                <arguments>
-                                    <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
-                                    <argument>import</argument>
-                                    <argument>--file=${keycloak.parent.path}/data/adaptive-realm.json</argument>
-                                    <argument>--optimized</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
                             <id>export-realm</id>
                             <phase>none</phase>
                             <goals>
@@ -205,6 +189,7 @@
                                     <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                     <argument>--debug</argument>
                                     <argument>start-dev</argument>
+                                    <argument>--import-realm</argument>
                                 </arguments>
                             </configuration>
                         </execution>
@@ -233,6 +218,24 @@
                                         <directory>${keycloak.parent.path}/data</directory>
                                         <includes>
                                             <include>keycloak.conf</include>
+                                        </includes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>copy-realm-</id>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${keycloak.distribution.path}/data/import</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${keycloak.parent.path}/data</directory>
+                                        <includes>
+                                            <include>adaptive-realm.json</include>
                                         </includes>
                                     </resource>
                                 </resources>

@@ -16,14 +16,6 @@ or
 ./mvnw exec:exec@start-server
 ```
 
-### Import Keycloak Adaptive realm
-
-It will import realm with data for the adaptive authentication
-
-```shell
-./mvnw exec:exec@import-realm
-```
-
 ### Export Keycloak Adaptive realm
 
 It will export realm with data for the adaptive authentication
@@ -35,7 +27,7 @@ It will export realm with data for the adaptive authentication
 ### Common process of full execution
 
 ```shell
-./mvnw exec:exec@compile exec:exec@import-realm exec:exec@start-server
+./mvnw exec:exec@compile exec:exec@start-server
 ```
 
 #### Execute with specific version of Keycloak (f.e with 24.0.1)
