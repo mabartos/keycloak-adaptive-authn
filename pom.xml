@@ -172,7 +172,7 @@
                                 <arguments>
                                     <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                     <argument>export</argument>
-                                    <argument>--dir=${realm.example.name}/src/main/resources</argument>
+                                    <argument>--dir=src/main/resources</argument>
                                     <argument>--users=realm_file</argument>
                                     <argument>--realm=${realm.example.name}</argument>
                                 </arguments>
