@@ -29,4 +29,6 @@ You can simply execute this command in this module and the custom Keycloak distr
 ../mvnw exec:exec@start-server
 ```
 
+## Show example flow
 
+In order to see the execution of the authentication flow from the example realm `authn-policy`, just access the url `http://localhost:8080/admin/authn-policy/console/`.

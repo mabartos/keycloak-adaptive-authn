@@ -11,6 +11,10 @@ You can simply execute this command in this module and a Keycloak distribution w
 ../mvnw exec:exec@start-server
 ```
 
+## Show example flow
+
+In order to see the execution of the authentication flow from the example realm `adaptive`, just access the url `http://localhost:8080/admin/adaptive/console/`.
+
 ## Integration with OpenAI
 In order to use the default OpenAI engine for risk scoring, create `.env` file in the working directory, or set following environment variables:
 
