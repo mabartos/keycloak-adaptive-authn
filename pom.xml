@@ -26,7 +26,6 @@
 
         <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}</keycloak.distribution.path>
 
-        <keycloak.parent.path>.</keycloak.parent.path>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -155,7 +154,7 @@
                             <configuration>
                                 <executable>bash</executable>
                                 <arguments>
-                                    <argument>${keycloak.parent.path}/mvnw</argument>
+                                    <argument>../mvnw</argument>
                                     <argument>clean</argument>
                                     <argument>install</argument>
                                     <argument>-DskipTests</argument>
@@ -173,7 +172,7 @@
                                 <arguments>
                                     <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
                                     <argument>export</argument>
-                                    <argument>--dir=${keycloak.parent.path}/data</argument>
+                                    <argument>--dir=${realm.example.name}/src/main/resources</argument>
                                     <argument>--users=realm_file</argument>
                                     <argument>--realm=${realm.example.name}</argument>
                                 </arguments>
@@ -217,7 +216,7 @@
                                 <outputDirectory>${keycloak.distribution.path}/conf</outputDirectory>
                                 <resources>
                                     <resource>
-                                        <directory>${keycloak.parent.path}/data</directory>
+                                        <directory>src/main/resources</directory>
                                         <includes>
                                             <include>keycloak.conf</include>
                                         </includes>
@@ -226,7 +225,7 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>copy-realm-</id>
+                            <id>copy-realm</id>
                             <phase>install</phase>
                             <goals>
                                 <goal>copy-resources</goal>
@@ -235,7 +234,7 @@
                                 <outputDirectory>${keycloak.distribution.path}/data/import</outputDirectory>
                                 <resources>
                                     <resource>
-                                        <directory>${keycloak.parent.path}/data</directory>
+                                        <directory>src/main/resources</directory>
                                         <includes>
                                             <include>${realm.example.name}-realm.json</include>
                                         </includes>

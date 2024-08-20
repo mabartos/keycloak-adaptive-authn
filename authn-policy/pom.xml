@@ -16,7 +16,6 @@
 
     <properties>
         <keycloak.version>888.0.0-ADAPTIVE</keycloak.version>
-        <keycloak.parent.path>../</keycloak.parent.path>
         <realm.example.name>authn-policy</realm.example.name>
     </properties>
 
