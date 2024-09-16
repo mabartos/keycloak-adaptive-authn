@@ -1247,7 +1247,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "177c422a-5da4-495f-97bb-365930521275",
@@ -1256,7 +1256,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "f03f1114-52b9-4eda-8519-d379aab18f59",
@@ -1371,10 +1371,18 @@
       "flowAlias" : "POLICY - Device",
       "userSetupAllowed" : false
     }, {
-      "authenticatorConfig" : "authn-policy-config-68f594a9-fb69-4e60-8762-4949edbe1a12",
+      "authenticatorConfig" : "authn-policy-config-9c8cdde3-30fd-4efc-bfb2-fc62ec9bdbaa",
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
       "priority" : 4,
+      "autheticatorFlow" : true,
+      "flowAlias" : "POLICY - Risk-based - NO user",
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorConfig" : "authn-policy-config-68f594a9-fb69-4e60-8762-4949edbe1a12",
+      "authenticatorFlow" : true,
+      "requirement" : "CONDITIONAL",
+      "priority" : 6,
       "autheticatorFlow" : true,
       "flowAlias" : "POLICY - Risk-based",
       "userSetupAllowed" : false
@@ -1382,7 +1390,7 @@
       "authenticatorConfig" : "authn-policy-config-023800d8-fc2c-4279-8406-2d538af53069",
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 5,
+      "priority" : 7,
       "autheticatorFlow" : true,
       "flowAlias" : "POLICY - Organizations",
       "userSetupAllowed" : false
@@ -1725,6 +1733,22 @@
       "priority" : 3,
       "autheticatorFlow" : true,
       "flowAlias" : "HIGH ",
+      "userSetupAllowed" : false
+    } ]
+  }, {
+    "id" : "9c8cdde3-30fd-4efc-bfb2-fc62ec9bdbaa",
+    "alias" : "POLICY - Risk-based - NO user",
+    "description" : "",
+    "providerId" : "basic-flow",
+    "topLevel" : false,
+    "builtIn" : false,
+    "authenticationExecutions" : [ {
+      "authenticatorConfig" : "No User",
+      "authenticator" : "default-risk-engine",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 0,
+      "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
   }, {
@@ -2193,6 +2217,12 @@
       "requires-user-config" : "false"
     }
   }, {
+    "id" : "21fbdcf0-eabe-4224-b955-f1b97d6e8d21",
+    "alias" : "No User",
+    "config" : {
+      "requiresUserConfig" : "false"
+    }
+  }, {
     "id" : "dec74c98-95d9-426f-b8b0-f2669be751e5",
     "alias" : "No User",
     "config" : {
@@ -2263,6 +2293,12 @@
     "alias" : "authn-policy-config-68f594a9-fb69-4e60-8762-4949edbe1a12",
     "config" : {
       "requires.user" : "true"
+    }
+  }, {
+    "id" : "d7cb54cc-f92c-4d61-bac2-88641495881b",
+    "alias" : "authn-policy-config-9c8cdde3-30fd-4efc-bfb2-fc62ec9bdbaa",
+    "config" : {
+      "requires.user" : "false"
     }
   }, {
     "id" : "4db8e7b6-d1b2-426c-944c-a43465ab3356",
