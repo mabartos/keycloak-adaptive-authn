@@ -90,7 +90,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages Repository</name>
-            <url>https://mabartos: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@maven.pkg.github.com/mabartos/keycloak/keycloak-server-dist/</url>
+            <url>https://mabartos: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@maven.pkg.github.com/mabartos/keycloak/keycloak-server-dist/</url>
         </repository>
     </repositories>
 
