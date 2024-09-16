@@ -40,6 +40,8 @@
         <maven.plugins.resources.version>3.3.1</maven.plugins.resources.version>
         <maven.plugins.assembly.version>3.7.1</maven.plugins.assembly.version>
         <maven.plugins.dependency.version>3.7.1</maven.plugins.dependency.version>
+        <maven.plugins.gpg.version>3.2.6</maven.plugins.gpg.version>
+        <nexus.staging.plugin.version>1.7.0</nexus.staging.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -262,7 +264,42 @@
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>${maven.plugins.assembly.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${nexus.staging.plugin.version}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.plugins.gpg.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
