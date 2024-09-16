@@ -6,7 +6,7 @@ This module contains common components shared by `adaptive`, and `authn-policy` 
 
 You will be able to leverage authentication policies together with the adaptive capabilities.
 
-1. Recompile this module with this system property:
+1. Recompile this module with the `-DstartAll` system property:
     ```shell
     mvn clean install -DskipTests -DstartAll 
     ```

@@ -84,16 +84,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- To obtain custom Keycloak distribution build with authn-policies UI changes -->
-    <!-- Generated PAT token with the 'read:packages' permission for the whole world -->
-    <repositories>
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages Repository</name>
-            <url>https://mabartos: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@maven.pkg.github.com/mabartos/keycloak/keycloak-server-dist/</url>
-        </repository>
-    </repositories>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -297,6 +287,11 @@
     </build>
 
     <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages Repository</name>
+            <url>https://maven.pkg.github.com/mabartos/keycloak/</url>
+        </repository>
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>

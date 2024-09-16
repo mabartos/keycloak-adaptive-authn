@@ -1,8 +1,12 @@
 ## Build the project
 
+To build the whole project, execute this command:
+
 ```shell
 ./mvnw clean install -DskipTests
 ```
+
+**WARN:** To properly build the `authn-policy` module, check the particular [README](../authn-policy/README.md).
 
 ## Start server with `adaptive` and `authn-policy` modules
 
