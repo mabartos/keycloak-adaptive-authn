@@ -1,13 +1,12 @@
 FROM registry.access.redhat.com/ubi9 AS ubi-micro-build
 
-ADD /target/unpacked/ /tmp/keycloak/
-ADD /data/adaptive-realm.json /tmp/keycloak/
+ADD target/unpacked/ /tmp/keycloak/
 
-RUN mv /tmp/keycloak/keycloak-* /opt/keycloak && mkdir -p /opt/keycloak/data
-RUN mv /tmp/keycloak/adaptive-realm.json /opt/keycloak
+RUN mv /tmp/keycloak/keycloak-* /opt/keycloak
+RUN mv /opt/keycloak/data/import /opt/keycloak && mkdir -p /opt/keycloak/data && mv /opt/keycloak/import /opt/keycloak/data/import
 RUN chmod -R g+rwX /opt/keycloak
 
-ADD ubi-null.sh /tmp/
+ADD container/ubi-null.sh /tmp/
 RUN bash /tmp/ubi-null.sh java-17-openjdk-headless glibc-langpack-en findutils
 
 FROM registry.access.redhat.com/ubi9-micro as keycloak-base
@@ -24,8 +23,8 @@ RUN echo "keycloak:x:0:root" >> /etc/group && \
 
 USER 1000
 
+RUN /opt/keycloak/bin/kc.sh import --dir=/opt/keycloak/data/import
 RUN /opt/keycloak/bin/kc.sh build
-RUN /opt/keycloak/bin/kc.sh import --file=/opt/keycloak/adaptive-realm.json
 
 ENV KEYCLOAK_ADMIN admin
 ENV KEYCLOAK_ADMIN_PASSWORD admin
