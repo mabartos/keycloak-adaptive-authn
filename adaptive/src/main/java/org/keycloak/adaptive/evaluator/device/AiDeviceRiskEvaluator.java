@@ -54,7 +54,7 @@ public class AiDeviceRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, AiDeviceRiskEvaluatorFactory.class, Weight.IMPORTANT);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, AiDeviceRiskEvaluatorFactory.class, 0.15);
     }
 
     @Override

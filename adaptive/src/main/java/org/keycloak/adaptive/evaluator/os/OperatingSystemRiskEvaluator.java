@@ -17,7 +17,6 @@
 package org.keycloak.adaptive.evaluator.os;
 
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.os.DefaultOperatingSystems;
 import org.keycloak.adaptive.context.os.OperatingSystemCondition;
 import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
@@ -47,7 +46,7 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
 
     @Override
     public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.class, 0.3);
+        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.class, 0.4);
     }
 
     @Override
@@ -62,9 +61,7 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
 
     @Override
     public void evaluate() {
-        if (condition.isOs(DefaultOperatingSystems.LINUX)) {
-            this.risk = Risk.MEDIUM; // they say that the probability of attacks is higher from Linux devices xD
-        } else if (condition.isDefaultKnownOs()) {
+        if (condition.isDefaultKnownOs()) {
             this.risk = Risk.NONE;
         } else {
             this.risk = Risk.INTERMEDIATE;
