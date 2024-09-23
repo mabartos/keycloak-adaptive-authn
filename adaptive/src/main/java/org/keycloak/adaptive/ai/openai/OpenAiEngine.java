@@ -16,23 +16,16 @@
  */
 package org.keycloak.adaptive.ai.openai;
 
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
+import org.keycloak.adaptive.ai.AiEngineUtils;
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
 import org.keycloak.adaptive.ai.DefaultAiDataResponse;
-import org.keycloak.adaptive.ai.DefaultAiRiskData;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.quarkus.runtime.configuration.Configuration;
-import org.keycloak.util.JsonSerialization;
+import org.keycloak.utils.StringUtil;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.KEY_PROPERTY;
@@ -56,62 +49,40 @@ public class OpenAiEngine implements AiNlpEngine {
 
     @Override
     public <T> T getResult(String context, String message, Class<T> clazz) {
-        try {
-            final var url = Configuration.getOptionalValue(URL_PROPERTY);
-            final var key = Configuration.getOptionalValue(KEY_PROPERTY);
-            final var organization = Configuration.getOptionalValue(ORGANIZATION_PROPERTY);
-            final var project = Configuration.getOptionalValue(PROJECT_PROPERTY);
+        final var url = Optional.ofNullable(System.getenv(URL_PROPERTY)).orElse(OpenAiEngineFactory.DEFAULT_URL);
+        final var key = System.getenv(KEY_PROPERTY);
+        final var organization = System.getenv(ORGANIZATION_PROPERTY);
+        final var project = System.getenv(PROJECT_PROPERTY);
 
-            if (url.isEmpty() || key.isEmpty() || organization.isEmpty() || project.isEmpty()) {
-                logger.error("Some of these required environment variables are missing: OPEN_AI_API_URL, OPEN_AI_API_KEY, OPEN_AI_API_ORGANIZATION, OPEN_AI_API_PROJECT");
+        if (StringUtil.isBlank(key) || StringUtil.isBlank(organization) || StringUtil.isBlank(project)) {
+            logger.errorf("Some of these required environment variables are missing: %s, %s, %s\n", KEY_PROPERTY, ORGANIZATION_PROPERTY, PROJECT_PROPERTY);
                 return null;
             }
 
-            var client = httpClientProvider.getHttpClient();
+        var httpClient = httpClientProvider.getHttpClient();
 
-            var request = new HttpPost(new URIBuilder(url.get()).build());
-            request.setHeader("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
-            request.setHeader("Authorization", String.format("Bearer %s", key.get()));
-            request.setHeader("OpenAI-Organization", organization.get());
-            request.setHeader("OpenAI-Project", project.get());
+        var result = AiEngineUtils.aiEngineRequest(
+                httpClient,
+                url,
+                () -> DefaultAiDataRequest.newRequest(OpenAiEngineFactory.DEFAULT_MODEL, context, message),
+                Map.of("Authorization", String.format("Bearer %s", key),
+                        "OpenAI-Organization", organization,
+                        "OpenAI-Project", project
+                ),
+                clazz
+        );
 
-            var question = DefaultAiDataRequest.newRequest(OpenAiEngineFactory.DEFAULT_MODEL, context, message);
-
-            request.setEntity(new StringEntity(JsonSerialization.writeValueAsString(question), ContentType.APPLICATION_JSON));
-
-            try (var response = client.execute(request)) {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    EntityUtils.consumeQuietly(response.getEntity());
-                    throw new RuntimeException(response.getStatusLine().getReasonPhrase());
-                }
-                var result = JsonSerialization.readValue(response.getEntity().getContent(), clazz);
-                logger.debugf("OpenAI response: %s", result);
-                return result;
-            }
-        } catch (URISyntaxException | IOException | RuntimeException e) {
-            throw new RuntimeException(e);
-        }
+        logger.debugf("Response from AI engine: %s\n", result.toString());
+        return result;
     }
 
     @Override
     public Optional<Double> getRisk(String context, String message) {
         var response = getResult(context, message, DefaultAiDataResponse.class);
 
-        var data = Optional.ofNullable(response)
-                .flatMap(f -> f.choices().stream().findAny())
-                .map(DefaultAiDataResponse.Choice::message)
-                .map(DefaultAiDataResponse.Choice.Message::content)
-                .map(f -> {
-                    try {
-                        return JsonSerialization.readValue(f, DefaultAiRiskData.class);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-        data.ifPresent(f -> logger.debugf("Evaluated risk: %f. Reason: %s", f.risk(), f.reason()));
-
-        return data.map(DefaultAiRiskData::risk);
+        return AiEngineUtils.getRiskFromDefaultResponse(response,
+                (eval) -> logger.debugf("OpenAI ChatGPT evaluated risk: %f. Reason: %s", eval.risk(), eval.reason())
+        );
     }
 
     @Override

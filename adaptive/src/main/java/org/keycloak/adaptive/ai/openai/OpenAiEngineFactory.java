@@ -24,6 +24,7 @@ import org.keycloak.models.KeycloakSessionFactory;
 public class OpenAiEngineFactory implements AiEngineFactory {
     public static final String PROVIDER_ID = "default";
     public static final String DEFAULT_MODEL = "gpt-3.5-turbo";
+    public static final String DEFAULT_URL = "https://api.openai.com/v1/chat/completions";
 
     static final String URL_PROPERTY = "openai.api.url";
     static final String KEY_PROPERTY = "openai.api.key";
