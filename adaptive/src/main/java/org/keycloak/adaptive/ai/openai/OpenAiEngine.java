@@ -22,6 +22,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
+import org.keycloak.adaptive.ai.DefaultAiDataRequest;
+import org.keycloak.adaptive.ai.DefaultAiDataResponse;
 import org.keycloak.adaptive.ai.DefaultAiRiskData;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
@@ -73,7 +75,7 @@ public class OpenAiEngine implements AiNlpEngine {
             request.setHeader("OpenAI-Organization", organization.get());
             request.setHeader("OpenAI-Project", project.get());
 
-            var question = OpenAiDataRequest.newRequest(context, message);
+            var question = DefaultAiDataRequest.newRequest(OpenAiEngineFactory.DEFAULT_MODEL, context, message);
 
             request.setEntity(new StringEntity(JsonSerialization.writeValueAsString(question), ContentType.APPLICATION_JSON));
 
@@ -93,12 +95,12 @@ public class OpenAiEngine implements AiNlpEngine {
 
     @Override
     public Optional<Double> getRisk(String context, String message) {
-        var response = getResult(context, message, OpenAiDataResponse.class);
+        var response = getResult(context, message, DefaultAiDataResponse.class);
 
         var data = Optional.ofNullable(response)
                 .flatMap(f -> f.choices().stream().findAny())
-                .map(OpenAiDataResponse.Choice::message)
-                .map(OpenAiDataResponse.Choice.Message::content)
+                .map(DefaultAiDataResponse.Choice::message)
+                .map(DefaultAiDataResponse.Choice.Message::content)
                 .map(f -> {
                     try {
                         return JsonSerialization.readValue(f, DefaultAiRiskData.class);

@@ -14,26 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.ai.openai;
+
+package org.keycloak.adaptive.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
 /**
- * Received data from OpenAI ChatGPT
+ * Default received data from common AI NLP engines (OpenAI ChatGPT)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record OpenAiDataResponse(
+public record DefaultAiDataResponse(
         String id,
         String object,
         long created,
         String model,
         List<Choice> choices
 ) {
-    
+
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Choice(String finish_reason, Message message) {
+    public record Choice(String finish_reason, Choice.Message message) {
 
         @JsonIgnoreProperties(ignoreUnknown = true)
         public record Message(String role, String content) {

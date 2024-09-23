@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.ai.openai;
+
+package org.keycloak.adaptive.ai;
 
 import java.util.List;
 
 /**
- * Data for general NLP request on OpenAI ChatGPT
+ * Data request for common AI NLP engines (OpenAI ChatGPT)
  */
-public record OpenAiDataRequest(String model,
-                                List<Message> messages) {
+public record DefaultAiDataRequest(String model,
+                                   List<Message> messages) {
 
     public record Message(String role,
                           String content) {
     }
 
-    public static OpenAiDataRequest newRequest(String model, String systemMessage, String userMessage) {
-        return new OpenAiDataRequest(model, List.of(new Message("system", systemMessage), new Message("user", userMessage)));
+    public static DefaultAiDataRequest newRequest(String model, String systemMessage, String userMessage) {
+        return new DefaultAiDataRequest(model, List.of(new DefaultAiDataRequest.Message("system", systemMessage), new DefaultAiDataRequest.Message("user", userMessage)));
     }
 
-    public static OpenAiDataRequest newRequest(String systemMessage, String userMessage) {
-        return newRequest(OpenAiEngineFactory.DEFAULT_MODEL, systemMessage, userMessage);
-    }
-
-    public static OpenAiDataRequest newRequest(String userMessage) {
-        return newRequest("", userMessage);
+    public static DefaultAiDataRequest newRequest(String model, String userMessage) {
+        return newRequest(model, "", userMessage);
     }
 }
