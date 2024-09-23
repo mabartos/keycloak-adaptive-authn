@@ -22,6 +22,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
+import org.keycloak.adaptive.ai.DefaultAiRiskData;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
@@ -100,7 +101,7 @@ public class OpenAiEngine implements AiNlpEngine {
                 .map(OpenAiDataResponse.Choice.Message::content)
                 .map(f -> {
                     try {
-                        return JsonSerialization.readValue(f, OpenAiRiskData.class);
+                        return JsonSerialization.readValue(f, DefaultAiRiskData.class);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -108,7 +109,7 @@ public class OpenAiEngine implements AiNlpEngine {
 
         data.ifPresent(f -> logger.debugf("Evaluated risk: %f. Reason: %s", f.risk(), f.reason()));
 
-        return data.map(OpenAiRiskData::risk);
+        return data.map(DefaultAiRiskData::risk);
     }
 
     @Override

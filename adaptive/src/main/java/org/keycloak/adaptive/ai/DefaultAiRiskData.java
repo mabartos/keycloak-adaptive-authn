@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.ai.openai;
+
+package org.keycloak.adaptive.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.keycloak.adaptive.spi.ai.AiRiskEvaluatorMessages;
 
 /**
- * Custom OpenAI ChatGPT data specified in the NLP query
+ * General data format for risk score and explanation specified in the NLP query {@link AiRiskEvaluatorMessages#CONTEXT_MESSAGE}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record OpenAiRiskData(Double risk, String reason) {
+public record DefaultAiRiskData(Double risk, String reason) {
 }
