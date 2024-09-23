@@ -21,7 +21,7 @@
     <properties>
         <realm.example.name/>
 
-        <keycloak.version>${project.version}</keycloak.version>
+        <keycloak.version>999.0.0-SNAPSHOT</keycloak.version>
         <keycloak.dist.version>${keycloak.version}</keycloak.dist.version>
 
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
