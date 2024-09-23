@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.KEY_PROPERTY;
+import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.MODEL_PROPERTY;
 import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.ORGANIZATION_PROPERTY;
 import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.PROJECT_PROPERTY;
 import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.URL_PROPERTY;
@@ -50,6 +51,7 @@ public class OpenAiEngine implements AiNlpEngine {
     @Override
     public <T> T getResult(String context, String message, Class<T> clazz) {
         final var url = Optional.ofNullable(System.getenv(URL_PROPERTY)).orElse(OpenAiEngineFactory.DEFAULT_URL);
+        final var model = Optional.ofNullable(System.getenv(MODEL_PROPERTY)).orElse(OpenAiEngineFactory.DEFAULT_MODEL);
         final var key = System.getenv(KEY_PROPERTY);
         final var organization = System.getenv(ORGANIZATION_PROPERTY);
         final var project = System.getenv(PROJECT_PROPERTY);
@@ -57,14 +59,14 @@ public class OpenAiEngine implements AiNlpEngine {
         if (StringUtil.isBlank(key) || StringUtil.isBlank(organization) || StringUtil.isBlank(project)) {
             logger.errorf("Some of these required environment variables are missing: %s, %s, %s\n", KEY_PROPERTY, ORGANIZATION_PROPERTY, PROJECT_PROPERTY);
                 return null;
-            }
+        }
 
         var httpClient = httpClientProvider.getHttpClient();
 
         var result = AiEngineUtils.aiEngineRequest(
                 httpClient,
                 url,
-                () -> DefaultAiDataRequest.newRequest(OpenAiEngineFactory.DEFAULT_MODEL, context, message),
+                () -> DefaultAiDataRequest.newRequest(model, context, message),
                 Map.of("Authorization", String.format("Bearer %s", key),
                         "OpenAI-Organization", organization,
                         "OpenAI-Project", project

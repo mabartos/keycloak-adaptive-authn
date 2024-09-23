@@ -22,3 +22,4 @@ In order to use the default OpenAI engine for risk scoring, create `.env` file i
 - `OPEN_AI_API_ORGANIZATION` - OpenAI organization ID
 - `OPEN_AI_API_PROJECT` - OpenAI project ID
 - `OPEN_AI_API_URL`(optional) - OpenAI URL (default 'https://api.openai.com/v1/chat/completions')
+- `OPEN_AI_API_MODEL`(optional) - OpenAI Model type (default `gpt-3.5-turbo`)

@@ -26,10 +26,11 @@ public class OpenAiEngineFactory implements AiEngineFactory {
     public static final String DEFAULT_MODEL = "gpt-3.5-turbo";
     public static final String DEFAULT_URL = "https://api.openai.com/v1/chat/completions";
 
-    static final String URL_PROPERTY = "openai.api.url";
-    static final String KEY_PROPERTY = "openai.api.key";
-    static final String ORGANIZATION_PROPERTY = "openai.api.organization";
-    static final String PROJECT_PROPERTY = "openai.api.project";
+    static final String URL_PROPERTY = "OPENAI_API_URL";
+    static final String KEY_PROPERTY = "OPENAI_API_KEY";
+    static final String ORGANIZATION_PROPERTY = "OPENAI_API_ORGANIZATION";
+    static final String PROJECT_PROPERTY = "OPENAI_API_PROJECT";
+    static final String MODEL_PROPERTY = "OPENAI_API_MODEL";
 
     @Override
     public OpenAiEngine create(KeycloakSession session) {
