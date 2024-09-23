@@ -21,7 +21,7 @@ import org.keycloak.provider.ProviderFactory;
 import org.keycloak.provider.Spi;
 
 public class AiEngineSpi implements Spi {
-    public static final String NAME = "ai-engine-spi";
+    public static final String NAME = "aiEngine";
 
     @Override
     public boolean isInternal() {
