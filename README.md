@@ -4,7 +4,7 @@
 
 ### Supported AI NLP Engines:
 
-- **OpenAI ChatGTP** - (preview)
+- **OpenAI ChatGPT** - (preview)
 - **IBM Granite** - (experimental)
 
 For more information, refer to the [README](adaptive/README.md) in `adaptive` module.
