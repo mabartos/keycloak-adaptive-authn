@@ -15,6 +15,14 @@ ENV LANG en_US.UTF-8
 # Flag for determining app is running in container
 ENV KC_RUN_IN_CONTAINER true
 
+# Add the AI engine properties as ENV vars and the default provider here
+#--------------------
+# ENV KC_SPI_AI_ENGINE_PROVIDER <YOUR_CUSTOM_PROVIDER_ID>
+# ENV OPEN_AI_API_KEY           <YOUR_API_KEY>
+# ENV OPEN_AI_API_ORGANIZATION  <YOUR_ORGANIZATION_ID>
+# ENV OPEN_AI_API_PROJECT       <YOUR_PROJECT_ID>
+#--------------------
+
 COPY --from=ubi-micro-build /tmp/null/rootfs/ /
 COPY --from=ubi-micro-build --chown=1000:0 /opt/keycloak /opt/keycloak
 
