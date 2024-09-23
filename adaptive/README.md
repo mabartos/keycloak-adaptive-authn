@@ -33,5 +33,8 @@ following environment variables:
 - `GRANITE_API_URL` - Granite API URL
 - `GRANITE_API_MODEL`(optional) - Granite API Model (default `granite-8b-code-instruct-128k`)
 
+As the IBM Granite is not the default AI NLP engine used in this extension, the default provider needs to be set (and the `build` command executed):
+- `KC_SPI_AI_ENGINE_PROVIDER=granite`
+
 **WARNING**: It seems the IMB Granite is slower than OpenAI ChatGPT, so the timeout for risk evaluations needs to be
 increased for now.
