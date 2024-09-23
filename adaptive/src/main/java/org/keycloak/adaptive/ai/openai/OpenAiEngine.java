@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.ai;
+package org.keycloak.adaptive.ai.openai;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -33,10 +33,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import static org.keycloak.adaptive.ai.OpenAiEngineFactory.KEY_PROPERTY;
-import static org.keycloak.adaptive.ai.OpenAiEngineFactory.ORGANIZATION_PROPERTY;
-import static org.keycloak.adaptive.ai.OpenAiEngineFactory.PROJECT_PROPERTY;
-import static org.keycloak.adaptive.ai.OpenAiEngineFactory.URL_PROPERTY;
+import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.KEY_PROPERTY;
+import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.ORGANIZATION_PROPERTY;
+import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.PROJECT_PROPERTY;
+import static org.keycloak.adaptive.ai.openai.OpenAiEngineFactory.URL_PROPERTY;
 
 /**
  * OpenAI ChatGPT engine
@@ -115,11 +115,6 @@ public class OpenAiEngine implements AiNlpEngine {
     @Override
     public Optional<Double> getRisk(String message) {
         return getRisk(AiRiskEvaluatorMessages.CONTEXT_MESSAGE, message);
-    }
-
-    @Override
-    public <T> T getResult(String message, Class<T> clazz) {
-        return getResult("", message, clazz);
     }
 
     @Override
