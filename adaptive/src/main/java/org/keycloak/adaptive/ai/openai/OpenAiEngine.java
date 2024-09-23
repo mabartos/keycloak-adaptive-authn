@@ -23,7 +23,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
-import org.keycloak.adaptive.spi.ai.AiRiskEvaluatorMessages;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.quarkus.runtime.configuration.Configuration;
@@ -109,12 +108,7 @@ public class OpenAiEngine implements AiNlpEngine {
 
         data.ifPresent(f -> logger.debugf("Evaluated risk: %f. Reason: %s", f.risk(), f.reason()));
 
-        return data.map(f -> f.risk());
-    }
-
-    @Override
-    public Optional<Double> getRisk(String message) {
-        return getRisk(AiRiskEvaluatorMessages.CONTEXT_MESSAGE, message);
+        return data.map(OpenAiRiskData::risk);
     }
 
     @Override
