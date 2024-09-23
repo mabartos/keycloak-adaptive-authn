@@ -1,1 +1,2 @@
 org.keycloak.adaptive.ai.openai.OpenAiEngineFactory
+org.keycloak.adaptive.ai.granite.GraniteAiEngineFactory
