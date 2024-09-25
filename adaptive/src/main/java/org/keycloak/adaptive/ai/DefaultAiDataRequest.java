@@ -20,7 +20,7 @@ package org.keycloak.adaptive.ai;
 import java.util.List;
 
 /**
- * Data request for common AI NLP engines (OpenAI ChatGPT)
+ * Data request for common AI NLP engines (OpenAI ChatGPT, IBM Granite)
  */
 public record DefaultAiDataRequest(String model,
                                    List<Message> messages) {

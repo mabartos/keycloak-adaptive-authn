@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * Default received data from common AI NLP engines (OpenAI ChatGPT)
+ * Default received data from common AI NLP engines (OpenAI ChatGPT, IBM Granite)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DefaultAiDataResponse(

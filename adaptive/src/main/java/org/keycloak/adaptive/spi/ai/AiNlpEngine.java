@@ -32,7 +32,7 @@ public interface AiNlpEngine extends Provider {
     <T> T getResult(String context, String message, Class<T> clazz);
 
     default Optional<Double> getRisk(String message) {
-        return getRisk(AiRiskEvaluatorMessages.CONTEXT_MESSAGE, message);
+        return getRisk(AiRiskEvaluatorMessages.getContextMessage(), message);
     }
 
     Optional<Double> getRisk(String context, String message);
