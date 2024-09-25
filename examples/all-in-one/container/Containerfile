@@ -1,8 +1,12 @@
 FROM registry.access.redhat.com/ubi9 AS ubi-micro-build
 
-ADD target/unpacked/ /tmp/keycloak/
+RUN dnf install -y unzip
 
-RUN mv /tmp/keycloak/keycloak-* /opt/keycloak
+ADD target/keycloak-adaptive-example-all-in-one-*.zip /tmp/keycloak/
+
+RUN (cd /tmp/keycloak && unzip /tmp/keycloak/keycloak-adaptive-example-all-in-one-*.zip && rm /tmp/keycloak/keycloak-adaptive-example-all-in-one-*.zip)
+
+RUN mv /tmp/keycloak/keycloak-adaptive-* /opt/keycloak
 RUN mv /opt/keycloak/data/import /opt/keycloak && mkdir -p /opt/keycloak/data && mv /opt/keycloak/import /opt/keycloak/data/import
 RUN chmod -R g+rwX /opt/keycloak
 
