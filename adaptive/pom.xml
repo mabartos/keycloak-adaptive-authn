@@ -61,10 +61,78 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-server</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.keycloak</groupId>
+                                    <artifactId>keycloak-quarkus-dist</artifactId>
+                                    <version>${keycloak.dist.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-extension-provider</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>keycloak-adaptive-common</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                    <finalName>${project.build.finalName}</finalName>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

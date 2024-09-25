@@ -13,9 +13,8 @@
     <name>Example all-in-one (Adaptive + Authn policies)</name>
 
     <properties>
-        <keycloak.version>25.0.4</keycloak.version>
-        <keycloak.dist.version>${keycloak.version}-AUTHN-POLICIES</keycloak.dist.version>
         <realm.example.name>authn-policy-adaptive</realm.example.name>
+        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-authn-policy-${keycloak.dist.version}</keycloak.distribution.path>
     </properties>
 
     <dependencies>
@@ -31,6 +30,12 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mabartos</groupId>
+            <artifactId>keycloak-authn-policy</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -41,34 +46,26 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-authn-policy-distribution</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${keycloak.distribution.path}</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>../../authn-policy/target/unpacked/keycloak-25.0.4-AUTHN-POLICIES
-                                    </directory>
-                                    <filtering>false</filtering>
-                                    <excludes>
-                                        <exclude>data/</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>unpack-server</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.mabartos</groupId>
+                                    <artifactId>keycloak-authn-policy</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>copy-extension-provider</id>
                         <phase>package</phase>
@@ -78,7 +75,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>org.mabartos</groupId>
                                     <artifactId>keycloak-adaptive-core</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
@@ -87,6 +84,27 @@
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                    <finalName>${project.build.finalName}</finalName>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
