@@ -81,7 +81,9 @@ public class DefaultRiskEngine implements RiskEngine {
         var start = Time.currentTimeMillis();
         var exec = executorsProvider.getExecutor("risk-engine");
 
-        var timeout = getNumberRealmAttribute(EVALUATOR_TIMEOUT_CONFIG, Long::parseLong).orElse(DEFAULT_EVALUATOR_TIMEOUT);
+        var timeout = getNumberRealmAttribute(EVALUATOR_TIMEOUT_CONFIG, Long::parseLong)
+                .map(Duration::ofMillis)
+                .orElse(DEFAULT_EVALUATOR_TIMEOUT);
         var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
 
         var evaluators = Multi.createFrom()
@@ -113,7 +115,7 @@ public class DefaultRiskEngine implements RiskEngine {
                     .onItem()
                     .transformToUniAndConcatenate(processEvaluator::apply)
                     .ifNoItem()
-                    .after(Duration.ofMillis(timeout))
+                    .after(timeout)
                     .recoverWithCompletion()
                     .filter(f -> f.getRiskValue().isPresent())
                     .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue().get()))

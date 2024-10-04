@@ -34,6 +34,7 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.utils.StringUtil;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,7 +49,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
     public static final String PROVIDER_ID = "default-risk-engine";
     public static final String REQUIRES_USER_CONFIG = "requiresUserConfig";
 
-    public static final long DEFAULT_EVALUATOR_TIMEOUT = 1500L;
+    public static final Duration DEFAULT_EVALUATOR_TIMEOUT = Duration.ofMillis(2500L);
     public static final int DEFAULT_EVALUATOR_RETRIES = 3;
 
     public static final String EVALUATOR_TIMEOUT_CONFIG = "riskEvaluatorTimeoutConfig";
