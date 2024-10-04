@@ -33,7 +33,7 @@
             </includes>
             <excludes>
                 <exclude>conf/keycloak.conf</exclude>
-                <exclude>conf/import/</exclude>
+                <exclude>data/import/</exclude>
             </excludes>
         </fileSet>
 
