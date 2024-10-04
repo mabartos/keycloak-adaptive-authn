@@ -56,7 +56,7 @@ public class AiEngineUtils {
             try (var response = client.execute(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     EntityUtils.consumeQuietly(response.getEntity());
-                    throw new RuntimeException(response.getStatusLine().toString());
+                    throw new RuntimeException(String.format("%s - Body: %s\n", response.getStatusLine().toString(), EntityUtils.toString(response.getEntity())));
                 }
                 var result = JsonSerialization.readValue(response.getEntity().getContent(), resultClass);
                 EntityUtils.consumeQuietly(response.getEntity());
