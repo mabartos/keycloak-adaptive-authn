@@ -14,7 +14,7 @@
 
     <properties>
         <realm.example.name>authn-policy-adaptive</realm.example.name>
-        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-authn-policy-${keycloak.dist.version}</keycloak.distribution.path>
+        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-authn-policy-${project.version}</keycloak.distribution.path>
     </properties>
 
     <dependencies>
