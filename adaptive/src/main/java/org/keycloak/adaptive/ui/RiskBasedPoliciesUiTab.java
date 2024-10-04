@@ -217,7 +217,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .label("Risk evaluator timeout (ms)")
                 .helpText("Timeout for evaluating risk score")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue(DEFAULT_EVALUATOR_TIMEOUT)
+                .defaultValue(DEFAULT_EVALUATOR_TIMEOUT.toMillis())
                 .add()
                 .property()
                 .name(EVALUATOR_RETRIES_CONFIG)
