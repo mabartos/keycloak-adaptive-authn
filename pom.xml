@@ -29,6 +29,7 @@
 
         <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.dist.version}
         </keycloak.distribution.path>
+        <keycloak.exec.distribution.path>${keycloak.distribution.path}</keycloak.exec.distribution.path>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -129,7 +130,7 @@
                             <configuration>
                                 <executable>bash</executable>
                                 <arguments>
-                                    <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
+                                    <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
                                     <argument>export</argument>
                                     <argument>--dir=src/main/resources</argument>
                                     <argument>--users=realm_file</argument>
@@ -146,7 +147,7 @@
                             <configuration>
                                 <executable>bash</executable>
                                 <arguments>
-                                    <argument>${keycloak.distribution.path}/bin/kc.sh</argument>
+                                    <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
                                     <argument>--debug</argument>
                                     <argument>start-dev</argument>
                                     <argument>--import-realm</argument>
