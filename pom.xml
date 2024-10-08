@@ -10,6 +10,25 @@
 
     <name>Keycloak Adaptive Authentication Extension Parent</name>
 
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/mabartos/keycloak-adaptive-authn</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Martin Bartos</name>
+            <email>mabartos@redhat.com</email>
+        </developer>
+    </developers>
+
     <modules>
         <module>common</module>
         <module>adaptive</module>
