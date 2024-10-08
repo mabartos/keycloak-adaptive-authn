@@ -22,7 +22,7 @@ import org.keycloak.provider.Provider;
  * Data representing information about characteristics of the authentication attempt.
  * Abstraction for declarative retrieval of specific authentication factors as we do not really care about the approach how the data was obtained.
  * Data is retrieved only once for the request as it is cached.
- * </p>
+ * <p></p>
  * Mainly used for aggregating data for risk-based authentication.
  * Can be information about user, device, location, etc.
  *

@@ -11,6 +11,19 @@
 
     <artifactId>keycloak-adaptive-common</artifactId>
     <name>Adaptive Common</name>
+    <description>Common module for adaptive and authentication policies modules</description>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/mabartos/keycloak-adaptive-authn/common</url>
+    </scm>
 
     <dependencies>
         <dependency>
