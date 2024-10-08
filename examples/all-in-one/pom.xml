@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.mabartos</groupId>
+        <groupId>io.github.mabartos</groupId>
         <artifactId>keycloak-adaptive-examples</artifactId>
         <version>999.0.0-SNAPSHOT</version>
     </parent>
@@ -20,19 +20,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.mabartos</groupId>
+            <groupId>io.github.mabartos</groupId>
             <artifactId>keycloak-adaptive-core</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mabartos</groupId>
+            <groupId>io.github.mabartos</groupId>
             <artifactId>keycloak-authn-policy</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mabartos</groupId>
+            <groupId>io.github.mabartos</groupId>
             <artifactId>keycloak-authn-policy</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -58,7 +58,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.mabartos</groupId>
+                                    <groupId>io.github.mabartos</groupId>
                                     <artifactId>keycloak-authn-policy</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
@@ -76,7 +76,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.mabartos</groupId>
+                                    <groupId>io.github.mabartos</groupId>
                                     <artifactId>keycloak-adaptive-core</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
