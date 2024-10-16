@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class GraniteAiEngine implements AiNlpEngine {
-    private static final Logger logger = Logger.getLogger(OpenAiEngine.class);
+    private static final Logger logger = Logger.getLogger(GraniteAiEngine.class);
 
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
