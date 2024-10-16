@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * Risk evaluator for calculating risk that the authentication user is fraud
  * All risk scores retrieved from evaluators are aggregated in the {@link org.keycloak.adaptive.spi.engine.RiskEngine}
- * Evaluates risk based on provided {@link UserContext} data
+ * Evaluates risk based on provided {@link org.keycloak.adaptive.spi.context.UserContext} data
  */
 public interface RiskEvaluator extends Provider {
 
