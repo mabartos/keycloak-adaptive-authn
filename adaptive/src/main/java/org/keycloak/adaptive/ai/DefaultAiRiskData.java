@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.keycloak.adaptive.spi.ai.AiRiskEvaluatorMessages;
 
 /**
- * General data format for risk score and explanation specified in the NLP query {@link AiRiskEvaluatorMessages#CONTEXT_MESSAGE}
+ * General data format for risk score and explanation specified in the NLP query {@link AiRiskEvaluatorMessages#getContextMessage()}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DefaultAiRiskData(Double risk, String reason) {
