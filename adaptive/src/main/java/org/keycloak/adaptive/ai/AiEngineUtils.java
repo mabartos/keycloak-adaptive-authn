@@ -17,6 +17,7 @@
 
 package org.keycloak.adaptive.ai;
 
+import io.quarkus.logging.Log;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
@@ -55,8 +56,8 @@ public class AiEngineUtils {
 
             try (var response = client.execute(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    EntityUtils.consumeQuietly(response.getEntity());
-                    throw new RuntimeException(String.format("%s - Body: %s\n", response.getStatusLine().toString(), EntityUtils.toString(response.getEntity())));
+                    Log.error(JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
+                    throw new RuntimeException(response.getStatusLine().toString());
                 }
                 var result = JsonSerialization.readValue(response.getEntity().getContent(), resultClass);
                 EntityUtils.consumeQuietly(response.getEntity());
