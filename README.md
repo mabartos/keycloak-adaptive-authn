@@ -28,3 +28,18 @@ In order to see the functionality in action, navigate to `localhost:8080/realms/
 ### Building from Source
 
 To build from source every module, refer to particular READMEs, or follow [building and working with the code base](docs/building-source.md) guide.
+
+## Resources with more info
+
+1. **Adaptive Authentication**
+    - [KeyConf24](https://keyconf.dev/) @ Vienna, Austria
+    - [Slides](https://drive.google.com/file/d/1PESlDBR8P9nQJyPz_H45R3ZS4LjtSV_W/view?usp=sharing)
+    - [Talk](https://www.youtube.com/watch?v=0zWlc08CPuo)
+    - [Demo](https://drive.google.com/file/d/1dv5zWM69-KZyT3OUjLe-3b1GcI8ErDJ2/view?usp=sharing)
+2. **AI-powered Keycloak**
+    - OpenShiftAI Roadshow @ Bratislava, Slovakia
+    - [Slides](https://drive.google.com/file/d/1WscEQlWpjYdrOwGDMj9IDV6bARY-4Utn/view?usp=sharing)
+3. **Adaptive Authentication**
+    - Master's thesis completed 2024
+    - (Information might differ)
+    - [Document](https://github.com/mabartos/adaptive-authn-docs/blob/main/Adaptive_Authentication_Final.pdf)
