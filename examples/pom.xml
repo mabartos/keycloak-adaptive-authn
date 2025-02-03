@@ -15,7 +15,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>all-in-one</module>
+        <!-- The 'authn-policy' module is being migrated to separate repository -->
+        <!--<module>all-in-one</module>-->
     </modules>
 
 </project>
