@@ -1,4 +1,4 @@
-# Adaptive Authentication module
+# Adaptive Authentication extension startup
 
 This module contains components for providing Adaptive authentication capabilities.
 

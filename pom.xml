@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.mabartos</groupId>
-    <artifactId>keycloak-adaptive-parent</artifactId>
+    <artifactId>keycloak-adaptive-authn</artifactId>
     <version>999.0.0-SNAPSHOT</version>
 
-    <name>Keycloak Adaptive Authentication Extension Parent</name>
+    <name>Keycloak Adaptive Authentication Extension</name>
 
     <licenses>
         <license>
@@ -29,14 +29,10 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>adaptive</module>
-    </modules>
-
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
-        <realm.example.name/>
+        <realm.example.name>adaptive</realm.example.name>
 
         <keycloak.version>999.0.0-SNAPSHOT</keycloak.version>
         <keycloak.dist.version>${keycloak.version}</keycloak.dist.version>
@@ -65,37 +61,42 @@
         <maven.sonatype.publish.version>0.6.0</maven.sonatype.publish.version>
     </properties>
 
-    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-common</artifactId>
                 <version>${keycloak.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-core</artifactId>
                 <version>${keycloak.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-services</artifactId>
                 <version>${keycloak.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-server-spi-private</artifactId>
                 <version>${keycloak.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-server-spi</artifactId>
                 <version>${keycloak.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-quarkus-server</artifactId>
                 <version>${keycloak.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.github.seancfoley</groupId>
@@ -103,7 +104,6 @@
                 <version>${seancfoley.ipaddress.version}</version>
             </dependency>
         </dependencies>
-    </dependencyManagement>
 
     <build>
         <pluginManagement>
@@ -112,6 +112,45 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>${maven.plugins.dependency.version}</version>
+                    <executions>
+                        <execution>
+                            <id>unpack-server</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.keycloak</groupId>
+                                        <artifactId>keycloak-quarkus-dist</artifactId>
+                                        <version>${keycloak.dist.version}</version>
+                                        <type>zip</type>
+                                        <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>copy-extension-provider</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>${project.artifactId}</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>jar</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -189,6 +228,23 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>${maven.plugins.assembly.version}</version>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>src/main/assembly/assembly.xml</descriptor>
+                        </descriptors>
+                        <finalName>${project.build.finalName}</finalName>
+                        <outputDirectory>${project.build.directory}</outputDirectory>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
