@@ -29,6 +29,9 @@ In order to see the functionality in action, navigate to `localhost:8080/realms/
 
 To build from source every module, refer to particular READMEs, or follow [building and working with the code base](docs/building-source.md) guide.
 
+## Connected Authentication Policies
+Authentication policies that were part of this Adaptive authentication initiative were moved to repository [mabartos/keycloak-authn-policies](https://github.com/mabartos/keycloak-authn-policies).
+
 ## Resources with more info
 
 1. **Adaptive Authentication**
