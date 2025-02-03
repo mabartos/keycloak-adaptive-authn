@@ -31,7 +31,6 @@
 
     <modules>
         <module>adaptive</module>
-        <module>examples</module>
     </modules>
 
     <packaging>pom</packaging>
