@@ -21,7 +21,6 @@ import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
-import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
