@@ -1,5 +1,7 @@
 ## All-in-one example deployment
 
+**NOTE**: The `authn-policy` module is migrating to separate repository - this example is not working for now.
+
 All-in-one example deployment combining Authentication policies and Adaptive capabilities.
 
 The server leverages the distribution from the `authn-policy` as we rely on the custom JS files.
