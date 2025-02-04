@@ -1,1 +1,0 @@
-Keycloak - Version 25.0.4-AUTHN-POLICIES
