@@ -32,8 +32,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <realm.example.name>adaptive</realm.example.name>
-
         <keycloak.version>999.0.0-SNAPSHOT</keycloak.version>
         <keycloak.dist.version>${keycloak.version}</keycloak.dist.version>
 
@@ -192,7 +190,7 @@
                                     <argument>export</argument>
                                     <argument>--dir=src/main/resources</argument>
                                     <argument>--users=realm_file</argument>
-                                    <argument>--realm=${realm.example.name}</argument>
+                                    <argument>--realm=adaptive</argument>
                                 </arguments>
                             </configuration>
                         </execution>
