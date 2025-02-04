@@ -32,11 +32,10 @@
 
     <properties>
         <keycloak.version>999.0.0-SNAPSHOT</keycloak.version>
-        <keycloak.dist.version>${keycloak.version}</keycloak.dist.version>
 
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
 
-        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.dist.version}
+        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}
         </keycloak.distribution.path>
         <keycloak.exec.distribution.path>${keycloak.distribution.path}</keycloak.exec.distribution.path>
 
@@ -119,7 +118,7 @@
                                 <artifactItem>
                                     <groupId>org.keycloak</groupId>
                                     <artifactId>keycloak-quarkus-dist</artifactId>
-                                    <version>${keycloak.dist.version}</version>
+                                    <version>${keycloak.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
                                 </artifactItem>
@@ -204,6 +203,7 @@
                                 <argument>--debug</argument>
                                 <argument>start-dev</argument>
                                 <argument>--import-realm</argument>
+                                <argument>--verbose</argument>
                             </arguments>
                         </configuration>
                     </execution>
