@@ -31,7 +31,7 @@
 
 
     <properties>
-        <keycloak.version>999.0.0-SNAPSHOT</keycloak.version>
+        <keycloak.version>26.1.0</keycloak.version>
 
         <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
 
