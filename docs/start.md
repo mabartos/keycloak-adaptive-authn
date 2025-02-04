@@ -6,6 +6,8 @@ It leverages risk-based authentication, and communicate with OpenAI ChatGPT NPL 
 
 ## Start the distribution with the extension
 
+You need to 
+
 You can simply execute this command in this module and a Keycloak distribution with this extension will start:
 ```shell
 ../mvnw exec:exec@start-server
