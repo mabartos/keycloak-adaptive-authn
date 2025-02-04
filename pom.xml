@@ -159,22 +159,6 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>compile</id>
-                        <phase>none</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>bash</executable>
-                            <arguments>
-                                <argument>../mvnw</argument>
-                                <argument>clean</argument>
-                                <argument>install</argument>
-                                <argument>-DskipTests</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>export-realm</id>
                         <phase>none</phase>
                         <goals>
