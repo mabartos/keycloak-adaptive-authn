@@ -13,7 +13,6 @@
     <name>Example all-in-one (Adaptive + Authn policies)</name>
 
     <properties>
-        <realm.example.name>authn-policy-adaptive</realm.example.name>
         <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-authn-policy-${project.version}</keycloak.distribution.path>
         <keycloak.exec.distribution.path>${project.build.directory}/${project.artifactId}-${project.version}</keycloak.exec.distribution.path>
     </properties>

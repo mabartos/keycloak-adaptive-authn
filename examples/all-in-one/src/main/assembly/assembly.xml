@@ -50,7 +50,7 @@
             <directory>src/main/resources/</directory>
             <outputDirectory>data/import/</outputDirectory>
             <includes>
-                <include>${realm.example.name}-realm.json</include>
+                <include>authn-policy-adaptive-realm.json</include>
             </includes>
         </fileSet>
     </fileSets>
