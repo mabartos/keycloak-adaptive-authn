@@ -154,8 +154,8 @@
                 <version>${maven.plugins.exec.version}</version>
                 <configuration>
                     <environmentVariables>
-                        <KEYCLOAK_ADMIN>admin</KEYCLOAK_ADMIN>
-                        <KEYCLOAK_ADMIN_PASSWORD>admin</KEYCLOAK_ADMIN_PASSWORD>
+                        <KC_BOOTSTRAP_ADMIN_USERNAME>admin</KC_BOOTSTRAP_ADMIN_USERNAME>
+                        <KC_BOOTSTRAP_ADMIN_PASSWORD>admin</KC_BOOTSTRAP_ADMIN_PASSWORD>
                     </environmentVariables>
                 </configuration>
                 <executions>
