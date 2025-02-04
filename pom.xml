@@ -44,9 +44,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Maven Plugins -->
-        <maven.plugins.compiler.version>3.13.0</maven.plugins.compiler.version>
         <maven.plugins.exec.version>3.4.1</maven.plugins.exec.version>
-        <maven.plugins.resources.version>3.3.1</maven.plugins.resources.version>
         <maven.plugins.assembly.version>3.7.1</maven.plugins.assembly.version>
         <maven.plugins.dependency.version>3.7.1</maven.plugins.dependency.version>
         <maven.plugins.gpg.version>3.2.6</maven.plugins.gpg.version>
@@ -210,16 +208,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.plugins.compiler.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.plugins.resources.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
