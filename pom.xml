@@ -135,6 +135,14 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.github.seancfoley</groupId>
+                                    <artifactId>ipaddress</artifactId>
+                                    <version>${seancfoley.ipaddress.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
