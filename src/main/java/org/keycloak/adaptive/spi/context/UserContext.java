@@ -18,6 +18,8 @@ package org.keycloak.adaptive.spi.context;
 
 import org.keycloak.provider.Provider;
 
+import java.util.Optional;
+
 /**
  * Data representing information about characteristics of the authentication attempt.
  * Abstraction for declarative retrieval of specific authentication factors as we do not really care about the approach how the data was obtained.
@@ -28,18 +30,14 @@ import org.keycloak.provider.Provider;
  *
  * @param <T> specific data to retrieve
  */
-public abstract class UserContext<T> implements Provider {
-    protected T data;
-    protected boolean isInitialized;
+public interface UserContext<T> extends Provider {
 
     /**
      * Flag to determine whether we need a basic information about the authentication user
      *
      * @return true if the basic info is needed
      */
-    public boolean requiresUser() {
-        return false;
-    }
+    boolean requiresUser();
 
     /**
      * Priority of the user context used for ordering when multiple implementation of the same user context is present
@@ -47,38 +45,33 @@ public abstract class UserContext<T> implements Provider {
      *
      * @return priority
      */
-    public int getPriority() {
-        return 0;
-    }
+    int getPriority();
+
+    /**
+     * Flag to determine if the data should be always re-fetched
+     * <p>
+     * User contexts from remote locations should be fetched only once per session
+     *
+     * @return true if {@link UserContext#getData()} should always call {@link UserContext#initData()}
+     */
+    boolean alwaysFetch();
 
     /**
      * Flag to determine the data was correctly obtained
      *
      * @return true if data is present, false otherwise
      */
-    public boolean isInitialized() {
-        return isInitialized;
-    }
+    boolean isInitialized();
 
     /**
      * Initialize the process of obtaining the required data
      */
-    public abstract void initData();
+    Optional<T> initData();
 
     /**
      * Get the specific user context data.
-     * If the data are not properly initialized, it retries the retrieval
      *
      * @return specific data
      */
-    public T getData() {
-        if (!isInitialized()) {
-            initData();
-        }
-        return data;
-    }
-
-    @Override
-    public void close() {
-    }
+    Optional<T> getData();
 }
