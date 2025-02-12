@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,21 +41,14 @@ public class ProxyIpAddressContext extends IpProxyContext {
     }
 
     @Override
-    public void initData() {
-        var result = Optional.ofNullable(session.getContext())
+    public Optional<Set<IPAddress>> initData() {
+        return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)
                 .map(headers -> Stream.concat(
                         getIpAddressFromHeader(headers, "Forwarded"),
                         getIpAddressFromHeader(headers, "X-Forwarded-For"))
                 )
                 .map(f -> f.collect(Collectors.toSet()));
-
-        if (result.isPresent()) {
-            this.data = result.get();
-            this.isInitialized = true;
-        } else {
-            this.isInitialized = false;
-        }
     }
 
     protected static Stream<IPAddress> getIpAddressFromHeader(HttpHeaders headers, String headerName) {

@@ -19,6 +19,7 @@ package org.keycloak.adaptive.context.location;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.util.EntityUtils;
+import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
@@ -36,15 +37,17 @@ import java.util.Optional;
  * Obtain location data based on the IP address from 'ipapi.co' server
  */
 public class IpApiLocationContext extends LocationContext {
+    private static final Logger log = Logger.getLogger(IpApiLocationContext.class);
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
+
     public IpApiLocationContext(KeycloakSession session) {
         this.session = session;
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
     }
 
     @Override
-    public void initData() {
+    public Optional<LocationData> initData() {
         try {
             final IpAddressContext ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
 
@@ -64,13 +67,11 @@ public class IpApiLocationContext extends LocationContext {
                     EntityUtils.consumeQuietly(response.getEntity());
                     throw new RuntimeException(response.getStatusLine().getReasonPhrase());
                 }
-                this.data = JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class);
+                return Optional.ofNullable(JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class));
             }
-
-            this.isInitialized = true;
         } catch (URISyntaxException | IOException | RuntimeException e) {
-            this.isInitialized = false;
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
         }
+        return Optional.empty();
     }
 }

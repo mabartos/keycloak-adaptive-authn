@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.context.role;
 
-import org.keycloak.adaptive.spi.context.UserContext;
+import org.keycloak.adaptive.spi.context.AbstractUserContext;
 import org.keycloak.models.RoleModel;
 
 import java.util.Set;
@@ -24,11 +24,15 @@ import java.util.Set;
 /**
  * Context for obtaining all roles of the authentication user
  */
-public abstract class UserRoleContext extends UserContext<Set<RoleModel>> {
+public abstract class UserRoleContext extends AbstractUserContext<Set<RoleModel>> {
 
     @Override
     public boolean requiresUser() {
         return true;
     }
 
+    @Override
+    public boolean alwaysFetch() {
+        return true;
+    }
 }

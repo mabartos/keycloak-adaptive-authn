@@ -16,8 +16,11 @@
  */
 package org.keycloak.adaptive.context.ip.client;
 
+import inet.ipaddr.IPAddress;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.models.KeycloakSession;
+
+import java.util.Optional;
 
 /**
  * Context for aggregating all IP address contexts and evaluate them based on their priority
@@ -30,17 +33,15 @@ public class DefaultIpAddress extends IpAddressContext {
     }
 
     @Override
-    public void initData() {
+    public Optional<IPAddress> initData() {
         final var contexts = ContextUtils.getSortedContexts(session, IpAddressContext.class, DefaultIpAddressFactory.PROVIDER_ID);
 
         for (var context : contexts) {
-            context.initData();
-            if (context.isInitialized()) {
-                this.data = context.getData();
-                this.isInitialized = true;
-                return;
+            var data = context.initData();
+            if (data.isPresent()) {
+                return data;
             }
         }
-        this.isInitialized = false;
+        return Optional.empty();
     }
 }

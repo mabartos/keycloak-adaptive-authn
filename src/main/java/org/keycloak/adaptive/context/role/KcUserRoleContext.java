@@ -19,10 +19,11 @@ package org.keycloak.adaptive.context.role;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleMapperModel;
+import org.keycloak.models.RoleModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,13 +37,11 @@ public class KcUserRoleContext extends UserRoleContext {
     }
 
     @Override
-    public void initData() {
-        this.data = Optional.ofNullable(session.getContext())
+    public Optional<Set<RoleModel>> initData() {
+        return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getAuthenticationSession)
                 .map(AuthenticationSessionModel::getAuthenticatedUser)
                 .map(RoleMapperModel::getRoleMappingsStream)
-                .map(f -> f.collect(Collectors.toSet()))
-                .orElseGet(Collections::emptySet);
-        this.isInitialized = !data.isEmpty();
+                .map(f -> f.collect(Collectors.toSet()));
     }
 }

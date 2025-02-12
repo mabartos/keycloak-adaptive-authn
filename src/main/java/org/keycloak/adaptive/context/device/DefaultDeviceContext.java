@@ -18,19 +18,27 @@ package org.keycloak.adaptive.context.device;
 
 import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.representations.account.DeviceRepresentation;
+
+import java.util.Optional;
 
 /**
  * Device context obtained from the Keycloak Device representation
  */
 public class DefaultDeviceContext extends DeviceContext {
     private final KeycloakSession session;
+
     public DefaultDeviceContext(KeycloakSession session) {
         this.session = session;
     }
 
     @Override
-    public void initData() {
-        this.data = session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation();
-        this.isInitialized = true;
+    public boolean alwaysFetch() {
+        return true;
+    }
+
+    @Override
+    public Optional<DeviceRepresentation> initData() {
+        return Optional.ofNullable(session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation());
     }
 }

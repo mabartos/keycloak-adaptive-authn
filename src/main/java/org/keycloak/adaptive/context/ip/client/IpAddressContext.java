@@ -17,10 +17,20 @@
 package org.keycloak.adaptive.context.ip.client;
 
 import inet.ipaddr.IPAddress;
-import org.keycloak.adaptive.spi.context.UserContext;
+import org.keycloak.adaptive.spi.context.AbstractUserContext;
 
 /**
  * Context for obtaining IP address
  */
-public abstract class IpAddressContext extends UserContext<IPAddress> {
+public abstract class IpAddressContext extends AbstractUserContext<IPAddress> {
+
+    @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
+    @Override
+    public boolean alwaysFetch() {
+        return true;
+    }
 }
