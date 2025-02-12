@@ -189,6 +189,8 @@
                                 <argument>start-dev</argument>
                                 <argument>--import-realm</argument>
                                 <argument>--verbose</argument>
+                                <argument>--tracing-enabled=true</argument>
+                                <argument>--log-console-include-trace=false</argument>
                             </arguments>
                         </configuration>
                     </execution>
