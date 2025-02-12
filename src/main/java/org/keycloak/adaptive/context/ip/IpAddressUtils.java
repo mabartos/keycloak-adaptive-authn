@@ -55,7 +55,7 @@ public class IpAddressUtils {
             var end = new IPAddressString(items[1]).getAddress();
             var ipRange = start.spanWithRange(end);
 
-            var deviceIp = Optional.ofNullable(context.getData())
+            var deviceIp = context.getData()
                     .map(DeviceRepresentation::getIpAddress)
                     .filter(StringUtil::isNotBlank);
 

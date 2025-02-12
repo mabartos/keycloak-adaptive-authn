@@ -25,6 +25,7 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
 
@@ -46,19 +47,19 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
-                    .condition((dev, val) -> dev.getData().getBrowser().startsWith(val))
+                    .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getBrowser).filter(f -> f.startsWith(val)).isPresent())
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NEQ)
-                    .condition((dev, val) -> !dev.getData().getBrowser().startsWith(val))
+                    .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getBrowser).filter(f -> f.startsWith(val)).isEmpty())
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().getBrowser()))
+                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().getBrowser()))
+                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>")))
                 .add()
                 .build();
     }
