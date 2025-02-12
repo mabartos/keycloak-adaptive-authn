@@ -33,6 +33,11 @@ public class DefaultIpAddress extends IpAddressContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public Optional<IPAddress> initData() {
         final var contexts = ContextUtils.getSortedContexts(session, IpAddressContext.class, DefaultIpAddressFactory.PROVIDER_ID);
 

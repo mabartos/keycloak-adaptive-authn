@@ -41,6 +41,11 @@ public class ProxyIpAddressContext extends IpProxyContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public Optional<Set<IPAddress>> initData() {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)

@@ -37,6 +37,11 @@ public class HeaderIpAddressContext extends IpAddressContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public Optional<IPAddress> initData() {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)

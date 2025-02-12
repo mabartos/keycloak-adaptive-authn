@@ -37,6 +37,11 @@ public class KcUserRoleContext extends UserRoleContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public Optional<Set<RoleModel>> initData() {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getAuthenticationSession)
