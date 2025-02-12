@@ -25,6 +25,7 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
 
@@ -81,19 +82,19 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
         return OperationsBuilder.builder(DeviceContext.class)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
-                    .condition((dev, val) -> dev.getData().getIpAddress().startsWith(val))
+                    .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isPresent())
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NEQ)
-                    .condition((dev, val) -> !dev.getData().getIpAddress().startsWith(val))
+                    .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isEmpty())
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().getIpAddress()))
+                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().getIpAddress()))
+                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.IN_RANGE)

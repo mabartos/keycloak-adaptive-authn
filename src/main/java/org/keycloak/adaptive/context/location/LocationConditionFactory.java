@@ -37,14 +37,14 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
     public static final String CITY_LIST_CONFIG = "cityListConfig";
     public static final String CITY_VALUE_CONFIG = "cityValueConfig";
 
-    public static final Operation<LocationContext> CONTINENT_IS = new Operation<>("CONT_EQ", "continent is", (location, val) -> location.getData().getContinent().equals(val));
-    public static final Operation<LocationContext> CONTINENT_IS_NOT = new Operation<>("CONT_NEQ", "continent is not", (location, val) -> !location.getData().getContinent().equals(val));
+    public static final Operation<LocationContext> CONTINENT_IS = new Operation<>("CONT_EQ", "continent is", (location, val) -> location.getData().map(LocationData::getContinent).filter(f -> f.equals(val)).isPresent());
+    public static final Operation<LocationContext> CONTINENT_IS_NOT = new Operation<>("CONT_NEQ", "continent is not", (location, val) -> location.getData().map(LocationData::getContinent).filter(f -> f.equals(val)).isEmpty());
 
-    public static final Operation<LocationContext> COUNTRY_IS = new Operation<>("COUNTRY_EQ", "country is", (location, val) -> location.getData().getCountry().equals(val));
-    public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not", (location, val) -> !location.getData().getCountry().equals(val));
+    public static final Operation<LocationContext> COUNTRY_IS = new Operation<>("COUNTRY_EQ", "country is", (location, val) -> location.getData().map(LocationData::getCountry).filter(f -> f.equals(val)).isPresent());
+    public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not", (location, val) -> location.getData().map(LocationData::getContinent).filter(f -> f.equals(val)).isEmpty());
 
-    public static final Operation<LocationContext> CITY_IS = new Operation<>("CITY_EQ", "city is", (location, val) -> location.getData().getCity().equals(val));
-    public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (location, val) -> !location.getData().getCity().equals(val));
+    public static final Operation<LocationContext> CITY_IS = new Operation<>("CITY_EQ", "city is", (location, val) -> location.getData().map(LocationData::getCity).filter(f -> f.equals(val)).isPresent());
+    public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (location, val) -> location.getData().map(LocationData::getContinent).filter(f -> f.equals(val)).isEmpty());
 
     public LocationConditionFactory() {
     }

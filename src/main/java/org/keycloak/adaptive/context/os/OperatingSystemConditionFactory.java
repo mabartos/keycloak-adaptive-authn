@@ -28,7 +28,6 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
-import java.util.Optional;
 
 public class OperatingSystemConditionFactory extends UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-os-authenticator";
@@ -80,7 +79,7 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
     }
 
     public static boolean isOs(DeviceContext context, String os) {
-        return Optional.ofNullable(context.getData())
+        return context.getData()
                 .map(DeviceRepresentation::getOs)
                 .map(f -> f.startsWith(os))
                 .orElse(false);
@@ -99,11 +98,11 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().getOs()))
+                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().getOs()))
+                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
                 .add()
                 .build();
     }

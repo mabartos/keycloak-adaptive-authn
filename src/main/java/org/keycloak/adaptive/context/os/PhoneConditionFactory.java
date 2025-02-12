@@ -27,7 +27,6 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
-import java.util.Optional;
 
 public class PhoneConditionFactory extends UserContextConditionFactory<DeviceContext> {
     public static final String PROVIDER_ID = "conditional-mobile-authenticator";
@@ -79,7 +78,7 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
     }
 
     protected boolean isMobilePhone(DeviceContext context, String value) {
-        return Optional.ofNullable(context.getData())
+        return context.getData()
                 .map(f -> Boolean.valueOf(f.isMobile()).toString())
                 .map(f -> f.equals(value))
                 .orElse(false);
