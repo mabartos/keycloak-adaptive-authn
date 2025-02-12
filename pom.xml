@@ -33,7 +33,7 @@
     <properties>
         <keycloak.version>26.1.0</keycloak.version>
 
-        <seancfoley.ipaddress.version>5.5.0</seancfoley.ipaddress.version>
+        <seancfoley.ipaddress.version>5.5.1</seancfoley.ipaddress.version>
 
         <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}
         </keycloak.distribution.path>
