@@ -19,9 +19,9 @@ package org.keycloak.adaptive.engine;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
@@ -29,10 +29,13 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.tracing.TracingProvider;
+import org.keycloak.tracing.TracingProviderUtil;
 
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
@@ -48,6 +51,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
     private final KeycloakSession session;
     private final RealmModel realm;
+    private final TracingProvider tracingProvider;
     private final Set<RiskEvaluator> riskFactorEvaluators;
     private final ExecutorsProvider executorsProvider;
     private final StoredRiskProvider storedRiskProvider;
@@ -59,6 +63,7 @@ public class DefaultRiskEngine implements RiskEngine {
     public DefaultRiskEngine(KeycloakSession session) {
         this.session = session;
         this.realm = session.getContext().getRealm();
+        this.tracingProvider = TracingProviderUtil.getTracingProvider(session);
         this.riskFactorEvaluators = session.getAllProviders(RiskEvaluator.class);
         this.executorsProvider = session.getProvider(ExecutorsProvider.class);
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
@@ -98,50 +103,63 @@ public class DefaultRiskEngine implements RiskEngine {
         // Evaluate factors with no user in a different worker thread, otherwise in the main thread
         evaluators = requiresUser ? evaluators : evaluators.runSubscriptionOn(exec);
 
-        final Function<RiskEvaluator, Uni<RiskEvaluator>> processEvaluator = (re) -> {
-            var item = Uni.createFrom()
-                    .item(re)
-                    .onItem()
-                    .invoke(RiskEvaluator::evaluate)
-                    .onFailure()
-                    .retry()
-                    .atMost(retries);
-            return requiresUser ? item : item.emitOn(exec);
-        };
-
         evaluators.subscribe().with(e -> KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            var evaluatedRisks = Multi.createFrom()
-                    .items(e.stream())
-                    .onItem()
-                    .transformToUniAndConcatenate(processEvaluator::apply)
-                    .ifNoItem()
-                    .after(timeout)
-                    .recoverWithCompletion()
-                    .filter(f -> f.getRiskValue().isPresent())
-                    .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue().get()))
-                    .collect()
-                    .asSet();
+            tracingProvider.trace(DefaultRiskEngine.class, "evaluateAll", span -> {
+                var evaluatedRisks = Multi.createFrom()
+                        .items(e.stream())
+                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, exec, retries))
+                        .ifNoItem()
+                        .after(timeout)
+                        .recoverWithCompletion()
+                        .filter(f -> f.getRiskValue().isPresent())
+                        .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskValue().get()))
+                        .collect()
+                        .asSet();
 
-            evaluatedRisks.subscribe().with(risks -> {
-                var weightedRisk = risks.stream()
-                        .filter(g -> g.getRiskValue().isPresent())
-                        .peek(g -> logger.debugf("Evaluator: %s", g.getClass().getSimpleName()))
-                        .peek(g -> logger.debugf("Risk evaluated: %f (weight %f)", g.getRiskValue().get(), g.getWeight()))
-                        .mapToDouble(g -> g.getRiskValue().get() * g.getWeight())
-                        .sum();
+                evaluatedRisks.subscribe().with(risks -> {
+                    var weightedRisk = risks.stream()
+                            .filter(eval -> eval.getRiskValue().isPresent())
+                            .peek(eval -> logger.debugf("Evaluator: %s", eval.getClass().getSimpleName()))
+                            .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRiskValue().get(), eval.getWeight()))
+                            .mapToDouble(eval -> eval.getRiskValue().get() * eval.getWeight())
+                            .sum();
 
-                var weights = risks.stream()
-                        .mapToDouble(RiskEvaluator::getWeight)
-                        .sum();
+                    var weights = risks.stream()
+                            .mapToDouble(RiskEvaluator::getWeight)
+                            .sum();
 
-                // Weighted arithmetic mean
-                this.risk = weightedRisk / weights;
-                logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
+                    // Weighted arithmetic mean
+                    this.risk = weightedRisk / weights;
+                    logger.debugf("The overall risk score is %f - (requires user: %s)", risk, requiresUser);
 
-                storedRiskProvider.storeRisk(risk, riskPhase);
+                    if (span.isRecording()) {
+                        span.setAttribute("keycloak.risk.engine.overall", risk);
+                        span.setAttribute("keycloak.risk.engine.phase", riskPhase.name());
+                    }
+
+                    storedRiskProvider.storeRisk(risk, riskPhase);
+                });
             });
         }), failure -> logger.error(failure.getCause()));
         logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
+    }
+
+    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, ExecutorService thread, int retries) {
+        var item = Uni.createFrom()
+                .item(evaluator)
+                .onItem()
+                .invoke(eval -> tracingProvider.trace(eval.getClass(), "evaluate", span -> {
+                    eval.evaluate();
+
+                    if (span.isRecording()) {
+                        span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRiskValue().orElse(-1.0));
+                        span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight());
+                    }
+                }))
+                .onFailure()
+                .retry()
+                .atMost(retries);
+        return requiresUser ? item : item.emitOn(thread);
     }
 
     @Override
