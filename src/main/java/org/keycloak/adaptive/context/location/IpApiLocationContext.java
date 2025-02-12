@@ -47,6 +47,11 @@ public class IpApiLocationContext extends LocationContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public Optional<LocationData> initData() {
         try {
             final IpAddressContext ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);

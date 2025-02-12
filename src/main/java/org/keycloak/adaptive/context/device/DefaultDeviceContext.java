@@ -38,6 +38,11 @@ public class DefaultDeviceContext extends DeviceContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public Optional<DeviceRepresentation> initData() {
         return Optional.ofNullable(session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation());
     }

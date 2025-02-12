@@ -37,6 +37,11 @@ public class DeviceIpAddressContext extends IpAddressContext {
     }
 
     @Override
+    public KeycloakSession getSession() {
+        return session;
+    }
+
+    @Override
     public int getPriority() {
         return 10;
     }

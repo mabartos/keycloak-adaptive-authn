@@ -16,12 +16,18 @@
  */
 package org.keycloak.adaptive.spi.context;
 
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.tracing.TracingProvider;
+import org.keycloak.tracing.TracingProviderUtil;
+
 import java.util.Optional;
 
 public abstract class AbstractUserContext<T> implements UserContext<T> {
     protected static int COUNT_OF_INIT_RETRIES = 2;
 
     private Optional<T> data;
+
+    public abstract KeycloakSession getSession();
 
     @Override
     public int getPriority() {
@@ -30,7 +36,7 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
 
     @Override
     public boolean isInitialized() {
-        return data.isPresent();
+        return data != null && data.isPresent();
     }
 
     @Override
@@ -44,16 +50,26 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
      */
     @Override
     public Optional<T> getData() {
-        if (!alwaysFetch() && isInitialized()) {
+        final var tracingProvider = TracingProviderUtil.getTracingProvider(getSession());
+
+        return tracingProvider.trace(this.getClass(), "getData", (span) -> {
+            if (span.isRecording()) {
+                span.setAttribute("keycloak.user.context.always-fetch", alwaysFetch());
+            }
+
+            if (!alwaysFetch() && isInitialized()) {
+                return data;
+            }
+            this.data = tryInitDataMultipleTimes(tracingProvider);
             return data;
-        }
-        this.data = tryInitDataMultipleTimes();
-        return data;
+        });
     }
 
-    protected Optional<T> tryInitDataMultipleTimes() {
+    protected Optional<T> tryInitDataMultipleTimes(TracingProvider tracing) {
         for (int i = 0; i < COUNT_OF_INIT_RETRIES; i++) {
-            Optional<T> data = initData();
+            Optional<T> data = tracing.trace(this.getClass(), "initData", (span) -> {
+                return initData();
+            });
             if (data.isPresent()) {
                 return data;
             }
