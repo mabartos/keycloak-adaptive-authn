@@ -26,6 +26,7 @@ import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -65,6 +66,7 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     public void evaluate() {
         boolean isAdmin = context.getData()
                 .stream()
+                .flatMap(Collection::stream)
                 .map(RoleModel::getName)
                 .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
 
