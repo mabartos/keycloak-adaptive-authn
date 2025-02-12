@@ -17,12 +17,22 @@
 package org.keycloak.adaptive.context.ip.proxy;
 
 import inet.ipaddr.IPAddress;
-import org.keycloak.adaptive.spi.context.UserContext;
+import org.keycloak.adaptive.spi.context.AbstractUserContext;
 
 import java.util.Set;
 
 /**
  * Obtain all IP addresses specified by proxy
  */
-public abstract class IpProxyContext extends UserContext<Set<IPAddress>> {
+public abstract class IpProxyContext extends AbstractUserContext<Set<IPAddress>> {
+
+    @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
+    @Override
+    public boolean alwaysFetch() {
+        return false;
+    }
 }

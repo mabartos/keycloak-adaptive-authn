@@ -16,9 +16,10 @@
  */
 package org.keycloak.adaptive.context.ip.client;
 
+import inet.ipaddr.IPAddress;
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
+import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.context.ip.IpAddressUtils;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
@@ -41,18 +42,11 @@ public class DeviceIpAddressContext extends IpAddressContext {
     }
 
     @Override
-    public void initData() {
+    public Optional<IPAddress> initData() {
         final DeviceContext deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
 
-        var ip = Optional.ofNullable(deviceContext.getData())
+        return deviceContext.getData()
                 .map(DeviceRepresentation::getIpAddress)
                 .flatMap(IpAddressUtils::getIpAddress);
-
-        if (ip.isPresent()) {
-            this.data = ip.get();
-            this.isInitialized = true;
-        } else {
-            this.isInitialized = false;
-        }
     }
 }

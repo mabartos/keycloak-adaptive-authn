@@ -16,11 +16,16 @@
  */
 package org.keycloak.adaptive.context.device;
 
-import org.keycloak.adaptive.spi.context.UserContext;
+import org.keycloak.adaptive.spi.context.AbstractUserContext;
 import org.keycloak.representations.account.DeviceRepresentation;
 
 /**
  * Context for obtaining device properties
  */
-public abstract class DeviceContext extends UserContext<DeviceRepresentation> {
+public abstract class DeviceContext extends AbstractUserContext<DeviceRepresentation> {
+
+    @Override
+    public boolean requiresUser() {
+        return false;
+    }
 }
