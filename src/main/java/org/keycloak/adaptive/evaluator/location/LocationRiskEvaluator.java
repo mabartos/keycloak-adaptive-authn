@@ -82,16 +82,15 @@ public class LocationRiskEvaluator implements RiskEvaluator {
         }
 
         var data = locationContext.getData();
-        if (data == null) {
+        if (data.isPresent()) {
+            logger.debugf("Location - City: %s, Country: %s", data.get().getCity(), data.get().getCountry());
+
+            // TODO save location to successful logins and then compare it here
+            //session.singleUseObjects().put(getUserLocationKey(user),);
+
+        } else {
             logger.debugf("Data for LocationRiskEvaluator is null");
-            this.risk = null;
-            return;
         }
-
-        logger.debugf("Location - City: %s, Country: %s", data.getCity(), data.getCountry());
-
-        // TODO save location to successful logins and then compare it here
-        //session.singleUseObjects().put(getUserLocationKey(user),);
     }
 
     protected String getUserLocationKey(UserModel user) {
