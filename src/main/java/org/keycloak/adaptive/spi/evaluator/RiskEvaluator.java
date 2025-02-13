@@ -32,7 +32,7 @@ public interface RiskEvaluator extends Provider {
      *
      * @return (optional) risk score in range (0,1>
      */
-    Optional<Double> getRiskValue();
+    Optional<Double> getRiskScore();
 
     /**
      * Get weight of the evaluation claims how much the evaluations should influence the overall risk score
@@ -51,17 +51,12 @@ public interface RiskEvaluator extends Provider {
     /**
      * Execute evaluation of the risk score
      */
-    void evaluate();
+    void evaluateRisk();
 
     /**
      * Flag to determine whether the evaluator should evaluate the risk score
      *
      * @return true if is enabled, otherwise false
      */
-    default boolean isEnabled() {
-        return true;
-    }
-
-    default void close() {
-    }
+    boolean isEnabled();
 }

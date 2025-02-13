@@ -21,7 +21,7 @@ import org.keycloak.adaptive.context.os.OperatingSystemCondition;
 import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Optional;
@@ -29,19 +29,13 @@ import java.util.Optional;
 /**
  * Risk evaluator for OS properties
  */
-public class OperatingSystemRiskEvaluator implements RiskEvaluator {
+public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     private final KeycloakSession session;
     private final OperatingSystemCondition condition;
-    private Double risk;
 
     public OperatingSystemRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.condition = ContextUtils.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -60,11 +54,7 @@ public class OperatingSystemRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public void evaluate() {
-        if (condition.isDefaultKnownOs()) {
-            this.risk = Risk.NONE;
-        } else {
-            this.risk = Risk.INTERMEDIATE;
-        }
+    public Optional<Double> evaluate() {
+        return Optional.of(condition.isDefaultKnownOs() ? Risk.NONE : Risk.INTERMEDIATE);
     }
 }

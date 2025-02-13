@@ -24,7 +24,7 @@ import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.utils.StringUtil;
@@ -34,21 +34,15 @@ import java.util.Optional;
 /**
  * Risk evaluator for checking login failures properties to detect brute-force attacks
  */
-public class LoginFailuresRiskEvaluator implements RiskEvaluator {
+public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(LoginFailuresRiskEvaluator.class);
 
     private final KeycloakSession session;
     private final IpAddressContext ipAddressContext;
-    private Double risk;
 
     public LoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -73,50 +67,61 @@ public class LoginFailuresRiskEvaluator implements RiskEvaluator {
         );
     }
 
+    protected double getRiskLoginFailures(int failuresCount) {
+        if (failuresCount <= 2) {
+            return Risk.NONE;
+        } else if (failuresCount <= 5) {
+            return Risk.SMALL;
+        } else if (failuresCount < 10) {
+            return Risk.MEDIUM;
+        } else if (failuresCount < 15) {
+            return Risk.INTERMEDIATE;
+        } else {
+            return Risk.VERY_HIGH;
+        }
+    }
+
+    protected Optional<Double> getRiskLastIP(String lastIP) {
+        var currentIp = ipAddressContext.getData().map(IPAddress::toString).orElse("");
+
+        if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIP)) {
+            if (!currentIp.equals(lastIP)) {
+                logger.debug("Request from different IP address");
+                return Optional.of(Risk.INTERMEDIATE);
+            } else {
+                logger.debug("Same IP address");
+            }
+        }
+        return Optional.empty();
+    }
+
     @Override
-    public void evaluate() {
+    public Optional<Double> evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
             logger.debug("Context realm is null");
-            return;
+            return Optional.empty();
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
             logger.debug("Context user is null");
-            return;
+            return Optional.empty();
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
             logger.debug("Cannot obtain login failures");
-            return;
+            return Optional.empty();
         }
 
         // Number of failures
         var numFailures = loginFailures.getNumFailures();
-        if (numFailures <= 2) {
-            this.risk = Risk.NONE;
-        } else if (numFailures <= 5) {
-            this.risk = Risk.SMALL;
-        } else if (numFailures < 10) {
-            this.risk = Risk.MEDIUM;
-        } else if (numFailures < 15) {
-            this.risk = Risk.INTERMEDIATE;
-        } else {
-            this.risk = Risk.VERY_HIGH;
-        }
 
-        var currentIp = ipAddressContext.getData().map(IPAddress::toString).orElse("");
-        var lastIpFailure = loginFailures.getLastIPFailure();
-
-        if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIpFailure)) {
-            if (!currentIp.equals(lastIpFailure)) {
-                this.risk = Math.max(risk, Risk.INTERMEDIATE);
-                logger.debug("Request from different IP address");
-            }
-        }
+        return getRiskLastIP(loginFailures.getLastIPFailure())
+                .map(score -> Math.max(score, getRiskLoginFailures(numFailures)))
+                .or(() -> Optional.of(getRiskLoginFailures(numFailures)));
 
         // TODO compute when was the last login failure
     }

@@ -22,7 +22,7 @@ import org.keycloak.adaptive.context.location.IpApiLocationContextFactory;
 import org.keycloak.adaptive.context.location.LocationContext;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -32,24 +32,17 @@ import java.util.Optional;
 /**
  * Risk evaluator for location properties
  */
-public class LocationRiskEvaluator implements RiskEvaluator {
+public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(LocationRiskEvaluator.class);
 
     private final KeycloakSession session;
     private final RealmModel realm;
     private final LocationContext locationContext;
 
-    private Double risk;
-
     public LocationRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.locationContext = ContextUtils.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -68,17 +61,17 @@ public class LocationRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public void evaluate() {
+    public Optional<Double> evaluate() {
         if (realm == null) {
             logger.debugf("Realm is null");
-            return;
+            return Optional.empty();
         }
 
         var user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
 
         if (user == null) {
             logger.debugf("User is null");
-            return;
+            return Optional.empty();
         }
 
         var data = locationContext.getData();
@@ -91,6 +84,8 @@ public class LocationRiskEvaluator implements RiskEvaluator {
         } else {
             logger.debugf("Data for LocationRiskEvaluator is null");
         }
+
+        return Optional.empty();
     }
 
     protected String getUserLocationKey(UserModel user) {
