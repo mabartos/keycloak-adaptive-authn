@@ -24,6 +24,7 @@ import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
@@ -35,23 +36,17 @@ import java.util.Optional;
 /**
  * Risk evaluator for checking login failures properties evaluated by AI NLP engine to detect brute-force attacks
  */
-public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
+public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiLoginFailuresRiskEvaluator.class);
 
     private final KeycloakSession session;
     private final IpAddressContext ipAddressContext;
     private final AiNlpEngine aiEngine;
-    private Double risk;
 
     public AiLoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiNlpEngine.class);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -96,30 +91,30 @@ public class AiLoginFailuresRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public void evaluate() {
+    public Optional<Double> evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
             logger.debug("Context realm is null");
-            return;
+            return Optional.empty();
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
             logger.debug("Context user is null");
-            return;
+            return Optional.empty();
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
             logger.debug("Cannot obtain login failures");
-            return;
+            return Optional.empty();
+
         }
 
         Optional<Double> evaluatedRisk = aiEngine.getRisk(request(loginFailures));
-        evaluatedRisk.ifPresent(risk -> {
-            logger.debugf("AI request was successful. Evaluated risk: %f", risk);
-            this.risk = risk;
-        });
+        evaluatedRisk.ifPresent(risk -> logger.debugf("AI request was successful. Evaluated risk: %f", risk));
+
+        return evaluatedRisk;
     }
 }

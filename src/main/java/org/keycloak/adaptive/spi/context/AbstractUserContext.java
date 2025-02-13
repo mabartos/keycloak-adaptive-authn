@@ -25,6 +25,7 @@ import java.util.Optional;
 public abstract class AbstractUserContext<T> implements UserContext<T> {
     protected static int COUNT_OF_INIT_RETRIES = 2;
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<T> data;
 
     public abstract KeycloakSession getSession();

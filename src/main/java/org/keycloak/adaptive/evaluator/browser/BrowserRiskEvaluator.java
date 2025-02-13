@@ -21,7 +21,7 @@ import org.keycloak.adaptive.context.browser.BrowserCondition;
 import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Optional;
@@ -29,19 +29,13 @@ import java.util.Optional;
 /**
  * Risk evaluator for browser properties
  */
-public class BrowserRiskEvaluator implements RiskEvaluator {
+public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     private final KeycloakSession session;
     private final BrowserCondition browserCondition;
-    private Double risk;
 
     public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.browserCondition = ContextUtils.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -60,13 +54,7 @@ public class BrowserRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public void evaluate() {
-        var isKnown = browserCondition.isDefaultKnownBrowser();
-
-        if (isKnown) {
-            this.risk = Risk.NONE;
-        } else {
-            this.risk = Risk.INTERMEDIATE;
-        }
+    public Optional<Double> evaluate() {
+        return Optional.of(browserCondition.isDefaultKnownBrowser() ? Risk.NONE : Risk.INTERMEDIATE);
     }
 }

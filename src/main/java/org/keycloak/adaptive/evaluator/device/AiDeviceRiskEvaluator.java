@@ -22,7 +22,7 @@ import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
 
@@ -31,24 +31,17 @@ import java.util.Optional;
 /**
  * Risk evaluator for checking device properties evaluated by AI NLP engine
  */
-public class AiDeviceRiskEvaluator implements RiskEvaluator {
+public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiDeviceRiskEvaluator.class);
 
     private final KeycloakSession session;
     private final DeviceContext deviceContext;
     private final AiNlpEngine aiEngine;
 
-    private Double risk;
-
     public AiDeviceRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiNlpEngine.class);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -92,21 +85,20 @@ public class AiDeviceRiskEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public void evaluate() {
+    public Optional<Double> evaluate() {
         if (aiEngine == null) {
             logger.warnf("Cannot find AI engine");
-            return;
+            return Optional.empty();
         }
 
         var deviceRepresentation = deviceContext.getData();
         if (deviceRepresentation.isPresent()) {
             Optional<Double> evaluatedRisk = aiEngine.getRisk(request(deviceRepresentation.get()));
-            evaluatedRisk.ifPresent(risk -> {
-                logger.debugf("AI request was successful. Evaluated risk: %f", risk);
-                this.risk = risk;
-            });
+            evaluatedRisk.ifPresent(risk -> logger.debugf("AI request was successful. Evaluated risk: %f", risk));
+            return evaluatedRisk;
         } else {
             logger.warnf("Device representation is null");
         }
+        return Optional.empty();
     }
 }

@@ -21,7 +21,7 @@ import org.keycloak.adaptive.context.role.KcUserRoleContextFactory;
 import org.keycloak.adaptive.context.role.UserRoleContext;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
@@ -32,19 +32,13 @@ import java.util.Optional;
 /**
  * Risk evaluator for user role properties
  */
-public class DefaultUserRoleEvaluator implements RiskEvaluator {
+public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     private final KeycloakSession session;
     private final UserRoleContext context;
-    private Double risk;
 
     public DefaultUserRoleEvaluator(KeycloakSession session) {
         this.session = session;
         this.context = ContextUtils.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public Optional<Double> getRiskValue() {
-        return Optional.ofNullable(risk);
     }
 
     @Override
@@ -63,13 +57,13 @@ public class DefaultUserRoleEvaluator implements RiskEvaluator {
     }
 
     @Override
-    public void evaluate() {
+    public Optional<Double> evaluate() {
         boolean isAdmin = context.getData()
                 .stream()
                 .flatMap(Collection::stream)
                 .map(RoleModel::getName)
                 .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
 
-        risk = isAdmin ? 0.6 : 0.1;
+        return Optional.of(isAdmin ? 0.6 : 0.1);
     }
 }
