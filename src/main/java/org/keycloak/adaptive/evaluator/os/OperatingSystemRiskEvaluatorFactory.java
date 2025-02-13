@@ -38,4 +38,9 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
     public String getName() {
         return NAME;
     }
+
+    @Override
+    public Class<? extends RiskEvaluator> evaluatorClass() {
+        return OperatingSystemRiskEvaluator.class;
+    }
 }

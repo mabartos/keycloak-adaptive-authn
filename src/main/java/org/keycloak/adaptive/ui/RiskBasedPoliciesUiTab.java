@@ -19,9 +19,9 @@ package org.keycloak.adaptive.ui;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
+import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
-import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.level.RiskLevelsFactory;
 import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
 import org.keycloak.component.ComponentModel;
@@ -96,18 +96,18 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         doIfPresent(model.get(EVALUATOR_TIMEOUT_CONFIG), value -> realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, value));
         doIfPresent(model.get(EVALUATOR_RETRIES_CONFIG), value -> realm.setAttribute(EVALUATOR_RETRIES_CONFIG, value));
 
-        riskEvaluatorFactories.forEach(f -> {
+        riskEvaluatorFactories.forEach(evalFactory -> {
             // Enabled
-            var enabled = model.get(isEnabledConfig(f.getClass()));
+            var enabled = model.get(isEnabledConfig(evalFactory.evaluatorClass()));
             doIfPresent(enabled, value -> {
-                logger.debugf("stored state '%s' for evaluator '%s'", value, f.getName());
-                EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), Boolean.parseBoolean(value));
+                logger.debugf("stored state '%s' for evaluator '%s' ('%s')", value, evalFactory.getName(), evalFactory.evaluatorClass().getSimpleName());
+                EvaluatorUtils.setEvaluatorEnabled(session, evalFactory.evaluatorClass(), Boolean.parseBoolean(value));
             });
 
-            var weight = model.get(getWeightConfig(f.getClass()));
+            var weight = model.get(getWeightConfig(evalFactory.evaluatorClass()));
             doIfPresent(weight, value -> {
-                logger.debugf("putting weight '%f' for evaluator '%s'", value, f.getName());
-                EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(value));
+                logger.debugf("putting weight '%f' for evaluator '%s' ('%s')", value, evalFactory.getName(),evalFactory.evaluatorClass());
+                EvaluatorUtils.storeEvaluatorWeight(session, evalFactory.evaluatorClass(), Double.parseDouble(value));
             });
         });
     }
@@ -129,23 +129,23 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         riskEvaluatorFactories.forEach(f -> {
             {
-                var oldEnabled = oldModel.get(isEnabledConfig(f.getClass()));
-                var newEnabled = newModel.get(isEnabledConfig(f.getClass()));
+                var oldEnabled = oldModel.get(isEnabledConfig(f.evaluatorClass()));
+                var newEnabled = newModel.get(isEnabledConfig(f.evaluatorClass()));
                 if (!Objects.equals(oldEnabled, newEnabled)) {
                     doIfPresent(newEnabled, value -> {
-                        logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.getClass()), Boolean.parseBoolean(value));
-                        EvaluatorUtils.setEvaluatorEnabled(session, f.getClass(), Boolean.parseBoolean(value));
+                        logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.evaluatorClass()), Boolean.parseBoolean(value));
+                        EvaluatorUtils.setEvaluatorEnabled(session, f.evaluatorClass(), Boolean.parseBoolean(value));
                     });
                 }
             }
 
             {
-                var oldWeight = oldModel.get(getWeightConfig(f.getClass()));
-                var newWeight = newModel.get(getWeightConfig(f.getClass()));
+                var oldWeight = oldModel.get(getWeightConfig(f.evaluatorClass()));
+                var newWeight = newModel.get(getWeightConfig(f.evaluatorClass()));
                 if (!Objects.equals(oldWeight, newWeight)) {
                     doIfPresent(newWeight, value -> {
-                        logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.getClass()), value);
-                        EvaluatorUtils.storeEvaluatorWeight(session, f.getClass(), Double.parseDouble(value));
+                        logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.evaluatorClass()), value);
+                        EvaluatorUtils.storeEvaluatorWeight(session, f.evaluatorClass(), Double.parseDouble(value));
                     });
                 }
             }
@@ -161,7 +161,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         riskEvaluatorFactories.forEach(f -> {
             try {
-                var value = model.get(getWeightConfig(f.getClass()));
+                var value = model.get(getWeightConfig(f.evaluatorClass()));
                 if (StringUtil.isBlank(value)) return; // default value is an empty string
 
                 var weight = Double.parseDouble(value);

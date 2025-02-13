@@ -19,7 +19,6 @@ package org.keycloak.adaptive.evaluator.role;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.role.KcUserRoleContextFactory;
 import org.keycloak.adaptive.context.role.UserRoleContext;
-import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.AdminRoles;
@@ -42,13 +41,13 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, DefaultUserRoleEvaluatorFactory.class, Weight.IMPORTANT);
+    public KeycloakSession getSession() {
+        return session;
     }
 
     @Override
-    public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, DefaultUserRoleEvaluatorFactory.class);
+    public double getDefaultWeight() {
+        return Weight.IMPORTANT;
     }
 
     @Override

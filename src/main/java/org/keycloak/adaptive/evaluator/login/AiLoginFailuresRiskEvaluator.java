@@ -21,11 +21,9 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
-import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserLoginFailureModel;
@@ -50,13 +48,13 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, AiLoginFailuresRiskEvaluatorFactory.class, Weight.IMPORTANT);
+    public KeycloakSession getSession() {
+        return session;
     }
 
     @Override
-    public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, AiLoginFailuresRiskEvaluatorFactory.class);
+    public double getDefaultWeight() {
+        return Weight.IMPORTANT;
     }
 
     @Override

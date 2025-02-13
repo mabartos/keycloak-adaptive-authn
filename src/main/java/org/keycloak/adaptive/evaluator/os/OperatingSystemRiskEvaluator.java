@@ -19,7 +19,6 @@ package org.keycloak.adaptive.evaluator.os;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.os.OperatingSystemCondition;
 import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
-import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
@@ -39,13 +38,13 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getWeight() {
-        return EvaluatorUtils.getStoredEvaluatorWeight(session, OperatingSystemRiskEvaluatorFactory.class, 0.4);
+    public KeycloakSession getSession() {
+        return session;
     }
 
     @Override
-    public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, OperatingSystemRiskEvaluatorFactory.class);
+    public double getDefaultWeight() {
+        return 0.4;
     }
 
     @Override

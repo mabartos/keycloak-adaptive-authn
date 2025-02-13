@@ -18,6 +18,7 @@ package org.keycloak.adaptive.evaluator;
 
 import com.apicatalog.jsonld.StringUtils;
 import org.keycloak.adaptive.level.Weight;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
@@ -29,57 +30,57 @@ public class EvaluatorUtils {
     /**
      * Get weight of the required risk evaluator
      */
-    private static Optional<String> getWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
+    private static Optional<String> getWeight(KeycloakSession session, Class<? extends RiskEvaluator> evaluator) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
-                .map(f -> f.getAttribute(RiskEvaluatorFactory.getWeightConfig(evaluatorFactory)))
+                .map(f -> f.getAttribute(RiskEvaluatorFactory.getWeightConfig(evaluator)))
                 .filter(StringUtils::isNotBlank);
     }
 
     /**
      * Get stored weight of the required risk evaluator
      */
-    public static double getStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, double defaultValue) {
-        return getWeight(session, evaluatorFactory)
+    public static double getStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluator> evaluator, double defaultValue) {
+        return getWeight(session, evaluator)
                 .map(Double::parseDouble)
                 .orElse(defaultValue);
     }
 
-    public static double getStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
-        return getStoredEvaluatorWeight(session, evaluatorFactory, Weight.NORMAL);
+    public static double getStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluator> evaluator) {
+        return getStoredEvaluatorWeight(session, evaluator, Weight.NORMAL);
     }
 
-    public static boolean existsStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
-        return getWeight(session, evaluatorFactory).isPresent();
+    public static boolean existsStoredEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluator> evaluator) {
+        return getWeight(session, evaluator).isPresent();
     }
 
     /**
      * Store risk evaluator weight in realm attributes
      */
-    public static void storeEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, double value) {
+    public static void storeEvaluatorWeight(KeycloakSession session, Class<? extends RiskEvaluator> evaluator, double value) {
         Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
-                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getWeightConfig(evaluatorFactory), Double.toString(value)));
+                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getWeightConfig(evaluator), Double.toString(value)));
     }
 
     /**
      * Check whether the risk evaluator is enabled on the realm level
      */
-    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, boolean defaultValue) {
+    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluator> evaluator, boolean defaultValue) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
-                .map(f -> f.getAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluatorFactory)))
+                .map(f -> f.getAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluator)))
                 .map(Boolean::parseBoolean)
                 .orElse(defaultValue);
     }
 
-    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory) {
-        return isEvaluatorEnabled(session, evaluatorFactory, true);
+    public static boolean isEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluator> evaluator) {
+        return isEvaluatorEnabled(session, evaluator, true);
     }
 
-    public static void setEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluatorFactory> evaluatorFactory, boolean enabled) {
+    public static void setEvaluatorEnabled(KeycloakSession session, Class<? extends RiskEvaluator> evaluator, boolean enabled) {
         Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRealm)
-                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluatorFactory), Boolean.valueOf(enabled).toString()));
+                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluator), Boolean.valueOf(enabled).toString()));
     }
 }
