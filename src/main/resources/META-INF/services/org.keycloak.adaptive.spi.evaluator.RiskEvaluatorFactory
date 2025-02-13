@@ -5,3 +5,4 @@
  org.keycloak.adaptive.evaluator.location.LocationRiskEvaluatorFactory
  org.keycloak.adaptive.evaluator.device.AiDeviceRiskEvaluatorFactory
  org.keycloak.adaptive.evaluator.login.AiLoginFailuresRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.recaptcha.RecaptchaRiskEvaluatorFactory
