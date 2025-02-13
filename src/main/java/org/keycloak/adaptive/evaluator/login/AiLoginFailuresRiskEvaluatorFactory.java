@@ -30,6 +30,11 @@ public class AiLoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory
     }
 
     @Override
+    public Class<? extends RiskEvaluator> evaluatorClass() {
+        return AiLoginFailuresRiskEvaluator.class;
+    }
+
+    @Override
     public RiskEvaluator create(KeycloakSession session) {
         return new AiLoginFailuresRiskEvaluator(session);
     }

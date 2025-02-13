@@ -38,4 +38,9 @@ public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     public String getName() {
         return NAME;
     }
+
+    @Override
+    public Class<? extends RiskEvaluator> evaluatorClass() {
+        return DefaultUserRoleEvaluator.class;
+    }
 }

@@ -20,8 +20,6 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.location.IpApiLocationContextFactory;
 import org.keycloak.adaptive.context.location.LocationContext;
-import org.keycloak.adaptive.evaluator.EvaluatorUtils;
-import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -46,13 +44,8 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getWeight() {
-        return Weight.DEFAULT;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return EvaluatorUtils.isEvaluatorEnabled(session, LocationRiskEvaluatorFactory.class);
+    public KeycloakSession getSession() {
+        return session;
     }
 
     @Override

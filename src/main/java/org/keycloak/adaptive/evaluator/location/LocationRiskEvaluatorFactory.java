@@ -32,6 +32,11 @@ public class LocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
+    public Class<? extends RiskEvaluator> evaluatorClass() {
+        return LocationRiskEvaluator.class;
+    }
+
+    @Override
     public RiskEvaluator create(KeycloakSession session) {
         return new LocationRiskEvaluator(session);
     }
