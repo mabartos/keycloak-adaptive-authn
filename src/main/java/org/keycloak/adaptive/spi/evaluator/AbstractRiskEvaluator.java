@@ -13,7 +13,7 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     public abstract KeycloakSession getSession();
 
     @Override
-    public abstract boolean requiresUser();
+    public abstract EvaluationPhase evaluationPhase();
 
     @Override
     public Optional<Double> getRiskScore() {

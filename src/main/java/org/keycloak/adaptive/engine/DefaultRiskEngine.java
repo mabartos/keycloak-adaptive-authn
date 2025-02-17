@@ -42,6 +42,9 @@ import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVAL
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static org.keycloak.adaptive.spi.evaluator.RiskEvaluator.EvaluationPhase.MANUAL;
+import static org.keycloak.adaptive.spi.evaluator.RiskEvaluator.EvaluationPhase.NO_USER;
+import static org.keycloak.adaptive.spi.evaluator.RiskEvaluator.EvaluationPhase.REQUIRES_USER;
 
 /**
  * Default risk engine for the overall risk score evaluation leveraging asynchronous and parallel processing
@@ -96,7 +99,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 .onItem()
                 .transformToIterable(f -> f)
                 .filter(RiskEvaluator::isEnabled)
-                .filter(f -> f.requiresUser() == this.requiresUser)
+                .filter(f -> this.requiresUser ? f.evaluationPhase() == REQUIRES_USER || f.evaluationPhase() == MANUAL : f.evaluationPhase() == NO_USER)
                 .collect()
                 .asSet();
 
@@ -149,7 +152,9 @@ public class DefaultRiskEngine implements RiskEngine {
                 .item(evaluator)
                 .onItem()
                 .invoke(eval -> tracingProvider.trace(eval.getClass(), "evaluate", span -> {
-                    eval.evaluateRisk();
+                    if (eval.evaluationPhase() != MANUAL) {
+                        eval.evaluateRisk();
+                    }
 
                     if (span.isRecording()) {
                         span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRiskScore().orElse(-1.0));

@@ -48,8 +48,8 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public EvaluationPhase evaluationPhase() {
+        return EvaluationPhase.REQUIRES_USER;
     }
 
     @Override
