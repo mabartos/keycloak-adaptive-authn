@@ -43,8 +43,8 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public EvaluationPhase evaluationPhase() {
+        return EvaluationPhase.NO_USER;
     }
 
     @Override

@@ -54,8 +54,8 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public EvaluationPhase evaluationPhase() {
+        return EvaluationPhase.NO_USER;
     }
 
     protected static String request(DeviceRepresentation device) {
