@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    name: Build distribution
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -23,10 +22,5 @@ jobs:
     - name: Build extension
       run: ./mvnw clean install -DskipTests
 
-  test:
-    name: Simple tests
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    steps:
     - name: Test execute 'build' command
       run: ./mvnw exec:exec@build
