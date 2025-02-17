@@ -194,6 +194,20 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>build</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
+                                <argument>build</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
