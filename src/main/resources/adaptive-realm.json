@@ -1248,7 +1248,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "177c422a-5da4-495f-97bb-365930521275",
@@ -1257,7 +1257,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     }, {
       "id" : "f03f1114-52b9-4eda-8519-d379aab18f59",
@@ -1335,8 +1335,8 @@
         "riskEvaluatorEnabledConfig-LocationRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : [ "true" ],
         "realm" : [ "adaptive" ],
-        "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
         "riskLevelProvider" : [ "Risk levels - 3 levels (Low, Medium, High)" ],
+        "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorTimeoutConfig" : [ "2500" ],
         "riskBasedAuthnEnabled" : [ "true" ],
         "riskEvaluatorEnabledConfig-AiDeviceRiskEvaluatorFactory" : [ "true" ],
@@ -1787,23 +1787,15 @@
     "topLevel" : false,
     "builtIn" : false,
     "authenticationExecutions" : [ {
-      "authenticatorConfig" : "before-user",
-      "authenticator" : "default-risk-engine",
-      "authenticatorFlow" : false,
-      "requirement" : "REQUIRED",
-      "priority" : 0,
-      "autheticatorFlow" : false,
-      "userSetupAllowed" : false
-    }, {
-      "authenticatorConfig" : "username-password",
-      "authenticator" : "auth-username-password-form",
+      "authenticatorConfig" : "recaptcha-evaluator",
+      "authenticator" : "recaptcha-enterprise",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 1,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     }, {
-      "authenticatorConfig" : "after-user",
+      "authenticatorConfig" : "before-user",
       "authenticator" : "default-risk-engine",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
@@ -1811,23 +1803,39 @@
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     }, {
+      "authenticatorConfig" : "username-password",
+      "authenticator" : "auth-username-password-form",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 3,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticatorConfig" : "after-user",
+      "authenticator" : "default-risk-engine",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 4,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 3,
+      "priority" : 5,
       "autheticatorFlow" : true,
       "flowAlias" : "LOW risk",
       "userSetupAllowed" : false
     }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 4,
+      "priority" : 6,
       "autheticatorFlow" : true,
       "flowAlias" : "MEDIUM risk",
       "userSetupAllowed" : false
     }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
-      "priority" : 5,
+      "priority" : 7,
       "autheticatorFlow" : true,
       "flowAlias" : "HIGH risk",
       "userSetupAllowed" : false
@@ -2263,6 +2271,10 @@
     "config" : {
       "denyErrorMessage" : "You cannot access the application now due to suspicious behavior. Please try it again later."
     }
+  }, {
+    "id" : "f1cf2eef-cedf-4c96-ae04-19c499fcb233",
+    "alias" : "recaptcha-evaluator",
+    "config" : { }
   }, {
     "id" : "b59862af-b5ad-4ff5-ae52-8467392b36b9",
     "alias" : "review profile config",

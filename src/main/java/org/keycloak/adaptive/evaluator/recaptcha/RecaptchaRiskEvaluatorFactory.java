@@ -5,8 +5,8 @@ import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
 public class RecaptchaRiskEvaluatorFactory implements RiskEvaluatorFactory {
-    public static final String PROVIDER_ID = "recaptcha-v3";
-    public static final String NAME = "reCAPTCHA v3";
+    public static final String PROVIDER_ID = "recaptcha-enterprise";
+    public static final String NAME = "reCAPTCHA Enterprise";
 
     @Override
     public String getName() {
