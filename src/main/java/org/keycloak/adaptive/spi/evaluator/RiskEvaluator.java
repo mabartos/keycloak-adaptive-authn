@@ -42,9 +42,11 @@ public interface RiskEvaluator extends Provider {
     double getWeight();
 
     /**
-     * Indicates when the evaluator executes the evaluation
+     * Flag to determine whether the evaluator requires user information to properly calculate the risk score
+     *
+     * @return true if the user info is required, otherwise false
      */
-    EvaluationPhase evaluationPhase();
+    boolean requiresUser();
 
     /**
      * Execute evaluation of the risk score
@@ -57,25 +59,4 @@ public interface RiskEvaluator extends Provider {
      * @return true if is enabled, otherwise false
      */
     boolean isEnabled();
-
-
-    /**
-     * Evaluation phase indicating in which phase the risk score will be evaluated
-     */
-    enum EvaluationPhase {
-        /**
-         * Initial phase - in the beginning of authentication process without knowing what user is trying to get access
-         */
-        NO_USER,
-        /**
-         * Manual phase - you need to manually run {@link #evaluateRisk()} to evaluate the risk score
-         * <p/>
-         * Useful when the evaluation is starting after callback invoke
-         */
-        MANUAL,
-        /**
-         * Last phase - executed when user is identified (usually after user provides a first credential)
-         */
-        REQUIRES_USER
-    }
 }

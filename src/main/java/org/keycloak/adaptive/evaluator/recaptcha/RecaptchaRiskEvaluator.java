@@ -31,16 +31,6 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements For
     }
 
     @Override
-    public EvaluationPhase evaluationPhase() {
-        return EvaluationPhase.MANUAL;
-    }
-
-    @Override
-    public Optional<Double> getRiskScore() {
-        return Optional.empty();
-    }
-
-    @Override
     public void buildPage(FormContext context, LoginFormsProvider form) {
 
     }

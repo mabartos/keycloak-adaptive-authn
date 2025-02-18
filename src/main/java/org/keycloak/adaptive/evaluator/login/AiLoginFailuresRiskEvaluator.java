@@ -58,8 +58,8 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public EvaluationPhase evaluationPhase() {
-        return EvaluationPhase.REQUIRES_USER;
+    public boolean requiresUser() {
+        return true;
     }
 
     protected String request(UserLoginFailureModel loginFailures) {
