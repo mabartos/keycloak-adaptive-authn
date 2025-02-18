@@ -1194,8 +1194,8 @@
     "xContentTypeOptions" : "nosniff",
     "referrerPolicy" : "no-referrer",
     "xRobotsTag" : "none",
-    "xFrameOptions" : "SAMEORIGIN",
-    "contentSecurityPolicy" : "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xFrameOptions" : "ALLOW-FROM https://www.google.com",
+    "contentSecurityPolicy" : "frame-src 'self' https://www.google.com; frame-ancestors 'self'; object-src 'none';",
     "xXSSProtection" : "1; mode=block",
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
@@ -1248,7 +1248,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "177c422a-5da4-495f-97bb-365930521275",
@@ -1257,7 +1257,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     }, {
       "id" : "f03f1114-52b9-4eda-8519-d379aab18f59",
@@ -1335,12 +1335,12 @@
         "riskEvaluatorEnabledConfig-LocationRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : [ "true" ],
         "realm" : [ "adaptive" ],
-        "riskEvaluatorTimeoutConfig" : [ "2500" ],
         "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
         "riskLevelProvider" : [ "Risk levels - 3 levels (Low, Medium, High)" ],
+        "riskEvaluatorTimeoutConfig" : [ "2500" ],
         "riskBasedAuthnEnabled" : [ "true" ],
-        "riskEvaluatorEnabledConfig-LoginFailuresRiskEvaluatorFactory" : [ "true" ],
-        "riskEvaluatorEnabledConfig-AiDeviceRiskEvaluatorFactory" : [ "true" ]
+        "riskEvaluatorEnabledConfig-AiDeviceRiskEvaluatorFactory" : [ "true" ],
+        "riskEvaluatorEnabledConfig-LoginFailuresRiskEvaluatorFactory" : [ "true" ]
       }
     } ]
   },
@@ -2397,7 +2397,7 @@
     "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : "true",
     "riskLevelProvider" : "simple-risk-levels"
   },
-  "keycloakVersion" : "26.1.0",
+  "keycloakVersion" : "26.1.2",
   "userManagedAccessAllowed" : false,
   "organizationsEnabled" : false,
   "verifiableCredentialsEnabled" : false,
