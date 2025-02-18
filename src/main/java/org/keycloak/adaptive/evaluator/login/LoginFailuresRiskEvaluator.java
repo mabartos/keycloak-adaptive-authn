@@ -50,8 +50,8 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public EvaluationPhase evaluationPhase() {
-        return EvaluationPhase.REQUIRES_USER;
+    public boolean requiresUser() {
+        return true;
     }
 
     @Override
