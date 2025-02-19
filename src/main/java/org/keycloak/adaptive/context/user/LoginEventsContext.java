@@ -7,6 +7,7 @@ import java.util.List;
 
 public abstract class LoginEventsContext extends AbstractUserContext<List<Event>> {
     public static final String LOGIN_EVENTS = "login-events-user-context";
+    public static final String LOGIN_FAILURES_EVENTS = "login-events-user-context";
 
     @Override
     public boolean requiresUser() {

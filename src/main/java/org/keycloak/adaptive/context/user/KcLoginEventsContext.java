@@ -21,6 +21,10 @@ public class KcLoginEventsContext extends LoginEventsContext {
         return session;
     }
 
+    public EventType[] eventTypes() {
+        return new EventType[]{EventType.LOGIN};
+    }
+
     @Override
     public Optional<List<Event>> initData() {
         var realm = session.getContext().getRealm();
@@ -34,7 +38,7 @@ public class KcLoginEventsContext extends LoginEventsContext {
                 .createQuery()
                 .realm(realm.getId())
                 .user(user.get().getId())
-                .type(EventType.LOGIN)
+                .type(eventTypes())
                 .getResultStream()
                 .toList());
     }
