@@ -26,16 +26,11 @@ import org.keycloak.utils.StringUtil;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.keycloak.adaptive.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY;
+import static org.keycloak.adaptive.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 
 public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Authenticator {
     protected static final String CAPTCHA_TOKEN_KEY = "captcha_token";
     protected static final String G_RECAPTCHA_RESPONSE = "g-recaptcha-response";
-
-    // Env vars
-    public static final String RECAPTCHA_SITE_KEY_ENV = "RECAPTCHA_SITE_KEY";
-    public static final String RECAPTCHA_PROJECT_ID_ENV = "RECAPTCHA_PROJECT_ID";
-    public static final String RECAPTCHA_PROJECT_API_KEY_ENV = "RECAPTCHA_PROJECT_API_KEY";
 
     private final KeycloakSession session;
     private final CloseableHttpClient httpClient;
@@ -46,9 +41,9 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     public RecaptchaRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.httpClient = session.getProvider(HttpClientProvider.class).getHttpClient();
-        this.recaptchaSiteKey = System.getenv(RECAPTCHA_SITE_KEY_ENV);
-        this.recaptchaProjectId = System.getenv(RECAPTCHA_PROJECT_ID_ENV);
-        this.recaptchaProjectApiKey = System.getenv(RECAPTCHA_PROJECT_API_KEY_ENV);
+        this.recaptchaSiteKey = RecaptchaAuthenticatorFactory.getSiteKey().orElse("");
+        this.recaptchaProjectId = RecaptchaAuthenticatorFactory.getProjectId().orElse("");
+        this.recaptchaProjectApiKey = RecaptchaAuthenticatorFactory.getProjectApiKey().orElse("");
     }
 
     @Override
@@ -97,6 +92,8 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
+        setAuthenticatorConfig(context);
+
         if (!configIsValid()) {
             Log.error("Cannot obtain configuration for reCAPTCHA v3 risk evaluator: missing authenticator configuration, or env vars.");
             context.success();
@@ -139,9 +136,9 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     }
 
     protected void setAuthenticatorConfig(AuthenticationFlowContext context) {
-        var authenticatorSiteKey = context.getAuthenticatorConfig().getConfig().get(SITE_KEY);
-        var authenticatorProjectId = context.getAuthenticatorConfig().getConfig().get(SITE_KEY);
-        var authenticatorProjectApiKey = context.getAuthenticatorConfig().getConfig().get(SITE_KEY);
+        var authenticatorSiteKey = context.getAuthenticatorConfig().getConfig().get(SITE_KEY_CONSOLE);
+        var authenticatorProjectId = context.getAuthenticatorConfig().getConfig().get(SITE_KEY_CONSOLE);
+        var authenticatorProjectApiKey = context.getAuthenticatorConfig().getConfig().get(SITE_KEY_CONSOLE);
 
         if (StringUtil.isNotBlank(authenticatorSiteKey)) {
             recaptchaSiteKey = authenticatorSiteKey;
