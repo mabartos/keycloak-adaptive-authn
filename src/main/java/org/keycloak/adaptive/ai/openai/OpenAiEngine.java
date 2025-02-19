@@ -44,8 +44,6 @@ public class OpenAiEngine implements AiNlpEngine {
 
     @Override
     public <T> T getResult(String context, String message, Class<T> clazz) {
-        var here = ConfigProvider.getConfig().getConfigValue("openai.api.url");
-
         final var url = OpenAiEngineFactory.getApiUrl();
         final var model = OpenAiEngineFactory.getModel();
         final var key = OpenAiEngineFactory.getApiKey();
