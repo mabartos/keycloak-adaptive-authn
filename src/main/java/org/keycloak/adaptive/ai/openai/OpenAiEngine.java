@@ -16,7 +16,6 @@
  */
 package org.keycloak.adaptive.ai.openai;
 
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.ai.AiEngineUtils;
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
@@ -43,7 +42,7 @@ public class OpenAiEngine implements AiNlpEngine {
     }
 
     @Override
-    public <T> T getResult(String context, String message, Class<T> clazz) {
+    public <T> Optional<T> getResult(String context, String message, Class<T> clazz) {
         final var url = OpenAiEngineFactory.getApiUrl();
         final var model = OpenAiEngineFactory.getModel();
         final var key = OpenAiEngineFactory.getApiKey();
@@ -52,7 +51,7 @@ public class OpenAiEngine implements AiNlpEngine {
 
         if (url.isEmpty() || model.isEmpty() || key.isEmpty() || organization.isEmpty() || project.isEmpty()) {
             logger.errorf("Some of required environment variables are missing. Check the guide how to set this AI engine.");
-            return null;
+            return Optional.empty();
         }
 
         var httpClient = httpClientProvider.getHttpClient();
@@ -75,8 +74,11 @@ public class OpenAiEngine implements AiNlpEngine {
     @Override
     public Optional<Double> getRisk(String context, String message) {
         var response = getResult(context, message, DefaultAiDataResponse.class);
+        if (response.isEmpty()) {
+            return Optional.empty();
+        }
 
-        return AiEngineUtils.getRiskFromDefaultResponse(response,
+        return AiEngineUtils.getRiskFromDefaultResponse(response.get(),
                 (eval) -> logger.debugf("OpenAI ChatGPT evaluated risk: %f. Reason: %s", eval.risk(), eval.reason())
         );
     }

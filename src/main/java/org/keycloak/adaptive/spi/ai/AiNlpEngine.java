@@ -25,11 +25,11 @@ import java.util.Optional;
  */
 public interface AiNlpEngine extends Provider {
 
-    default <T> T getResult(String message, Class<T> clazz) {
+    default <T> Optional<T> getResult(String message, Class<T> clazz) {
         return getResult("", message, clazz);
     }
 
-    <T> T getResult(String context, String message, Class<T> clazz);
+    <T> Optional<T> getResult(String context, String message, Class<T> clazz);
 
     default Optional<Double> getRisk(String message) {
         return getRisk(AiRiskEvaluatorMessages.getContextMessage(), message);

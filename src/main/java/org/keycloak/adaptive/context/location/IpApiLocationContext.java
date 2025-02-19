@@ -62,20 +62,25 @@ public class IpApiLocationContext extends LocationContext {
                     .map(UserContext::getData)
                     .flatMap(f->f.stream().findAny())
                     .map(IpApiLocationContextFactory.SERVICE_URL)
-                    .filter(StringUtil::isNotBlank)
-                    .orElseThrow(() -> new IllegalStateException("Cannot obtain full URL for IP API"));
+                    .filter(StringUtil::isNotBlank);
 
-            var getRequest = new HttpGet(new URIBuilder(uriString).build());
+            if (uriString.isEmpty()) {
+                log.error("Cannot obtain full URL for IP API");
+                return Optional.empty();
+            }
+
+            var getRequest = new HttpGet(new URIBuilder(uriString.get()).build());
 
             try (var response = client.execute(getRequest)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     EntityUtils.consumeQuietly(response.getEntity());
-                    throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+                    log.error(response.getStatusLine().getReasonPhrase());
+                    return Optional.empty();
                 }
                 return Optional.ofNullable(JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class));
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {
-            log.error(e.getMessage());
+            log.error(e);
         }
         return Optional.empty();
     }
