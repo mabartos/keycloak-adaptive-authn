@@ -1200,9 +1200,10 @@
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
   "smtpServer" : { },
-  "eventsEnabled" : false,
+  "eventsEnabled" : true,
+  "eventsExpiration" : 63072000,
   "eventsListeners" : [ "jboss-logging" ],
-  "enabledEventTypes" : [ ],
+  "enabledEventTypes" : [ "LOGIN_ERROR", "LOGIN" ],
   "adminEventsEnabled" : false,
   "adminEventsDetailsEnabled" : false,
   "identityProviders" : [ ],
@@ -1248,7 +1249,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper" ]
       }
     }, {
       "id" : "177c422a-5da4-495f-97bb-365930521275",
@@ -1257,7 +1258,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "f03f1114-52b9-4eda-8519-d379aab18f59",
@@ -1335,11 +1336,11 @@
         "riskEvaluatorEnabledConfig-LocationRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : [ "true" ],
         "realm" : [ "adaptive" ],
+        "riskEvaluatorTimeoutConfig" : [ "2500" ],
         "riskLevelProvider" : [ "Risk levels - 3 levels (Low, Medium, High)" ],
         "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
-        "riskEvaluatorTimeoutConfig" : [ "2500" ],
-        "riskBasedAuthnEnabled" : [ "true" ],
         "riskEvaluatorEnabledConfig-AiDeviceRiskEvaluatorFactory" : [ "true" ],
+        "riskBasedAuthnEnabled" : [ "true" ],
         "riskEvaluatorEnabledConfig-LoginFailuresRiskEvaluatorFactory" : [ "true" ]
       }
     } ]
@@ -2406,6 +2407,7 @@
     "parRequestUriLifespan" : "60",
     "clientSessionMaxLifespan" : "0",
     "acr.loa.map" : "{}",
+    "adminEventsExpiration" : "",
     "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : "true",
     "riskLevelProvider" : "simple-risk-levels"
   },
