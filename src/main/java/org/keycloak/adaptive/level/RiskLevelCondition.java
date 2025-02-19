@@ -51,7 +51,7 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
                     .orElseThrow(() -> new IllegalStateException("No risk has been evaluated. Did you forget to add Risk Engine authenticator to the flow?"));
 
             if (riskLevelsProvider == null) {
-                logger.errorf("Cannot find risk level provider '%s'", riskLevelsProvider);
+                logger.errorf("Cannot find risk level provider");
                 throw new IllegalStateException("Risk Level Provider is not found");
             }
 

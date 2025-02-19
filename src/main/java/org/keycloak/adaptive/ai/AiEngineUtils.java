@@ -38,7 +38,7 @@ public class AiEngineUtils {
     /**
      * Abstraction layer up to the HttpClient to obtain data from common AI NLP engines
      */
-    public static <T> T aiEngineRequest(
+    public static <T> Optional<T> aiEngineRequest(
             CloseableHttpClient client,
             String url,
             Supplier<Object> body,
@@ -56,16 +56,17 @@ public class AiEngineUtils {
 
             try (var response = client.execute(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    Log.error(JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
-                    throw new RuntimeException(response.getStatusLine().toString());
+                    Log.errorf("%s: %s", response.getStatusLine().toString(), JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
+                    return Optional.empty();
                 }
                 var result = JsonSerialization.readValue(response.getEntity().getContent(), resultClass);
                 EntityUtils.consumeQuietly(response.getEntity());
-                return result;
+                return Optional.of(result);
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {
-            throw new RuntimeException(e);
+            Log.error(e);
         }
+        return Optional.empty();
     }
 
     /**
@@ -80,7 +81,8 @@ public class AiEngineUtils {
                     try {
                         return JsonSerialization.readValue(f, DefaultAiRiskData.class);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        Log.error(e);
+                        return null;
                     }
                 });
 

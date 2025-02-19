@@ -40,14 +40,14 @@ public class GraniteAiEngine implements AiNlpEngine {
     }
 
     @Override
-    public <T> T getResult(String context, String message, Class<T> clazz) {
+    public <T> Optional<T> getResult(String context, String message, Class<T> clazz) {
         final var url = GraniteAiEngineFactory.getApiUrl();
         final var key = GraniteAiEngineFactory.getApiKey();
         final var model = GraniteAiEngineFactory.getModel();
 
         if (url.isEmpty() || key.isEmpty() || model.isEmpty()) {
             logger.errorf("Some of required environment variables are missing. Check the guide how to set this AI engine.");
-            return null;
+            return Optional.empty();
         }
 
         var httpClient = httpClientProvider.getHttpClient();
@@ -68,8 +68,11 @@ public class GraniteAiEngine implements AiNlpEngine {
     @Override
     public Optional<Double> getRisk(String context, String message) {
         var response = getResult(context, message, DefaultAiDataResponse.class);
+        if (response.isEmpty()) {
+            return Optional.empty();
+        }
 
-        return AiEngineUtils.getRiskFromDefaultResponse(response,
+        return AiEngineUtils.getRiskFromDefaultResponse(response.get(),
                 (eval) -> logger.debugf("Granite evaluated risk: %f. Reason: %s", eval.risk(), eval.reason())
         );
     }
