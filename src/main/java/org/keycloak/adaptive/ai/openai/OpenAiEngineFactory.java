@@ -20,17 +20,18 @@ import org.keycloak.Config;
 import org.keycloak.adaptive.spi.ai.AiEngineFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.quarkus.runtime.configuration.Configuration;
+
+import java.util.Optional;
 
 public class OpenAiEngineFactory implements AiEngineFactory {
     public static final String PROVIDER_ID = "default";
-    public static final String DEFAULT_MODEL = "gpt-3.5-turbo";
-    public static final String DEFAULT_URL = "https://api.openai.com/v1/chat/completions";
 
-    static final String URL_PROPERTY = "OPEN_AI_API_URL";
-    static final String KEY_PROPERTY = "OPEN_AI_API_KEY";
-    static final String ORGANIZATION_PROPERTY = "OPEN_AI_API_ORGANIZATION";
-    static final String PROJECT_PROPERTY = "OPEN_AI_API_PROJECT";
-    static final String MODEL_PROPERTY = "OPEN_AI_API_MODEL";
+    private static final String URL_PROPERTY = "ai.openai.api.url";
+    private static final String KEY_PROPERTY = "ai.openai.api.key";
+    private static final String ORGANIZATION_PROPERTY = "ai.openai.api.organization";
+    private static final String PROJECT_PROPERTY = "ai.openai.api.project";
+    private static final String MODEL_PROPERTY = "ai.openai.api.model";
 
     @Override
     public OpenAiEngine create(KeycloakSession session) {
@@ -55,5 +56,25 @@ public class OpenAiEngineFactory implements AiEngineFactory {
     @Override
     public void close() {
 
+    }
+
+    public static Optional<String> getApiUrl() {
+        return Configuration.getOptionalValue(URL_PROPERTY);
+    }
+
+    public static Optional<String> getApiKey() {
+        return Configuration.getOptionalValue(KEY_PROPERTY);
+    }
+
+    public static Optional<String> getOrganization() {
+        return Configuration.getOptionalValue(ORGANIZATION_PROPERTY);
+    }
+
+    public static Optional<String> getProject() {
+        return Configuration.getOptionalValue(PROJECT_PROPERTY);
+    }
+
+    public static Optional<String> getModel() {
+        return Configuration.getOptionalValue(MODEL_PROPERTY);
     }
 }
