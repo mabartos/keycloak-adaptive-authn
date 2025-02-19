@@ -20,6 +20,7 @@ import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.browser.BrowserCondition;
 import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
 import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
@@ -40,6 +41,11 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public KeycloakSession getSession() {
         return session;
+    }
+
+    @Override
+    public double getDefaultWeight() {
+        return Weight.LOW;
     }
 
     @Override

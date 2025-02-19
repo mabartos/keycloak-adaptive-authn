@@ -23,5 +23,5 @@ public interface Weight {
     double IMPORTANT = 0.8;
     double HIGHEST = 1;
 
-    double DEFAULT = NORMAL;
+    double DEFAULT = LOW;
 }

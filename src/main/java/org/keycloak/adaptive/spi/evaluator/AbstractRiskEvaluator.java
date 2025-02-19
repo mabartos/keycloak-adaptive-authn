@@ -21,7 +21,7 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     }
 
     public double getDefaultWeight() {
-        return Weight.NORMAL;
+        return Weight.DEFAULT;
     }
 
     @Override

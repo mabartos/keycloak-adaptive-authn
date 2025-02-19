@@ -20,6 +20,7 @@ import org.keycloak.adaptive.context.ContextUtils;
 import org.keycloak.adaptive.context.os.OperatingSystemCondition;
 import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
 import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
@@ -44,7 +45,7 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
 
     @Override
     public double getDefaultWeight() {
-        return 0.4;
+        return Weight.LOW;
     }
 
     @Override

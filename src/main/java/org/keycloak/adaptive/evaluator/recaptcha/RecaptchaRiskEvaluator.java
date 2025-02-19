@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -49,6 +50,11 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     @Override
     public KeycloakSession getSession() {
         return session;
+    }
+
+    @Override
+    public double getDefaultWeight() {
+        return Weight.IMPORTANT;
     }
 
     @Override
