@@ -17,8 +17,8 @@
 package org.keycloak.adaptive.evaluator.role;
 
 import org.keycloak.adaptive.context.ContextUtils;
-import org.keycloak.adaptive.context.role.KcUserRoleContextFactory;
-import org.keycloak.adaptive.context.role.UserRoleContext;
+import org.keycloak.adaptive.context.user.KcUserRoleContextFactory;
+import org.keycloak.adaptive.context.user.UserRoleContext;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.AdminRoles;

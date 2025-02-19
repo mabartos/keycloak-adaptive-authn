@@ -14,21 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.context.role;
+package org.keycloak.adaptive.context.user;
 
-import org.keycloak.adaptive.spi.context.UserContextFactory;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.adaptive.spi.context.AbstractUserContext;
+import org.keycloak.models.RoleModel;
 
-public class KcUserRoleContextFactory implements UserContextFactory<UserRoleContext> {
-    public static final String PROVIDER_ID = "kc-user-role-risk-factor";
+import java.util.Set;
+
+/**
+ * Context for obtaining all roles of the authentication user
+ */
+public abstract class UserRoleContext extends AbstractUserContext<Set<RoleModel>> {
 
     @Override
-    public UserRoleContext create(KeycloakSession session) {
-        return new KcUserRoleContext(session);
+    public boolean requiresUser() {
+        return true;
     }
 
     @Override
-    public String getId() {
-        return PROVIDER_ID;
+    public boolean alwaysFetch() {
+        return true;
     }
 }

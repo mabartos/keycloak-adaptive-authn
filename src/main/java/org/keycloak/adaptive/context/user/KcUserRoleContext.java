@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.context.role;
+package org.keycloak.adaptive.context.user;
 
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
