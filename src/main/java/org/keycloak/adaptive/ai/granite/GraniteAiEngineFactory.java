@@ -22,14 +22,16 @@ import org.keycloak.adaptive.spi.ai.AiEngineFactory;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.quarkus.runtime.configuration.Configuration;
+
+import java.util.Optional;
 
 public class GraniteAiEngineFactory implements AiEngineFactory {
     public static final String PROVIDER_ID = "granite";
-    public static final String DEFAULT_MODEL = "granite-8b-code-instruct-128k";
 
-    static final String URL_PROPERTY = "GRANITE_API_URL";
-    static final String KEY_PROPERTY = "GRANITE_API_KEY";
-    static final String MODEL_PROPERTY = "GRANITE_API_MODEL";
+    private static final String URL_PROPERTY = "ai.granite.api.url";
+    private static final String KEY_PROPERTY = "ai.granite.api.key";
+    private static final String MODEL_PROPERTY = "ai.granite.api.model";
 
     @Override
     public AiNlpEngine create(KeycloakSession session) {
@@ -54,5 +56,17 @@ public class GraniteAiEngineFactory implements AiEngineFactory {
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+    public static Optional<String> getApiUrl() {
+        return Configuration.getOptionalValue(URL_PROPERTY);
+    }
+
+    public static Optional<String> getApiKey() {
+        return Configuration.getOptionalValue(KEY_PROPERTY);
+    }
+
+    public static Optional<String> getModel() {
+        return Configuration.getOptionalValue(MODEL_PROPERTY);
     }
 }

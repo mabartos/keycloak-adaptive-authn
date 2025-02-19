@@ -21,11 +21,9 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.ai.AiEngineUtils;
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
 import org.keycloak.adaptive.ai.DefaultAiDataResponse;
-import org.keycloak.adaptive.ai.openai.OpenAiEngine;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.utils.StringUtil;
 
 import java.util.Map;
 import java.util.Optional;
@@ -43,13 +41,12 @@ public class GraniteAiEngine implements AiNlpEngine {
 
     @Override
     public <T> T getResult(String context, String message, Class<T> clazz) {
-        final var url = System.getenv(GraniteAiEngineFactory.URL_PROPERTY);
-        final var key = System.getenv(GraniteAiEngineFactory.KEY_PROPERTY);
-        final var model = Optional.ofNullable(System.getenv(GraniteAiEngineFactory.MODEL_PROPERTY)).orElse(GraniteAiEngineFactory.DEFAULT_MODEL);
+        final var url = GraniteAiEngineFactory.getApiUrl();
+        final var key = GraniteAiEngineFactory.getApiKey();
+        final var model = GraniteAiEngineFactory.getModel();
 
-        if (StringUtil.isBlank(url) || StringUtil.isBlank(key) || StringUtil.isBlank(model)) {
-            logger.errorf("Some of these required environment variables are missing: %s, %s, %s\n",
-                    GraniteAiEngineFactory.URL_PROPERTY, GraniteAiEngineFactory.KEY_PROPERTY, GraniteAiEngineFactory.MODEL_PROPERTY);
+        if (url.isEmpty() || key.isEmpty() || model.isEmpty()) {
+            logger.errorf("Some of required environment variables are missing. Check the guide how to set this AI engine.");
             return null;
         }
 
@@ -57,8 +54,8 @@ public class GraniteAiEngine implements AiNlpEngine {
 
         var result = AiEngineUtils.aiEngineRequest(
                 httpClient,
-                url,
-                () -> DefaultAiDataRequest.newRequest(model, context, message),
+                url.get(),
+                () -> DefaultAiDataRequest.newRequest(model.get(), context, message),
                 Map.of("Authorization", String.format("Bearer %s", key)),
                 clazz
         );
