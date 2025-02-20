@@ -9,8 +9,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
-import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
@@ -25,7 +25,6 @@ import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import static org.keycloak.adaptive.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 
@@ -58,16 +57,16 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     }
 
     @Override
-    public Optional<Double> evaluate() {
+    public Risk evaluate() {
         try {
             if (!configIsValid()) {
-                return Optional.empty();
+                return Risk.invalid();
             }
 
             var token = session.getContext().getAuthenticationSession().getAuthNote(CAPTCHA_TOKEN_KEY);
             if (StringUtil.isBlank(token)) {
                 Log.error("No stored reCAPTCHA token");
-                return Optional.empty();
+                return Risk.invalid();
             }
 
             HttpPost request = buildAssessmentRequest(token);
@@ -76,7 +75,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 Log.errorf("Could not create reCAPTCHA assessment: %s", response.getStatusLine());
                 EntityUtils.consumeQuietly(response.getEntity());
-                return Optional.empty();
+                return Risk.invalid();
             }
 
             RecaptchaAssessmentResponse assessment = JsonSerialization.readValue(
@@ -86,14 +85,14 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
             boolean valid = assessment.getTokenProperties().isValid();
             double score = assessment.getRiskAnalysis().getScore();
 
-            if (valid && RiskEngine.isValidValue(score)) {
-                return Optional.of(1.0 - score);
+            if (valid) {
+                return Risk.of(1.0 - score);
             }
         } catch (Exception e) {
             ServicesLogger.LOGGER.recaptchaFailed(e);
         }
 
-        return Optional.empty();
+        return Risk.invalid();
     }
 
     @Override

@@ -19,7 +19,7 @@ package org.keycloak.adaptive.ui;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.adaptive.evaluator.EvaluatorUtils;
-import org.keycloak.adaptive.spi.engine.RiskEngine;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.adaptive.spi.level.RiskLevelsFactory;
@@ -165,7 +165,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 if (StringUtil.isBlank(value)) return; // default value is an empty string
 
                 var weight = Double.parseDouble(value);
-                if (!RiskEngine.isValidValue(weight)) {
+                if (!Risk.isValid(weight)) {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {

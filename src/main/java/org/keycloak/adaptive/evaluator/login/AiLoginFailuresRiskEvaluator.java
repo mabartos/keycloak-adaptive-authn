@@ -21,6 +21,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
@@ -89,30 +90,28 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
+    public Risk evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
             logger.debug("Context realm is null");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
             logger.debug("Context user is null");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
             logger.debug("Cannot obtain login failures");
-            return Optional.empty();
+            return Risk.invalid();
 
         }
 
         Optional<Double> evaluatedRisk = aiEngine.getRisk(request(loginFailures));
-        evaluatedRisk.ifPresent(risk -> logger.debugf("AI request was successful. Evaluated risk: %f", risk));
-
-        return evaluatedRisk;
+        return evaluatedRisk.map(Risk::of).orElse(Risk.invalid());
     }
 }

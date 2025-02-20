@@ -33,6 +33,11 @@ public interface RiskEvaluator extends Provider {
      * @return (optional) risk score in range (0,1>
      */
     Optional<Double> getRiskScore();
+    
+    /**
+     * Get reasoning about the evaluated risk score
+     */
+    Optional<String> getReason();
 
     /**
      * Get weight of the evaluation claims how much the evaluations should influence the overall risk score
