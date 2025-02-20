@@ -21,6 +21,7 @@ public class KcLoginEventsContext extends LoginEventsContext {
         return session;
     }
 
+    @Override
     public EventType[] eventTypes() {
         return new EventType[]{EventType.LOGIN};
     }
@@ -39,6 +40,8 @@ public class KcLoginEventsContext extends LoginEventsContext {
                 .realm(realm.getId())
                 .user(user.get().getId())
                 .type(eventTypes())
+                .maxResults(getMaxEventsCount())
+                .orderByDescTime()
                 .getResultStream()
                 .toList());
     }

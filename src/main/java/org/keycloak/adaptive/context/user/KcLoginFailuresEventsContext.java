@@ -8,6 +8,7 @@ public class KcLoginFailuresEventsContext extends KcLoginEventsContext {
         super(session);
     }
 
+    @Override
     public EventType[] eventTypes() {
         return new EventType[]{EventType.LOGIN_ERROR};
     }
