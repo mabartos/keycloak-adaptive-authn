@@ -24,8 +24,6 @@ import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
-import java.util.Optional;
-
 /**
  * Risk evaluator for browser properties
  */
@@ -54,7 +52,7 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
-        return Optional.of(browserCondition.isDefaultKnownBrowser() ? Risk.NONE : Risk.INTERMEDIATE);
+    public Risk evaluate() {
+        return Risk.of(browserCondition.isDefaultKnownBrowser() ? Risk.NONE : Risk.INTERMEDIATE);
     }
 }

@@ -20,6 +20,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.device.DeviceContext;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
@@ -84,20 +85,19 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
+    public Risk evaluate() {
         if (aiEngine == null) {
             logger.warnf("Cannot find AI engine");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var deviceRepresentation = deviceContext.getData();
         if (deviceRepresentation.isPresent()) {
             Optional<Double> evaluatedRisk = aiEngine.getRisk(request(deviceRepresentation.get()));
-            evaluatedRisk.ifPresent(risk -> logger.debugf("AI request was successful. Evaluated risk: %f", risk));
-            return evaluatedRisk;
+            return evaluatedRisk.map(Risk::of).orElse(Risk.invalid());
         } else {
             logger.warnf("Device representation is null");
         }
-        return Optional.empty();
+        return Risk.invalid();
     }
 }

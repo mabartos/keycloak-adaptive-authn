@@ -17,7 +17,7 @@
 package org.keycloak.adaptive.engine;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.spi.engine.RiskEngine;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
@@ -64,7 +64,7 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
 
     @Override
     public void storeRisk(double risk, RiskPhase riskPhase) {
-        if (!RiskEngine.isValidValue(risk)) {
+        if (!Risk.isValid(risk)) {
             logger.warnf("Cannot store the invalid risk score '%f'", risk);
             return;
         }
@@ -78,7 +78,7 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
         if (riskPhase != RiskPhase.OVERALL) { // Store Overall risk
             var oppositePhase = riskPhase == RiskPhase.NO_USER ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
             var oppositeRisk = getStoredRisk(oppositePhase);
-            var isValidOppositeRisk = oppositeRisk.filter(RiskEngine::isValidValue).isPresent();
+            var isValidOppositeRisk = oppositeRisk.filter(Risk::isValid).isPresent();
 
             var overallRisk = risk;
 

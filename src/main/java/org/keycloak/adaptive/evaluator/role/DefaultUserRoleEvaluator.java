@@ -19,6 +19,7 @@ package org.keycloak.adaptive.evaluator.role;
 import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.user.KcUserRoleContextFactory;
 import org.keycloak.adaptive.context.user.UserRoleContext;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.AdminRoles;
@@ -26,7 +27,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * Risk evaluator for user role properties
@@ -56,13 +56,13 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
+    public Risk evaluate() {
         boolean isAdmin = context.getData()
                 .stream()
                 .flatMap(Collection::stream)
                 .map(RoleModel::getName)
                 .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
 
-        return Optional.of(isAdmin ? 0.6 : 0.1);
+        return Risk.of(isAdmin ? 0.6 : 0.1);
     }
 }

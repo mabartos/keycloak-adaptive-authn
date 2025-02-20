@@ -19,6 +19,7 @@ package org.keycloak.adaptive.engine;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
@@ -112,7 +113,7 @@ public class DefaultRiskEngine implements RiskEngine {
                         .after(timeout)
                         .recoverWithCompletion()
                         .filter(f -> f.getRiskScore().isPresent())
-                        .filter(f -> RiskEngine.isValidValue(f.getWeight()) && RiskEngine.isValidValue(f.getRiskScore().get()))
+                        .filter(f -> Risk.isValid(f.getWeight()) && Risk.isValid(f.getRiskScore().get()))
                         .collect()
                         .asSet();
 

@@ -20,6 +20,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.location.IpApiLocationContextFactory;
 import org.keycloak.adaptive.context.location.LocationContext;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -54,17 +55,17 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
+    public Risk evaluate() {
         if (realm == null) {
             logger.debugf("Realm is null");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
 
         if (user == null) {
             logger.debugf("User is null");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var data = locationContext.getData();
@@ -78,7 +79,7 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
             logger.debugf("Data for LocationRiskEvaluator is null");
         }
 
-        return Optional.empty();
+        return Risk.invalid();
     }
 
     protected String getUserLocationKey(UserModel user) {

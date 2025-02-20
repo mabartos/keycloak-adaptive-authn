@@ -54,7 +54,7 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
-        return Optional.of(condition.isDefaultKnownOs() ? Risk.NONE : Risk.INTERMEDIATE);
+    public Risk evaluate() {
+        return Risk.of(condition.isDefaultKnownOs() ? Risk.NONE : Risk.INTERMEDIATE);
     }
 }

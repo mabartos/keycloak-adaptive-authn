@@ -88,24 +88,24 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Optional<Double> evaluate() {
+    public Risk evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
             logger.debug("Context realm is null");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
             logger.debug("Context user is null");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
             logger.debug("Cannot obtain login failures");
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         // Number of failures
@@ -113,7 +113,8 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
         return getRiskLastIP(loginFailures.getLastIPFailure())
                 .map(score -> Math.max(score, getRiskLoginFailures(numFailures)))
-                .or(() -> Optional.of(getRiskLoginFailures(numFailures)));
+                .map(Risk::of)
+                .orElseGet(() -> Risk.of(getRiskLoginFailures(numFailures)));
 
         // TODO compute when was the last login failure
     }

@@ -79,8 +79,5 @@ public interface RiskEngine extends Authenticator, ConfigurableRequirements {
 
     }
 
-    static boolean isValidValue(Double value) {
-        if (value == null || value.isNaN() || value.isInfinite()) return false;
-        return value >= 0.0d && value <= 1.0d;
-    }
+
 }

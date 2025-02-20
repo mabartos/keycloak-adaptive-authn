@@ -16,14 +16,58 @@
  */
 package org.keycloak.adaptive.level;
 
+import org.keycloak.utils.StringUtil;
+
+import java.util.Optional;
+
 /**
  * Common risk values
  */
-public interface Risk {
-    double NONE = 0.01;
-    double SMALL = 0.3;
-    double MEDIUM = 0.5;
-    double INTERMEDIATE = 0.7;
-    double VERY_HIGH = 0.85;
-    double HIGHEST = 1.0;
+public class Risk {
+    public static double NONE = 0.01;
+    public static double SMALL = 0.3;
+    public static double MEDIUM = 0.5;
+    public static double INTERMEDIATE = 0.7;
+    public static double VERY_HIGH = 0.85;
+    public static double HIGHEST = 1.0;
+
+    private static final Risk INVALID = of(-1);
+
+    private final boolean valid;
+    private final double score;
+    private final String reason;
+
+    private Risk(double score, String reason) {
+        this.valid = isValid(score);
+        this.score = score;
+        this.reason = reason;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public Optional<Double> getScore() {
+        return isValid() ? Optional.of(score) : Optional.empty();
+    }
+
+    public Optional<String> getReason() {
+        return StringUtil.isNotBlank(reason) ? Optional.of(reason) : Optional.empty();
+    }
+
+    public static Risk of(double risk) {
+        return of(risk, "");
+    }
+
+    public static Risk of(double risk, String reason) {
+        return new Risk(risk, reason);
+    }
+
+    public static Risk invalid() {
+        return INVALID;
+    }
+
+    public static boolean isValid(double score) {
+        return score >= 0.0d && score <= 1.0d;
+    }
 }
