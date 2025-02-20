@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.evaluator.role;
 
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.user.KcUserRoleContextFactory;
 import org.keycloak.adaptive.context.user.UserRoleContext;
 import org.keycloak.adaptive.level.Weight;
@@ -37,7 +37,7 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
 
     public DefaultUserRoleEvaluator(KeycloakSession session) {
         this.session = session;
-        this.context = ContextUtils.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
+        this.context = UserContexts.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
     }
 
     @Override

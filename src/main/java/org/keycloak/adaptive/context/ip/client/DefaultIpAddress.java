@@ -17,7 +17,7 @@
 package org.keycloak.adaptive.context.ip.client;
 
 import inet.ipaddr.IPAddress;
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class DefaultIpAddress extends IpAddressContext {
 
     @Override
     public Optional<IPAddress> initData() {
-        final var contexts = ContextUtils.getSortedContexts(session, IpAddressContext.class, DefaultIpAddressFactory.PROVIDER_ID);
+        final var contexts = UserContexts.getSortedContexts(session, IpAddressContext.class, DefaultIpAddressFactory.PROVIDER_ID);
 
         for (var context : contexts) {
             var data = context.initData();

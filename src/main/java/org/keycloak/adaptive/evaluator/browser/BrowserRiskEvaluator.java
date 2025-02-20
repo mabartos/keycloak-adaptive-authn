@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.evaluator.browser;
 
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.browser.BrowserCondition;
 import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
 import org.keycloak.adaptive.level.Risk;
@@ -35,7 +35,7 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
 
     public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.browserCondition = ContextUtils.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
+        this.browserCondition = UserContexts.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
     }
 
     @Override

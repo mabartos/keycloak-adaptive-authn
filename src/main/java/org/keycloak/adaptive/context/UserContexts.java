@@ -23,7 +23,7 @@ import org.keycloak.models.KeycloakSession;
 import java.util.Comparator;
 import java.util.List;
 
-public class ContextUtils {
+public class UserContexts {
 
     /**
      * Retrieve user contexts sorted by their specified priority

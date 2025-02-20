@@ -17,7 +17,7 @@
 package org.keycloak.adaptive.evaluator.location;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.location.IpApiLocationContextFactory;
 import org.keycloak.adaptive.context.location.LocationContext;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
@@ -40,7 +40,7 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     public LocationRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.realm = session.getContext().getRealm();
-        this.locationContext = ContextUtils.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
+        this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
     }
 
     @Override

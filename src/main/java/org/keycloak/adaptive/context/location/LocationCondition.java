@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.context.location;
 
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.spi.condition.Operation;
 import org.keycloak.adaptive.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -35,7 +35,7 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
 
     public LocationCondition(KeycloakSession session, List<Operation<LocationContext>> rules) {
         this.session = session;
-        this.locationContext = ContextUtils.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
+        this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
