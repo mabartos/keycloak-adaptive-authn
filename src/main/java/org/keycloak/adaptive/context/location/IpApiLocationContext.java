@@ -20,7 +20,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.spi.context.UserContext;
@@ -54,7 +54,7 @@ public class IpApiLocationContext extends LocationContext {
     @Override
     public Optional<LocationData> initData() {
         try {
-            final IpAddressContext ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
+            final IpAddressContext ipAddressContext = UserContexts.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
 
             var client = httpClientProvider.getHttpClient();
 

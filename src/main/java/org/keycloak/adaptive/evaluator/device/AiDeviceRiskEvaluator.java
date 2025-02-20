@@ -17,7 +17,7 @@
 package org.keycloak.adaptive.evaluator.device;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
@@ -39,7 +39,7 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
 
     public AiDeviceRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiNlpEngine.class);
     }
 

@@ -1,6 +1,6 @@
 package org.keycloak.adaptive.evaluator.login;
 
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.context.user.KcLoginEventsContextFactory;
@@ -19,8 +19,8 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
 
     public LoginEventIpAddressRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.loginEvents = ContextUtils.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-        this.deviceContext = ContextUtils.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
     }
 
     @Override

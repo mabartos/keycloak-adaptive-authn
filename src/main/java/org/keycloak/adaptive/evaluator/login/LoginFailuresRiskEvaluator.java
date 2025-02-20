@@ -18,7 +18,7 @@ package org.keycloak.adaptive.evaluator.login;
 
 import inet.ipaddr.IPAddress;
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.level.Risk;
@@ -41,7 +41,7 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
     public LoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.ipAddressContext = ContextUtils.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
+        this.ipAddressContext = UserContexts.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
     }
 
     @Override

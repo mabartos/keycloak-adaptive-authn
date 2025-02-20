@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.evaluator.os;
 
-import org.keycloak.adaptive.context.ContextUtils;
+import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.os.OperatingSystemCondition;
 import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
 import org.keycloak.adaptive.level.Risk;
@@ -35,7 +35,7 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
 
     public OperatingSystemRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.condition = ContextUtils.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
+        this.condition = UserContexts.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
     }
 
     @Override
