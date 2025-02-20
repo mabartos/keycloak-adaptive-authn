@@ -25,10 +25,9 @@ public class LoginEventsEventListener implements EventListenerProvider {
             return;
         }
 
-        riskProvider.getStoredRisk().ifPresent(risk -> {
-            var score = String.valueOf(risk);
-            event.getDetails().put(RISK_SCORE_DETAIL, score);
-            Log.debugf("Added risk score ('%s') to the login session", score);
+        riskProvider.printStoredRisk().ifPresent(risk -> {
+            event.getDetails().put(RISK_SCORE_DETAIL, risk);
+            Log.debugf("Added risk score ('%s') to the login session", risk);
         });
     }
 
