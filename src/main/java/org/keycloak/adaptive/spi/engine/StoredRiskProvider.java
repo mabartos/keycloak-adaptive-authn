@@ -64,4 +64,18 @@ public interface StoredRiskProvider extends Provider {
         REQUIRES_USER, // Phase for evaluated risk score based on evaluators that do REQUIRE user
         OVERALL // Phase for the overall risk score aggregating the NO_USER and REQUIRES_USER scores
     }
+
+    /**
+     * Get stored overall risk score in a printable version
+     */
+    default Optional<String> printStoredRisk() {
+        return printStoredRisk(RiskPhase.OVERALL);
+    }
+
+    /**
+     * Get stored risk score in a printable version for specific risk phase
+     */
+    default Optional<String> printStoredRisk(RiskPhase riskPhase) {
+        return getStoredRisk(riskPhase).map(score -> String.format("%.2f", score));
+    }
 }
