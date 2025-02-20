@@ -11,9 +11,11 @@ import java.util.Optional;
 
 public class KcLoginEventsContext extends LoginEventsContext {
     private final KeycloakSession session;
+    private final EventStoreProvider eventStore;
 
     public KcLoginEventsContext(KeycloakSession session) {
         this.session = session;
+        this.eventStore = session.getProvider(EventStoreProvider.class);
     }
 
     @Override
@@ -35,8 +37,7 @@ public class KcLoginEventsContext extends LoginEventsContext {
             return Optional.empty();
         }
 
-        return Optional.of(session.getProvider(EventStoreProvider.class)
-                .createQuery()
+        return Optional.of(eventStore.createQuery()
                 .realm(realm.getId())
                 .user(user.get().getId())
                 .type(eventTypes())
