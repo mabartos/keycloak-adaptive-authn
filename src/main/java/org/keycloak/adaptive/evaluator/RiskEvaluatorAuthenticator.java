@@ -1,7 +1,6 @@
 package org.keycloak.adaptive.evaluator;
 
 import org.jboss.logging.Logger;
-import org.keycloak.adaptive.engine.DefaultRiskEngineFactory;
 import org.keycloak.adaptive.spi.engine.ConfigurableRequirements;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;

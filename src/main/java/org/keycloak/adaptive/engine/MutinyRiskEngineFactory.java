@@ -27,10 +27,10 @@ import org.keycloak.provider.ProviderEvent;
 
 import java.time.Duration;
 
-public class DefaultRiskEngineFactory implements RiskEngineFactory {
-    private static final Logger logger = Logger.getLogger(DefaultRiskEngineFactory.class);
+public class MutinyRiskEngineFactory implements RiskEngineFactory {
+    private static final Logger logger = Logger.getLogger(MutinyRiskEngineFactory.class);
 
-    public static final String PROVIDER_ID = "default";
+    public static final String PROVIDER_ID = "default"; // It is default provider for now
 
     public static final Duration DEFAULT_EVALUATOR_TIMEOUT = Duration.ofMillis(2500L);
     public static final int DEFAULT_EVALUATOR_RETRIES = 3;
@@ -42,7 +42,7 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
     @Override
     public RiskEngine create(KeycloakSession session) {
-        return new DefaultRiskEngine(session);
+        return new MutinyRiskEngine(session);
     }
 
     @Override
