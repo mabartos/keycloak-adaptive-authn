@@ -38,16 +38,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 
 /**
  * Default risk engine for the overall risk score evaluation leveraging asynchronous and parallel processing
  */
-public class MutinyRiskEngine implements RiskEngine {
-    private static final Logger logger = Logger.getLogger(MutinyRiskEngine.class);
+public class DefaultRiskEngine implements RiskEngine {
+    private static final Logger logger = Logger.getLogger(DefaultRiskEngine.class);
 
     private final KeycloakSession session;
     private final RealmModel realm;
@@ -58,7 +58,7 @@ public class MutinyRiskEngine implements RiskEngine {
 
     private Double risk;
 
-    public MutinyRiskEngine(KeycloakSession session) {
+    public DefaultRiskEngine(KeycloakSession session) {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.tracingProvider = TracingProviderUtil.getTracingProvider(session);
@@ -101,7 +101,7 @@ public class MutinyRiskEngine implements RiskEngine {
         evaluators = requiresUser ? evaluators : evaluators.runSubscriptionOn(exec);
 
         evaluators.subscribe().with(e -> KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            tracingProvider.trace(MutinyRiskEngine.class, "evaluateAll", span -> {
+            tracingProvider.trace(DefaultRiskEngine.class, "evaluateAll", span -> {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
                         .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries))
