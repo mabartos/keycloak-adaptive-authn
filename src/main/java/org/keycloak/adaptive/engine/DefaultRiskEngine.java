@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
 import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
@@ -96,8 +97,6 @@ public class DefaultRiskEngine implements RiskEngine {
                 .items(getRiskEvaluators())
                 .onItem()
                 .transformToIterable(f -> f)
-                .filter(RiskEvaluator::isEnabled)
-                .filter(f -> f.requiresUser() == this.requiresUser)
                 .collect()
                 .asSet();
 
@@ -170,6 +169,13 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public Set<RiskEvaluator> getRiskEvaluators() {
+        return getAllRiskEvaluators().stream()
+                .filter(f -> f.requiresUser() == this.requiresUser)
+                .filter(RiskEvaluator::isEnabled)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<RiskEvaluator> getAllRiskEvaluators() {
         return riskFactorEvaluators;
     }
 
