@@ -16,7 +16,7 @@
  */
 package org.keycloak.adaptive.spi.engine;
 
-import org.keycloak.authentication.AuthenticatorFactory;
+import org.keycloak.provider.ProviderFactory;
 
-public interface RiskEngineFactory extends AuthenticatorFactory {
+public interface RiskEngineFactory extends ProviderFactory<RiskEngine> {
 }

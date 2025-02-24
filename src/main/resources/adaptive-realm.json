@@ -1797,7 +1797,7 @@
       "userSetupAllowed" : false
     }, {
       "authenticatorConfig" : "before-user",
-      "authenticator" : "default-risk-engine",
+      "authenticator" : "default-risk-evaluator",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 2,
@@ -1813,7 +1813,7 @@
       "userSetupAllowed" : false
     }, {
       "authenticatorConfig" : "after-user",
-      "authenticator" : "default-risk-engine",
+      "authenticator" : "default-risk-evaluator",
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 4,
