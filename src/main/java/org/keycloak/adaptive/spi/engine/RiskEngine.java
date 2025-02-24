@@ -17,12 +17,7 @@
 package org.keycloak.adaptive.spi.engine;
 
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
-import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.authentication.Authenticator;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.provider.Provider;
 
 import java.util.Set;
 
@@ -30,7 +25,7 @@ import java.util.Set;
  * Risk engine for aggregating risk scores from the {@link RiskEvaluator}s and calculating the overall risk score for
  * the whole authentication request.
  */
-public interface RiskEngine extends Authenticator, ConfigurableRequirements {
+public interface RiskEngine extends Provider {
     /**
      * Get the overall risk score for the authentication request
      *
@@ -39,45 +34,19 @@ public interface RiskEngine extends Authenticator, ConfigurableRequirements {
     Double getRisk();
 
     /**
-     * Risk evaluators that contributes to the overall risk score calculations
+     * Risk evaluators that contributes to the overall risk score calculations based on the requirement of knowing the user
      *
      * @return set of risk evaluators
      */
-    Set<RiskEvaluator> getRiskEvaluators();
+    Set<RiskEvaluator> getRiskEvaluators(boolean requiresUser);
 
     /**
      * Start the overall risk score evaluation
      */
-    void evaluateRisk();
-
-    @Override
-    default void action(AuthenticationFlowContext context) {
-    }
-
-    @Override
-    default boolean requiresUser(AuthenticatorConfigModel config) {
-        return requiresUser();
-    }
-
-    @Override
-    default boolean requiresUser() {
-        return false;
-    }
-
-    @Override
-    default boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return false;
-    }
-
-    @Override
-    default void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-
-    }
+    void evaluateRisk(boolean requiresUser);
 
     @Override
     default void close() {
 
     }
-
-
 }

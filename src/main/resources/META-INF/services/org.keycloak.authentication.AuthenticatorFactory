@@ -3,8 +3,7 @@ org.keycloak.adaptive.context.os.OperatingSystemConditionFactory
 org.keycloak.adaptive.context.os.PhoneConditionFactory
 org.keycloak.adaptive.context.ip.IpAddressConditionFactory
 org.keycloak.adaptive.context.location.LocationConditionFactory
-org.keycloak.adaptive.engine.DefaultRiskEngineFactory
-org.keycloak.adaptive.engine.SynchronousRiskEngineFactory
 org.keycloak.adaptive.level.SimpleRiskLevelConditionFactory
 org.keycloak.adaptive.level.AdvancedRiskLevelsConditionFactory
 org.keycloak.adaptive.evaluator.recaptcha.RecaptchaAuthenticatorFactory
+org.keycloak.adaptive.evaluator.RiskEvaluatorAuthenticatorFactory

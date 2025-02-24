@@ -23,10 +23,8 @@ import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
-import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
-import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -58,8 +56,6 @@ public class DefaultRiskEngine implements RiskEngine {
     private final ExecutorsProvider executorsProvider;
     private final StoredRiskProvider storedRiskProvider;
 
-    private boolean requiresUser;
-    private StoredRiskProvider.RiskPhase riskPhase;
     private Double risk;
 
     public DefaultRiskEngine(KeycloakSession session) {
@@ -72,7 +68,7 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public void evaluateRisk() {
+    public void evaluateRisk(boolean requiresUser) {
         logger.debugf("Risk Engine - EVALUATING");
 
         // It is not necessary to evaluate the risk multiple times for 'NO_USER' phase
@@ -85,6 +81,7 @@ public class DefaultRiskEngine implements RiskEngine {
             }
         }
 
+        var riskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
         var start = Time.currentTimeMillis();
         var exec = executorsProvider.getExecutor("risk-engine");
 
@@ -94,7 +91,7 @@ public class DefaultRiskEngine implements RiskEngine {
         var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
 
         var evaluators = Multi.createFrom()
-                .items(getRiskEvaluators())
+                .items(getRiskEvaluators(requiresUser))
                 .onItem()
                 .transformToIterable(f -> f)
                 .collect()
@@ -107,7 +104,7 @@ public class DefaultRiskEngine implements RiskEngine {
             tracingProvider.trace(DefaultRiskEngine.class, "evaluateAll", span -> {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
-                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, exec, retries))
+                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries))
                         .ifNoItem()
                         .after(timeout)
                         .recoverWithCompletion()
@@ -144,7 +141,7 @@ public class DefaultRiskEngine implements RiskEngine {
         logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
     }
 
-    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, ExecutorService thread, int retries) {
+    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, boolean requiresUser, ExecutorService thread, int retries) {
         var item = Uni.createFrom()
                 .item(evaluator)
                 .onItem()
@@ -168,40 +165,11 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Set<RiskEvaluator> getRiskEvaluators() {
-        return getAllRiskEvaluators().stream()
-                .filter(f -> f.requiresUser() == this.requiresUser)
+    public Set<RiskEvaluator> getRiskEvaluators(boolean requiresUser) {
+        return riskFactorEvaluators.stream()
+                .filter(f -> f.requiresUser() == requiresUser)
                 .filter(RiskEvaluator::isEnabled)
                 .collect(Collectors.toSet());
-    }
-
-    public Set<RiskEvaluator> getAllRiskEvaluators() {
-        return riskFactorEvaluators;
-    }
-
-    @Override
-    public boolean requiresUser(AuthenticatorConfigModel configModel) {
-        return Optional.ofNullable(configModel)
-                .map(AuthenticatorConfigModel::getConfig)
-                .map(f -> f.get(DefaultRiskEngineFactory.REQUIRES_USER_CONFIG))
-                .map(Boolean::parseBoolean)
-                .orElse(false);
-    }
-
-    @Override
-    public void authenticate(AuthenticationFlowContext context) {
-        this.requiresUser = requiresUser(context.getAuthenticatorConfig());
-        this.riskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
-
-        final var storedRisk = storedRiskProvider.getStoredRisk(riskPhase);
-
-        if (storedRisk.isPresent()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", riskPhase, storedRisk.get());
-        } else {
-            evaluateRisk();
-        }
-
-        context.success();
     }
 
     protected <T extends Number> Optional<T> getNumberRealmAttribute(String attribute, Function<String, T> func) {
