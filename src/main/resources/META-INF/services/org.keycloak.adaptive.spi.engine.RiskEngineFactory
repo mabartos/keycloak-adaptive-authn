@@ -1,2 +1,2 @@
-org.keycloak.adaptive.engine.DefaultRiskEngineFactory
+org.keycloak.adaptive.engine.MutinyRiskEngineFactory
 org.keycloak.adaptive.engine.SynchronousRiskEngineFactory
