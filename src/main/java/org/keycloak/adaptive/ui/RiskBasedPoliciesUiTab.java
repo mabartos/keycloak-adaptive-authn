@@ -45,10 +45,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
-import static org.keycloak.adaptive.engine.MutinyRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory.getWeightConfig;
 import static org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
 

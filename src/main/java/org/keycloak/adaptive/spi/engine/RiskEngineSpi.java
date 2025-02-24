@@ -24,7 +24,7 @@ import org.keycloak.provider.Spi;
  * SPI for the Risk engine functionality
  */
 public class RiskEngineSpi implements Spi {
-    public static final String SPI_NAME = "risk-engine-spi";
+    public static final String SPI_NAME = "risk-engine";
 
     @Override
     public boolean isInternal() {
