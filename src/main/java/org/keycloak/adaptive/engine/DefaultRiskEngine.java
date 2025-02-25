@@ -20,6 +20,7 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
@@ -52,7 +53,8 @@ public class DefaultRiskEngine implements RiskEngine {
     private final KeycloakSession session;
     private final RealmModel realm;
     private final TracingProvider tracingProvider;
-    private final Set<RiskEvaluator> riskFactorEvaluators;
+    private final Set<RiskEvaluator> riskEvaluators;
+    private final Set<UserContext> userContexts;
     private final ExecutorsProvider executorsProvider;
     private final StoredRiskProvider storedRiskProvider;
 
@@ -62,7 +64,8 @@ public class DefaultRiskEngine implements RiskEngine {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.tracingProvider = TracingProviderUtil.getTracingProvider(session);
-        this.riskFactorEvaluators = session.getAllProviders(RiskEvaluator.class);
+        this.riskEvaluators = session.getAllProviders(RiskEvaluator.class);
+        this.userContexts = session.getAllProviders(UserContext.class);
         this.executorsProvider = session.getProvider(ExecutorsProvider.class);
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
     }
@@ -90,6 +93,13 @@ public class DefaultRiskEngine implements RiskEngine {
                 .orElse(DEFAULT_EVALUATOR_TIMEOUT);
         var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
 
+        // Init blocking user contexts
+        userContexts.stream()
+                .filter(f -> f.requiresUser() == requiresUser)
+                .filter(f -> !f.isInitialized())
+                .filter(UserContext::isBlocking)
+                .forEach(UserContext::initData);
+        
         var evaluators = Multi.createFrom()
                 .items(getRiskEvaluators(requiresUser))
                 .onItem()
@@ -166,7 +176,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public Set<RiskEvaluator> getRiskEvaluators(boolean requiresUser) {
-        return riskFactorEvaluators.stream()
+        return riskEvaluators.stream()
                 .filter(f -> f.requiresUser() == requiresUser)
                 .filter(RiskEvaluator::isEnabled)
                 .collect(Collectors.toSet());

@@ -74,4 +74,15 @@ public interface UserContext<T> extends Provider {
      * @return specific data
      */
     Optional<T> getData();
+
+    /**
+     * Flag to determine whether the user context should be obtained in a synchronous blocking manner
+     * Otherwise, user context should be obtained asynchronously
+     * <p/>
+     * It should be se to 'true' when using I/O operations like accessing database.
+     * Otherwise, it's recommended to set to 'false' to improve performance.
+     */
+    default boolean isBlocking() {
+        return true;
+    }
 }

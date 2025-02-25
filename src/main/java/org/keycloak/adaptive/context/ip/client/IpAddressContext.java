@@ -33,4 +33,9 @@ public abstract class IpAddressContext extends AbstractUserContext<IPAddress> {
     public boolean alwaysFetch() {
         return true;
     }
+
+    @Override
+    public boolean isBlocking() {
+        return false;
+    }
 }

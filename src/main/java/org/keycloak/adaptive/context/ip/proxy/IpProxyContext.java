@@ -35,4 +35,9 @@ public abstract class IpProxyContext extends AbstractUserContext<Set<IPAddress>>
     public boolean alwaysFetch() {
         return false;
     }
+
+    @Override
+    public boolean isBlocking() {
+        return false;
+    }
 }
