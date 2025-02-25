@@ -16,6 +16,7 @@
  */
 package org.keycloak.adaptive.spi.engine;
 
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.provider.Provider;
 
@@ -28,22 +29,31 @@ import java.util.Set;
 public interface RiskEngine extends Provider {
     /**
      * Get the overall risk score for the authentication request
+     * Never must be null - return {@link Risk#invalid()} instead
      *
-     * @return risk score in range (0,1>
+     * @return risk score in range (0,1> with additional parameters
      */
-    Double getRisk();
+    Risk getOverallRisk();
+    
+    /**
+     * Get the risk score for the specific {@link org.keycloak.adaptive.spi.engine.StoredRiskProvider.RiskPhase} evaluation phase
+     * Never must be null - return {@link Risk#invalid()} instead
+     *
+     * @return risk score in range (0,1> with additional parameters
+     */
+    Risk getRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
 
     /**
      * Risk evaluators that contributes to the overall risk score calculations based on the requirement of knowing the user
      *
      * @return set of risk evaluators
      */
-    Set<RiskEvaluator> getRiskEvaluators(boolean requiresUser);
+    Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase evaluationPhase);
 
     /**
      * Start the overall risk score evaluation
      */
-    void evaluateRisk(boolean requiresUser);
+    void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
 
     @Override
     default void close() {

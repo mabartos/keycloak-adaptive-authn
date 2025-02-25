@@ -25,6 +25,7 @@ import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static org.keycloak.adaptive.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 
@@ -49,6 +50,11 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     @Override
     public KeycloakSession getSession() {
         return session;
+    }
+
+    @Override
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     @Override

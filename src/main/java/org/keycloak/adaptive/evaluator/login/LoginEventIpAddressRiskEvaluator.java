@@ -10,6 +10,8 @@ import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.events.Event;
 import org.keycloak.models.KeycloakSession;
 
+import java.util.Set;
+
 import static org.keycloak.adaptive.level.Risk.INTERMEDIATE;
 import static org.keycloak.adaptive.level.Risk.NONE;
 import static org.keycloak.adaptive.level.Risk.SMALL;
@@ -32,8 +34,8 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return true;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Risk evaluator for checking device properties evaluated by AI NLP engine
@@ -55,8 +56,8 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     protected static String request(DeviceRepresentation device) {

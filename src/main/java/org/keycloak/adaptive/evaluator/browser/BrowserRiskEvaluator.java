@@ -22,7 +22,10 @@ import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
+
+import java.util.Set;
 
 /**
  * Risk evaluator for browser properties
@@ -42,13 +45,13 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.LOW;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public double getDefaultWeight() {
+        return Weight.LOW;
     }
 
     @Override
