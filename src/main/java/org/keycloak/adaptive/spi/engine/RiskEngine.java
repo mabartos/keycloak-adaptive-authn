@@ -34,14 +34,14 @@ public interface RiskEngine extends Provider {
      * @return risk score in range (0,1> with additional parameters
      */
     Risk getOverallRisk();
-    
+
     /**
-     * Get the risk score for the specific {@link org.keycloak.adaptive.spi.engine.StoredRiskProvider.RiskPhase} evaluation phase
+     * Get the risk score for the specific {@link org.keycloak.adaptive.spi.evaluator.RiskEvaluator.EvaluationPhase} evaluation phase
      * Never must be null - return {@link Risk#invalid()} instead
      *
      * @return risk score in range (0,1> with additional parameters
      */
-    Risk getRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
+    Risk getRisk(RiskEvaluator.EvaluationPhase phase);
 
     /**
      * Risk evaluators that contributes to the overall risk score calculations based on the requirement of knowing the user

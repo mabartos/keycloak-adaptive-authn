@@ -46,27 +46,29 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
         final AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
 
         if (authConfig != null) {
-            var storedRiskProvider = context.getSession().getProvider(StoredRiskProvider.class);
-            var risk = storedRiskProvider.getStoredRisk()
-                    .orElseThrow(() -> new IllegalStateException("No risk has been evaluated. Did you forget to add Risk Engine authenticator to the flow?"));
-
             if (riskLevelsProvider == null) {
                 logger.errorf("Cannot find risk level provider");
                 throw new IllegalStateException("Risk Level Provider is not found");
             }
+
+            var storedRiskProvider = context.getSession().getProvider(StoredRiskProvider.class);
+            var risk = Optional.of(storedRiskProvider.getStoredOverallRisk())
+                    .filter(Risk::isValid)
+                    .orElseThrow(() -> new IllegalStateException("No risk has been evaluated or invalid risk score. Did you forget to add Risk Engine authenticator to the flow?"));
+
 
             var level = Optional.ofNullable(authConfig.getConfig().get(AbstractRiskLevelConditionFactory.LEVEL_CONFIG))
                     .filter(StringUtil::isNotBlank)
                     .flatMap(f -> riskLevelsProvider.getRiskLevels().stream().filter(g -> g.getName().equals(f)).findAny())
                     .orElseThrow(() -> new IllegalStateException("Cannot find specified level for provider: " + riskLevelsProvider));
 
-            var matches = level.matchesRisk(risk);
+            var matches = level.matchesRisk(risk.getScore().get());
 
             if (matches) {
-                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.getName(), level.getLowestRiskValue(), risk, level.getHighestRiskValue());
+                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.getName(), level.getLowestRiskValue(), risk.getScore().get(), level.getHighestRiskValue());
                 return true;
             } else {
-                logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.getName(), risk);
+                logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.getName(), risk.getScore().get());
                 return false;
             }
         }
