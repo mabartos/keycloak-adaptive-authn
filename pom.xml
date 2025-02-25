@@ -39,8 +39,8 @@
         </keycloak.distribution.path>
         <keycloak.exec.distribution.path>${project.build.directory}/unpacked/${project.artifactId}-${project.version}</keycloak.exec.distribution.path>
 
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Maven Plugins -->
