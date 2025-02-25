@@ -1,3 +1,2 @@
 org.keycloak.adaptive.engine.DefaultRiskEngineFactory
 org.keycloak.adaptive.engine.SynchronousRiskEngineFactory
-org.keycloak.adaptive.engine.VirtualThreadsRiskEngineFactory
