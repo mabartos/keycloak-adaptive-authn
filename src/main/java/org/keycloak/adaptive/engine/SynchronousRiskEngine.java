@@ -56,10 +56,10 @@ public class SynchronousRiskEngine implements RiskEngine {
             getRiskEvaluators(requiresUser).forEach(RiskEvaluator::evaluateRisk);
 
             var weightedRisk = getRiskEvaluators(requiresUser).stream()
-                    .filter(eval -> eval.getRiskScore().isPresent())
+                    .filter(eval -> eval.getRisk().isValid())
                     .peek(eval -> logger.debugf("Evaluator: %s", eval.getClass().getSimpleName()))
-                    .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRiskScore().get(), eval.getWeight()))
-                    .mapToDouble(eval -> eval.getRiskScore().get() * eval.getWeight())
+                    .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRisk().getScore().get(), eval.getWeight()))
+                    .mapToDouble(eval -> eval.getRisk().getScore().get() * eval.getWeight())
                     .sum();
 
             var weights = getRiskEvaluators(requiresUser).stream()

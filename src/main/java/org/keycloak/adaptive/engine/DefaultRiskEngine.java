@@ -118,17 +118,17 @@ public class DefaultRiskEngine implements RiskEngine {
                         .ifNoItem()
                         .after(timeout)
                         .recoverWithCompletion()
-                        .filter(f -> f.getRiskScore().isPresent())
-                        .filter(f -> Risk.isValid(f.getWeight()) && Risk.isValid(f.getRiskScore().get()))
+                        .filter(f -> f.getRisk().isValid())
+                        .filter(f -> Risk.isValid(f.getWeight()))
                         .collect()
                         .asSet();
 
                 evaluatedRisks.subscribe().with(risks -> {
                     var weightedRisk = risks.stream()
-                            .filter(eval -> eval.getRiskScore().isPresent())
+                            .filter(eval -> eval.getRisk().getScore().isPresent())
                             .peek(eval -> logger.debugf("Evaluator: %s", eval.getClass().getSimpleName()))
-                            .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRiskScore().get(), eval.getWeight()))
-                            .mapToDouble(eval -> eval.getRiskScore().get() * eval.getWeight())
+                            .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRisk().getScore().get(), eval.getWeight()))
+                            .mapToDouble(eval -> eval.getRisk().getScore().get() * eval.getWeight())
                             .sum();
 
                     var weights = risks.stream()
@@ -159,7 +159,8 @@ public class DefaultRiskEngine implements RiskEngine {
                     eval.evaluateRisk();
 
                     if (span.isRecording()) {
-                        span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRiskScore().orElse(-1.0));
+                        span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRisk().getScore().orElse(-1.0));
+                        eval.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
                         span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight());
                     }
                 }))
