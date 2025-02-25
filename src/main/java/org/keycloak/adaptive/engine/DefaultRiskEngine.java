@@ -71,21 +71,20 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
+    public void evaluateRisk(RiskEvaluator.EvaluationPhase phase) {
         logger.debugf("Risk Engine - EVALUATING");
 
         // It is not necessary to evaluate the risk multiple times for 'BEFORE_AUTHN' phase
-        if (evaluationPhase.equals(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN)) {
-            final var storedRisk = storedRiskProvider.getStoredRisk(StoredRiskProvider.RiskPhase.NO_USER);
-            if (storedRisk.isPresent()) {
-                logger.debugf("Risk for the phase 'NO_USER' was already evaluated (score: %f). Skipping the evaluation", storedRisk.get());
-                this.risk = Risk.of(storedRisk.get());
+        if (phase == RiskEvaluator.EvaluationPhase.BEFORE_AUTHN) {
+            final var storedRisk = storedRiskProvider.getStoredRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
+            if (storedRisk.isValid()) {
+                logger.debugf("Risk for the phase 'NO_USER' was already evaluated (score: %f). Skipping the evaluation", storedRisk.getScore().get());
+                this.risk = storedRisk;
                 return;
             }
         }
 
-        var requiresUser = evaluationPhase.equals(RiskEvaluator.EvaluationPhase.USER_KNOWN);
-        var riskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
+        var requiresUser = phase == RiskEvaluator.EvaluationPhase.USER_KNOWN;
         var start = Time.currentTimeMillis();
         var exec = executorsProvider.getExecutor("risk-engine");
 
@@ -102,7 +101,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 .forEach(UserContext::initData);
         
         var evaluators = Multi.createFrom()
-                .items(getRiskEvaluators(evaluationPhase))
+                .items(getRiskEvaluators(phase))
                 .onItem()
                 .transformToIterable(f -> f)
                 .collect()
@@ -140,14 +139,14 @@ public class DefaultRiskEngine implements RiskEngine {
                     this.risk = Risk.of(weightedRisk / weights);
 
                     if (risk.isValid()) {
-                        logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore().get(), evaluationPhase);
+                        logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore().get(), phase);
 
                         if (span.isRecording()) {
                             span.setAttribute("keycloak.risk.engine.overall", risk.getScore().get());
-                            span.setAttribute("keycloak.risk.engine.phase", evaluationPhase.name());
+                            span.setAttribute("keycloak.risk.engine.phase", phase.name());
                         }
 
-                        storedRiskProvider.storeRisk(risk.getScore().get(), riskPhase);
+                        storedRiskProvider.storeRisk(risk, phase);
                     }
 
                 });
@@ -181,21 +180,17 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Risk getRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
-        var phase = switch (evaluationPhase) {
-            case BEFORE_AUTHN -> StoredRiskProvider.RiskPhase.NO_USER;
-            case USER_KNOWN -> StoredRiskProvider.RiskPhase.REQUIRES_USER;
-            case CONTINUOUS -> null;
-        };
-
-
-        return phase == null ? Risk.invalid() : Risk.of(storedRiskProvider.getStoredRisk(phase).orElse(-1.0));
+    public Risk getRisk(RiskEvaluator.EvaluationPhase phase) {
+        if (phase == null) {
+            return Risk.invalid();
+        }
+        return storedRiskProvider.getStoredRisk(phase);
     }
 
     @Override
-    public Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase evaluationPhase) {
+    public Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase phase) {
         return riskEvaluators.stream()
-                .filter(f -> f.evaluationPhases().contains(evaluationPhase))
+                .filter(f -> f.evaluationPhases().contains(phase))
                 .filter(RiskEvaluator::isEnabled)
                 .collect(Collectors.toSet());
     }

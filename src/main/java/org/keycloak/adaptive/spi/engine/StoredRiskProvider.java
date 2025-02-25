@@ -16,6 +16,8 @@
  */
 package org.keycloak.adaptive.spi.engine;
 
+import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.provider.Provider;
 
 import java.util.Optional;
@@ -31,7 +33,7 @@ public interface StoredRiskProvider extends Provider {
      *
      * @return overall risk score in range (0,1>
      */
-    Optional<Double> getStoredRisk();
+    Risk getStoredOverallRisk();
 
     /**
      * Get evaluated stored risk score for the specific phase
@@ -39,43 +41,34 @@ public interface StoredRiskProvider extends Provider {
      * @param riskPhase phase of the evaluation
      * @return overall risk score in range (0,1>
      */
-    Optional<Double> getStoredRisk(RiskPhase riskPhase);
+    Risk getStoredRisk(RiskEvaluator.EvaluationPhase phase);
 
     /**
      * Store the overall risk score
      *
-     * @param risk overall risk score in range (0,1>
+     * @param risk overall risk score in range (0,1> and other attributes
      */
-    void storeRisk(double risk);
+    void storeOverallRisk(Risk risk);
 
     /**
      * Store the overall risk score for the specific phase
      *
-     * @param risk      overall risk score in range (0,1>
-     * @param riskPhase phase of the evaluation
+     * @param risk      risk score in range (0,1> and other attributes
+     * @param phase     phase of the risk score evaluation
      */
-    void storeRisk(double risk, RiskPhase riskPhase);
-
-    /**
-     * Individual risk score phases
-     */
-    enum RiskPhase {
-        NO_USER, // Phase for evaluated risk score based on evaluators that do NOT REQUIRE user
-        REQUIRES_USER, // Phase for evaluated risk score based on evaluators that do REQUIRE user
-        OVERALL // Phase for the overall risk score aggregating the NO_USER and REQUIRES_USER scores
-    }
+    void storeRisk(Risk risk, RiskEvaluator.EvaluationPhase phase);
 
     /**
      * Get stored overall risk score in a printable version
      */
     default Optional<String> printStoredRisk() {
-        return printStoredRisk(RiskPhase.OVERALL);
+        return Optional.of(getStoredOverallRisk()).filter(Risk::isValid).map(risk -> String.format("%.2f", risk.getScore().get()));
     }
 
     /**
      * Get stored risk score in a printable version for specific risk phase
      */
-    default Optional<String> printStoredRisk(RiskPhase riskPhase) {
-        return getStoredRisk(riskPhase).map(score -> String.format("%.2f", score));
+    default Optional<String> printStoredRisk(RiskEvaluator.EvaluationPhase phase) {
+        return Optional.of(getStoredRisk(phase)).filter(Risk::isValid).map(risk -> String.format("%.2f", risk.getScore().get()));
     }
 }

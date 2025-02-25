@@ -16,9 +16,11 @@
  */
 package org.keycloak.adaptive.engine;
 
+import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
 
@@ -30,9 +32,9 @@ import java.util.Optional;
 public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
     private static final Logger logger = Logger.getLogger(AuthnSessionStoredRiskProvider.class);
 
-    public static final String RISK_NO_USER_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK_NO_USER";
-    public static final String RISK_REQUIRES_USER_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_RISK_REQUIRES_USER";
-    public static final String RISK_OVERALL_AUTH_NOTE = "ADAPTIVE_AUTHN_CURRENT_OVERALL_RISK";
+    private static final String OVERALL_PROP = "OVERALL";
+    protected static final String ADAPTIVE_AUTHN_RISK_SCORE_PREFIX = "ADAPTIVE_AUTHN_CURRENT_RISK_SCORE_";
+    protected static final String ADAPTIVE_AUTHN_RISK_REASON_PREFIX = "ADAPTIVE_AUTHN_CURRENT_RISK_REASON_";
 
     private final KeycloakSession session;
 
@@ -41,64 +43,75 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
     }
 
     @Override
-    public Optional<Double> getStoredRisk() {
-        return getStoredRisk(RiskPhase.OVERALL);
+    public Risk getStoredOverallRisk() {
+        return getStoredRisk(null);
     }
 
     @Override
-    public Optional<Double> getStoredRisk(RiskPhase riskPhase) {
+    public Risk getStoredRisk(@Nullable RiskEvaluator.EvaluationPhase phase) {
         try {
             return Optional.ofNullable(session.getContext().getAuthenticationSession())
-                    .map(f -> f.getAuthNote(getConfigProperty(riskPhase)))
-                    .filter(StringUtil::isNotBlank)
-                    .map(Double::parseDouble);
+                    .map(f -> {
+                        var score = f.getAuthNote(getScoreProperty(phase));
+                        if (StringUtil.isBlank(score) || score.equals("-1")) {
+                            return Risk.invalid();
+                        }
+                        var reason = f.getAuthNote(getReasonProperty(phase));
+                        return Risk.of(Double.parseDouble(score), reason);
+                    })
+                    .filter(Risk::isValid)
+                    .orElse(Risk.invalid());
         } catch (NumberFormatException e) {
-            return Optional.empty();
+            return Risk.invalid();
         }
     }
 
     @Override
-    public void storeRisk(double risk) {
-        storeRisk(risk, RiskPhase.OVERALL);
+    public void storeOverallRisk(Risk risk) {
+        storeRisk(risk, null);
     }
 
     @Override
-    public void storeRisk(double risk, RiskPhase riskPhase) {
-        if (!Risk.isValid(risk)) {
+    public void storeRisk(Risk risk, @Nullable RiskEvaluator.EvaluationPhase phase) {
+        if (!risk.isValid()) {
             logger.warnf("Cannot store the invalid risk score '%f'", risk);
             return;
         }
 
         Optional.ofNullable(session.getContext().getAuthenticationSession())
-                .ifPresentOrElse(f -> f.setAuthNote(getConfigProperty(riskPhase), Double.toString(risk)),
+                .ifPresentOrElse(f -> {
+                            f.setAuthNote(getScoreProperty(phase), Double.toString(risk.getScore().get()));
+                            f.setAuthNote(getReasonProperty(phase), risk.getReason().orElse(""));
+                        },
                         () -> {
-                            throw new IllegalArgumentException("Authentication session is null");
+                            throw new IllegalStateException("Authentication session is null");
                         });
 
-        if (riskPhase != RiskPhase.OVERALL) { // Store Overall risk
-            var oppositePhase = riskPhase == RiskPhase.NO_USER ? RiskPhase.REQUIRES_USER : RiskPhase.NO_USER;
+        // Store Overall risk
+        if (phase != null && !phase.equals(RiskEvaluator.EvaluationPhase.CONTINUOUS)) {
+            var oppositePhase = phase == RiskEvaluator.EvaluationPhase.BEFORE_AUTHN ?
+                    RiskEvaluator.EvaluationPhase.USER_KNOWN :
+                    RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
             var oppositeRisk = getStoredRisk(oppositePhase);
-            var isValidOppositeRisk = oppositeRisk.filter(Risk::isValid).isPresent();
-
             var overallRisk = risk;
 
-            if (isValidOppositeRisk) {
-                overallRisk = Math.max(overallRisk,oppositeRisk.get());
-                logger.debugf("Stored overall risk: max(%f ('%s'), %f ('%s')) = %f", risk, riskPhase.name(), oppositeRisk.get(), oppositePhase.name(), overallRisk);
+            if (oppositeRisk.isValid()) {
+                overallRisk = risk.getScore().get() > oppositeRisk.getScore().get() ? risk : oppositeRisk;
+                logger.debugf("Stored overall risk: max(%f ('%s'), %f ('%s')) = %f", risk.getScore().get(), phase.name(), oppositeRisk.getScore().get(), oppositePhase.name(), overallRisk.getScore().get());
             } else {
-                logger.debugf("Stored overall risk: %f ('%s')", risk, riskPhase.name());
+                logger.debugf("Stored overall risk: %f ('%s')", risk.getScore().get(), phase.name());
             }
 
-            storeRisk(overallRisk, RiskPhase.OVERALL);
+            storeOverallRisk(overallRisk);
         }
     }
 
-    static String getConfigProperty(RiskPhase riskPhase) {
-        return switch (riskPhase) {
-            case NO_USER -> RISK_NO_USER_AUTH_NOTE;
-            case REQUIRES_USER -> RISK_REQUIRES_USER_AUTH_NOTE;
-            case OVERALL -> RISK_OVERALL_AUTH_NOTE;
-        };
+    static String getScoreProperty(@Nullable RiskEvaluator.EvaluationPhase phase) {
+        return ADAPTIVE_AUTHN_RISK_SCORE_PREFIX + Optional.ofNullable(phase).map(Enum::name).orElse(OVERALL_PROP);
+    }
+
+    static String getReasonProperty(@Nullable RiskEvaluator.EvaluationPhase phase) {
+        return ADAPTIVE_AUTHN_RISK_REASON_PREFIX + Optional.ofNullable(phase).map(Enum::name).orElse(OVERALL_PROP);
     }
 
     @Override

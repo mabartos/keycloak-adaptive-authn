@@ -32,15 +32,14 @@ public class RiskEvaluatorAuthenticator implements Authenticator, ConfigurableRe
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         var requiresUser = requiresUser(context.getAuthenticatorConfig());
-        var riskEvaluationPhase = requiresUser ? RiskEvaluator.EvaluationPhase.USER_KNOWN : RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
-        var storedRiskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
+        var phase = requiresUser ? RiskEvaluator.EvaluationPhase.USER_KNOWN : RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 
-        final var storedRisk = storedRiskProvider.getStoredRisk(storedRiskPhase);
+        final var storedRisk = storedRiskProvider.getStoredRisk(phase);
 
-        if (storedRisk.isPresent()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", storedRiskPhase, storedRisk.get());
+        if (storedRisk.isValid()) {
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
         } else {
-            riskEngine.evaluateRisk(riskEvaluationPhase);
+            riskEngine.evaluateRisk(phase);
         }
 
         context.success();
