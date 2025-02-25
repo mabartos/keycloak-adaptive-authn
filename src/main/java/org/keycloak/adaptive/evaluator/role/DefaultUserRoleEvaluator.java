@@ -27,6 +27,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Risk evaluator for user role properties
@@ -51,8 +52,8 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return true;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

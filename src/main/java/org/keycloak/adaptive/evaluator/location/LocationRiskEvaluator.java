@@ -27,6 +27,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Risk evaluator for location properties
@@ -50,8 +51,8 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return true;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

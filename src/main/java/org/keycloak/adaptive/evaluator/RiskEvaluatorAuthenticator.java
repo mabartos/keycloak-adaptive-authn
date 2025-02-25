@@ -4,6 +4,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.spi.engine.ConfigurableRequirements;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
+import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -31,14 +32,15 @@ public class RiskEvaluatorAuthenticator implements Authenticator, ConfigurableRe
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         var requiresUser = requiresUser(context.getAuthenticatorConfig());
-        var riskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
+        var riskEvaluationPhase = requiresUser ? RiskEvaluator.EvaluationPhase.USER_KNOWN : RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+        var storedRiskPhase = requiresUser ? StoredRiskProvider.RiskPhase.REQUIRES_USER : StoredRiskProvider.RiskPhase.NO_USER;
 
-        final var storedRisk = storedRiskProvider.getStoredRisk(riskPhase);
+        final var storedRisk = storedRiskProvider.getStoredRisk(storedRiskPhase);
 
         if (storedRisk.isPresent()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", riskPhase, storedRisk.get());
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", storedRiskPhase, storedRisk.get());
         } else {
-            riskEngine.evaluateRisk(requiresUser);
+            riskEngine.evaluateRisk(riskEvaluationPhase);
         }
 
         context.success();

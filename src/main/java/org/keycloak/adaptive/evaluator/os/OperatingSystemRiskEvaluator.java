@@ -25,6 +25,7 @@ import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Risk evaluator for OS properties
@@ -49,8 +50,8 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     @Override

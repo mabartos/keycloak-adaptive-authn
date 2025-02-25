@@ -5,13 +5,15 @@ import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.models.KeycloakSession;
 
+import java.util.Set;
+
 public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     private Risk risk = Risk.invalid();
 
     public abstract KeycloakSession getSession();
 
     @Override
-    public abstract boolean requiresUser();
+    public abstract Set<EvaluationPhase> evaluationPhases();
 
     @Override
     public Risk getRisk() {

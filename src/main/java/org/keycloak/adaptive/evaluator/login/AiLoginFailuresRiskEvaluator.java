@@ -31,6 +31,7 @@ import org.keycloak.models.UserLoginFailureModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Risk evaluator for checking login failures properties evaluated by AI NLP engine to detect brute-force attacks
@@ -59,8 +60,8 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean requiresUser() {
-        return true;
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     protected String request(UserLoginFailureModel loginFailures) {
