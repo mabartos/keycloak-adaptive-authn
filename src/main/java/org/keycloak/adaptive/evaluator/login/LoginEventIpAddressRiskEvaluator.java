@@ -27,12 +27,6 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public boolean isEnabled() {
-        // TODO - bug when authenticate multiple times - SQLException - Connection is closed
-        return false;
-    }
-
-    @Override
     public KeycloakSession getSession() {
         return session;
     }
