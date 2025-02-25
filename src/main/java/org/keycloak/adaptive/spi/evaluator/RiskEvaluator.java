@@ -16,6 +16,7 @@
  */
 package org.keycloak.adaptive.spi.evaluator;
 
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.provider.Provider;
 
 import java.util.Optional;
@@ -28,16 +29,12 @@ import java.util.Optional;
 public interface RiskEvaluator extends Provider {
 
     /**
-     * Get evaluated risk score
+     * Get evaluated risk score with additional information
+     * Never must be null - return {@link Risk#invalid()} instead
      *
-     * @return (optional) risk score in range (0,1>
+     * @return (optional) risk score in range (0,1> with additional parameters
      */
-    Optional<Double> getRiskScore();
-    
-    /**
-     * Get reasoning about the evaluated risk score
-     */
-    Optional<String> getReason();
+    Risk getRisk();
 
     /**
      * Get weight of the evaluation claims how much the evaluations should influence the overall risk score
