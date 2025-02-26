@@ -58,6 +58,6 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
                 .map(RoleModel::getName)
                 .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
 
-        return Risk.of(isAdmin ? 0.6 : 0.1);
+        return isAdmin ? Risk.of(Risk.INTERMEDIATE) : Risk.none();
     }
 }

@@ -24,7 +24,7 @@ import java.util.Optional;
  * Common risk values
  */
 public class Risk {
-    public static double NONE = 0.01;
+    public static double NONE = 0.0;
     public static double SMALL = 0.3;
     public static double MEDIUM = 0.5;
     public static double INTERMEDIATE = 0.7;
@@ -32,6 +32,7 @@ public class Risk {
     public static double HIGHEST = 1.0;
 
     private static final Risk INVALID = of(-1);
+    private static final Risk NO_RISK = of(0);
 
     private final boolean valid;
     private final double score;
@@ -65,6 +66,10 @@ public class Risk {
 
     public static Risk invalid() {
         return INVALID;
+    }
+
+    public static Risk none() {
+        return NO_RISK;
     }
 
     public static boolean isValid(double score) {

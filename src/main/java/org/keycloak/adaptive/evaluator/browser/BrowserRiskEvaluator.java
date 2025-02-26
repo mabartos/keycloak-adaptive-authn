@@ -56,6 +56,6 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
 
     @Override
     public Risk evaluate() {
-        return Risk.of(browserCondition.isDefaultKnownBrowser() ? Risk.NONE : Risk.INTERMEDIATE);
+        return browserCondition.isDefaultKnownBrowser() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
     }
 }
