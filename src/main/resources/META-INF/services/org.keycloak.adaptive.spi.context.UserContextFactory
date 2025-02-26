@@ -7,3 +7,4 @@ org.keycloak.adaptive.context.ip.client.HeaderIpAddressContextFactory
 org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory
 org.keycloak.adaptive.context.user.KcLoginEventsContextFactory
 org.keycloak.adaptive.context.user.KcLoginFailuresEventsContextFactory
+org.keycloak.adaptive.context.ip.client.TestIpAddressContextFactory

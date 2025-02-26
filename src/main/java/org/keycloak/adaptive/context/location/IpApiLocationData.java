@@ -57,10 +57,6 @@ public class IpApiLocationData implements LocationData, Serializable {
         return country_name;
     }
 
-    public String getCountryCapital() {
-        return country_capital;
-    }
-
     @Override
     public String getContinent() {
         return continent_code;
