@@ -22,7 +22,6 @@ import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.level.Risk;
-import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiNlpEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
@@ -52,11 +51,6 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public KeycloakSession getSession() {
         return session;
-    }
-
-    @Override
-    public double getDefaultWeight() {
-        return Weight.IMPORTANT;
     }
 
     @Override
