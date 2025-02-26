@@ -73,7 +73,7 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
                     return Risk.of(INTERMEDIATE);
                 }
             } else {
-                return Risk.of(NONE);
+                return Risk.none();
             }
         }
 
