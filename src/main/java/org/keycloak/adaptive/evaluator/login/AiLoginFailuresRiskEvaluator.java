@@ -22,7 +22,7 @@ import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
 import org.keycloak.adaptive.level.Risk;
-import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
@@ -40,12 +40,12 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
     private final KeycloakSession session;
     private final IpAddressContext ipAddressContext;
-    private final AiNlpEngine aiEngine;
+    private final AiEngine aiEngine;
 
     public AiLoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.ipAddressContext = UserContexts.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
-        this.aiEngine = session.getProvider(AiNlpEngine.class);
+        this.aiEngine = session.getProvider(AiEngine.class);
     }
 
     @Override

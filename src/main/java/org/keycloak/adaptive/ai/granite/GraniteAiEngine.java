@@ -21,14 +21,14 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.ai.AiEngineUtils;
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
 import org.keycloak.adaptive.ai.DefaultAiDataResponse;
-import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Map;
 import java.util.Optional;
 
-public class GraniteAiEngine implements AiNlpEngine {
+public class GraniteAiEngine implements AiEngine {
     private static final Logger logger = Logger.getLogger(GraniteAiEngine.class);
 
     private final KeycloakSession session;

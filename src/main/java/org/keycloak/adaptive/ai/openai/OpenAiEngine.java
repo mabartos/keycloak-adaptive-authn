@@ -20,7 +20,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.ai.AiEngineUtils;
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
 import org.keycloak.adaptive.ai.DefaultAiDataResponse;
-import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 
@@ -30,7 +30,7 @@ import java.util.Optional;
 /**
  * OpenAI ChatGPT engine
  */
-public class OpenAiEngine implements AiNlpEngine {
+public class OpenAiEngine implements AiEngine {
     private static final Logger logger = Logger.getLogger(OpenAiEngine.class);
 
     private final KeycloakSession session;

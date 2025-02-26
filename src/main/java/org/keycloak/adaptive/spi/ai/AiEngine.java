@@ -23,17 +23,41 @@ import java.util.Optional;
 /**
  * Artificial Intelligence Natural Language Processing engine
  */
-public interface AiNlpEngine extends Provider {
+public interface AiEngine extends Provider {
 
+    /**
+     * Get result from the AI engine
+     *
+     * @param message your query
+     * @param clazz   what response type should be returned
+     */
     default <T> Optional<T> getResult(String message, Class<T> clazz) {
         return getResult("", message, clazz);
     }
 
+    /**
+     * Get result from the AI engine
+     *
+     * @param context context message representing the overall general instruction for each request
+     * @param message your query
+     * @param clazz   what response type should be returned
+     */
     <T> Optional<T> getResult(String context, String message, Class<T> clazz);
 
+    /**
+     * Get evaluated risk score from the AI engine
+     *
+     * @param message your query
+     */
     default Optional<Double> getRisk(String message) {
         return getRisk(AiRiskEvaluatorMessages.getContextMessage(), message);
     }
 
+    /**
+     * Get evaluated risk score from the AI engine
+     *
+     * @param context context message representing the overall general instruction for each request on how to evaluate risk
+     * @param message your query
+     */
     Optional<Double> getRisk(String context, String message);
 }

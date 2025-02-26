@@ -21,7 +21,7 @@ import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.level.Risk;
-import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
@@ -37,12 +37,12 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
 
     private final KeycloakSession session;
     private final DeviceContext deviceContext;
-    private final AiNlpEngine aiEngine;
+    private final AiEngine aiEngine;
 
     public AiDeviceRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
-        this.aiEngine = session.getProvider(AiNlpEngine.class);
+        this.aiEngine = session.getProvider(AiEngine.class);
     }
 
     @Override
