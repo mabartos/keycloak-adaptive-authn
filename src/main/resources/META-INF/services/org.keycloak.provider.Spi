@@ -5,3 +5,4 @@ org.keycloak.adaptive.spi.engine.RiskEngineSpi
 org.keycloak.adaptive.spi.condition.UserContextConditionSpi
 org.keycloak.adaptive.spi.ai.AiEngineSpi
 org.keycloak.adaptive.spi.engine.StoredRiskSpi
+org.keycloak.adaptive.spi.engine.RiskScoreAlgorithmSpi
