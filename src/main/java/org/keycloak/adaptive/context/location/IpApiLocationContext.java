@@ -23,15 +23,19 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.ip.client.DefaultIpAddressFactory;
 import org.keycloak.adaptive.context.ip.client.IpAddressContext;
+import org.keycloak.adaptive.context.ip.client.TestIpAddressContextFactory;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.quarkus.runtime.configuration.Configuration;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
+
+import static org.keycloak.adaptive.context.ip.client.TestIpAddressContextFactory.USE_TESTING_IP_PROP;
 
 /**
  * Obtain location data based on the IP address from 'ipapi.co' server
@@ -51,10 +55,15 @@ public class IpApiLocationContext extends LocationContext {
         return session;
     }
 
+    private boolean useTestingIpAddress() {
+        return Configuration.isTrue(USE_TESTING_IP_PROP);
+    }
+
     @Override
     public Optional<LocationData> initData() {
         try {
-            final IpAddressContext ipAddressContext = UserContexts.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
+            final var contextProvider = useTestingIpAddress() ? TestIpAddressContextFactory.PROVIDER_ID : DefaultIpAddressFactory.PROVIDER_ID;
+            final IpAddressContext ipAddressContext = UserContexts.getContext(session, contextProvider);
 
             var client = httpClientProvider.getHttpClient();
 
@@ -77,7 +86,9 @@ public class IpApiLocationContext extends LocationContext {
                     log.error(response.getStatusLine().getReasonPhrase());
                     return Optional.empty();
                 }
-                return Optional.ofNullable(JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class));
+                Optional<LocationData> data = Optional.ofNullable(JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class));
+                data.ifPresent(location -> log.debugf("Location obtained: %s", data));
+                return data;
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {
             log.error(e);
