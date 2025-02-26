@@ -22,6 +22,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
+import org.keycloak.adaptive.spi.engine.RiskScoreAlgorithm;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.common.util.Time;
@@ -53,6 +54,7 @@ public class DefaultRiskEngine implements RiskEngine {
     private final KeycloakSession session;
     private final RealmModel realm;
     private final TracingProvider tracingProvider;
+    private final RiskScoreAlgorithm riskScoreAlgorithm;
     private final Set<RiskEvaluator> riskEvaluators;
     private final Set<UserContext> userContexts;
     private final ExecutorsProvider executorsProvider;
@@ -64,6 +66,7 @@ public class DefaultRiskEngine implements RiskEngine {
         this.session = session;
         this.realm = session.getContext().getRealm();
         this.tracingProvider = TracingProviderUtil.getTracingProvider(session);
+        this.riskScoreAlgorithm = session.getProvider(RiskScoreAlgorithm.class);
         this.riskEvaluators = session.getAllProviders(RiskEvaluator.class);
         this.userContexts = session.getAllProviders(UserContext.class);
         this.executorsProvider = session.getProvider(ExecutorsProvider.class);
@@ -124,19 +127,7 @@ public class DefaultRiskEngine implements RiskEngine {
                         .asSet();
 
                 evaluatedRisks.subscribe().with(risks -> {
-                    var weightedRisk = risks.stream()
-                            .filter(eval -> eval.getRisk().getScore().isPresent())
-                            .peek(eval -> logger.debugf("Evaluator: %s", eval.getClass().getSimpleName()))
-                            .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRisk().getScore().get(), eval.getWeight()))
-                            .mapToDouble(eval -> eval.getRisk().getScore().get() * eval.getWeight())
-                            .sum();
-
-                    var weights = risks.stream()
-                            .mapToDouble(RiskEvaluator::getWeight)
-                            .sum();
-
-                    // Weighted arithmetic mean
-                    this.risk = Risk.of(weightedRisk / weights);
+                    this.risk = riskScoreAlgorithm.evaluateRisk(risks, phase);
 
                     if (risk.isValid()) {
                         logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore().get(), phase);
