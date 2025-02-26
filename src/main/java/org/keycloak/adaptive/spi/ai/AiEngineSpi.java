@@ -35,7 +35,7 @@ public class AiEngineSpi implements Spi {
 
     @Override
     public Class<? extends Provider> getProviderClass() {
-        return AiNlpEngine.class;
+        return AiEngine.class;
     }
 
     @Override

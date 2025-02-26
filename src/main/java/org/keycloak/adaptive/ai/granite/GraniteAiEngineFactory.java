@@ -19,7 +19,7 @@ package org.keycloak.adaptive.ai.granite;
 
 import org.keycloak.Config;
 import org.keycloak.adaptive.spi.ai.AiEngineFactory;
-import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.quarkus.runtime.configuration.Configuration;
@@ -34,7 +34,7 @@ public class GraniteAiEngineFactory implements AiEngineFactory {
     private static final String MODEL_PROPERTY = "ai.granite.api.model";
 
     @Override
-    public AiNlpEngine create(KeycloakSession session) {
+    public AiEngine create(KeycloakSession session) {
         return new GraniteAiEngine(session);
     }
 

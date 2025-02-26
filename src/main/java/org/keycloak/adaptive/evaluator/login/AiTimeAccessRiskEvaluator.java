@@ -5,7 +5,7 @@ import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.user.KcLoginEventsContextFactory;
 import org.keycloak.adaptive.context.user.LoginEventsContext;
 import org.keycloak.adaptive.level.Risk;
-import org.keycloak.adaptive.spi.ai.AiNlpEngine;
+import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventType;
@@ -21,12 +21,12 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
     private final static Logger logger = Logger.getLogger(AiTimeAccessRiskEvaluator.class);
     private final KeycloakSession session;
     private final LoginEventsContext loginEvents;
-    private final AiNlpEngine aiEngine;
+    private final AiEngine aiEngine;
 
     public AiTimeAccessRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-        this.aiEngine = session.getProvider(AiNlpEngine.class);
+        this.aiEngine = session.getProvider(AiEngine.class);
     }
 
     @Override
