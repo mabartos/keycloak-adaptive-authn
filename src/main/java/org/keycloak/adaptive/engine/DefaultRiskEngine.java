@@ -151,17 +151,19 @@ public class DefaultRiskEngine implements RiskEngine {
                 .item(evaluator)
                 .onItem()
                 .invoke(eval -> tracingProvider.trace(eval.getClass(), "evaluate", span -> {
-                    eval.evaluateRisk();
+                    for (int i = 0; i < retries; i++) {
+                        eval.evaluateRisk();
+                        if (eval.getRisk() != Risk.invalid()) {
+                            break;
+                        }
+                    }
 
                     if (span.isRecording()) {
                         span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRisk().getScore().orElse(-1.0));
                         eval.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
                         span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight());
                     }
-                }))
-                .onFailure()
-                .retry()
-                .atMost(retries);
+                }));
         return requiresUser ? item : item.emitOn(thread);
     }
 
