@@ -197,6 +197,7 @@
                                 <argument>--verbose</argument>
                                 <argument>--tracing-enabled=true</argument>
                                 <argument>--log-console-include-trace=false</argument>
+                                <argument>--log-level=org.keycloak.adaptive:debug</argument>
                             </arguments>
                         </configuration>
                     </execution>
