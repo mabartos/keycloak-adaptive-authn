@@ -117,10 +117,7 @@ public class DefaultRiskEngine implements RiskEngine {
             tracingProvider.trace(DefaultRiskEngine.class, "evaluateAll", span -> {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
-                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries))
-                        .ifNoItem()
-                        .after(timeout)
-                        .recoverWithCompletion()
+                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries, timeout))
                         .filter(f -> f.getRisk().isValid())
                         .filter(f -> Risk.isValid(f.getWeight()))
                         .collect()
@@ -146,7 +143,7 @@ public class DefaultRiskEngine implements RiskEngine {
         logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
     }
 
-    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, boolean requiresUser, ExecutorService thread, int retries) {
+    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, boolean requiresUser, ExecutorService thread, int retries, Duration timeout) {
         var item = Uni.createFrom()
                 .item(evaluator)
                 .onItem()
@@ -163,7 +160,12 @@ public class DefaultRiskEngine implements RiskEngine {
                         eval.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
                         span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight());
                     }
-                }));
+                }))
+                .onFailure()
+                .recoverWithUni(Uni.createFrom().nothing())
+                .ifNoItem()
+                .after(timeout)
+                .recoverWithUni(Uni.createFrom().nothing());
         return requiresUser ? item : item.emitOn(thread);
     }
 
