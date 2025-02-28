@@ -79,10 +79,10 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIP)) {
             if (!currentIp.equals(lastIP)) {
-                logger.debug("Request from different IP address");
+                logger.trace("Request from different IP address");
                 return Optional.of(Risk.INTERMEDIATE);
             } else {
-                logger.debug("Same IP address");
+                logger.trace("Same IP address");
             }
         }
         return Optional.empty();
@@ -92,20 +92,20 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     public Risk evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
-            logger.debug("Context realm is null");
+            logger.trace("Context realm is null");
             return Risk.invalid();
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
-            logger.debug("Context user is null");
+            logger.trace("Context user is null");
             return Risk.invalid();
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
-            logger.debug("Cannot obtain login failures");
+            logger.trace("Cannot obtain login failures");
             return Risk.invalid();
         }
 

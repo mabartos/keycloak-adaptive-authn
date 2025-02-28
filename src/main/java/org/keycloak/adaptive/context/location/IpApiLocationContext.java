@@ -87,7 +87,7 @@ public class IpApiLocationContext extends LocationContext {
                     return Optional.empty();
                 }
                 Optional<LocationData> data = Optional.ofNullable(JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class));
-                data.ifPresent(location -> log.debugf("Location obtained: %s", data));
+                data.ifPresent(location -> log.tracef("Location obtained: %s", data));
                 return data;
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {

@@ -88,7 +88,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
-        logger.debugf("onCreate execution");
+        logger.tracef("onCreate execution");
 
         updateRiskBasedLevel(realm, model);
 
@@ -100,13 +100,13 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             // Enabled
             var enabled = model.get(isEnabledConfig(evalFactory.evaluatorClass()));
             doIfPresent(enabled, value -> {
-                logger.debugf("stored state '%s' for evaluator '%s' ('%s')", value, evalFactory.getName(), evalFactory.evaluatorClass().getSimpleName());
+                logger.tracef("stored state '%s' for evaluator '%s' ('%s')", value, evalFactory.getName(), evalFactory.evaluatorClass().getSimpleName());
                 EvaluatorUtils.setEvaluatorEnabled(session, evalFactory.evaluatorClass(), Boolean.parseBoolean(value));
             });
 
             var weight = model.get(getWeightConfig(evalFactory.evaluatorClass()));
             doIfPresent(weight, value -> {
-                logger.debugf("putting weight '%f' for evaluator '%s' ('%s')", value, evalFactory.getName(),evalFactory.evaluatorClass());
+                logger.tracef("putting weight '%f' for evaluator '%s' ('%s')", value, evalFactory.getName(),evalFactory.evaluatorClass());
                 EvaluatorUtils.storeEvaluatorWeight(session, evalFactory.evaluatorClass(), Double.parseDouble(value));
             });
         });
@@ -120,7 +120,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-        logger.debugf("onUpdate execution");
+        logger.tracef("onUpdate execution");
 
         updateRiskBasedLevel(realm, newModel);
         doIfPresent(newModel.get(RISK_BASED_AUTHN_ENABLED_CONFIG), value -> realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, value));
@@ -133,7 +133,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 var newEnabled = newModel.get(isEnabledConfig(f.evaluatorClass()));
                 if (!Objects.equals(oldEnabled, newEnabled)) {
                     doIfPresent(newEnabled, value -> {
-                        logger.debugf("setting new value for '%s' = '%s'", isEnabledConfig(f.evaluatorClass()), Boolean.parseBoolean(value));
+                        logger.tracef("setting new value for '%s' = '%s'", isEnabledConfig(f.evaluatorClass()), Boolean.parseBoolean(value));
                         EvaluatorUtils.setEvaluatorEnabled(session, f.evaluatorClass(), Boolean.parseBoolean(value));
                     });
                 }
@@ -144,7 +144,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 var newWeight = newModel.get(getWeightConfig(f.evaluatorClass()));
                 if (!Objects.equals(oldWeight, newWeight)) {
                     doIfPresent(newWeight, value -> {
-                        logger.debugf("setting new value for '%s' = '%s'", getWeightConfig(f.evaluatorClass()), value);
+                        logger.tracef("setting new value for '%s' = '%s'", getWeightConfig(f.evaluatorClass()), value);
                         EvaluatorUtils.storeEvaluatorWeight(session, f.evaluatorClass(), Double.parseDouble(value));
                     });
                 }
@@ -154,7 +154,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
-        logger.debugf("validateConfiguration execution");
+        logger.tracef("validateConfiguration execution");
 
         validateInteger(model.get(EVALUATOR_TIMEOUT_CONFIG), "Timeout");
         validateInteger(model.get(EVALUATOR_RETRIES_CONFIG), "Retries");

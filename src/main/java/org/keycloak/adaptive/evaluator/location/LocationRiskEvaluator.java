@@ -58,26 +58,26 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Risk evaluate() {
         if (realm == null) {
-            logger.debugf("Realm is null");
+            logger.tracef("Realm is null");
             return Risk.invalid();
         }
 
         var user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
 
         if (user == null) {
-            logger.debugf("User is null");
+            logger.tracef("User is null");
             return Risk.invalid();
         }
 
         var data = locationContext.getData();
         if (data.isPresent()) {
-            logger.debugf("Location - City: %s, Country: %s", data.get().getCity(), data.get().getCountry());
+            logger.tracef("Location - City: %s, Country: %s", data.get().getCity(), data.get().getCountry());
 
             // TODO save location to successful logins and then compare it here
             //session.singleUseObjects().put(getUserLocationKey(user),);
 
         } else {
-            logger.debugf("Data for LocationRiskEvaluator is null");
+            logger.tracef("Data for LocationRiskEvaluator is null");
         }
 
         return Risk.invalid();
