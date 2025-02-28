@@ -16,14 +16,17 @@
  */
 package org.keycloak.adaptive.context.location;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
+import java.util.StringJoiner;
 
 /**
  * Response data from the 'ipapi.co' server
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class IpApiLocationData implements LocationData, Serializable {
     private String city;
     private String region;
@@ -86,4 +89,22 @@ public class IpApiLocationData implements LocationData, Serializable {
     public String getCurrency() {
         return currency;
     }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", IpApiLocationData.class.getSimpleName() + " {", "}")
+                .add("city='" + city + "'")
+                .add("region='" + region + "'")
+                .add("region_code='" + region_code + "'")
+                .add("country_name='" + country_name + "'")
+                .add("country_capital='" + country_capital + "'")
+                .add("continent_code='" + continent_code + "'")
+                .add("postal='" + postal + "'")
+                .add("latitude=" + latitude)
+                .add("longitude=" + longitude)
+                .add("timezone='" + timezone + "'")
+                .add("currency='" + currency + "'")
+                .toString();
+    }
+
 }
