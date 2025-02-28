@@ -60,7 +60,7 @@ public class GraniteAiEngine implements AiEngine {
                 clazz
         );
 
-        logger.debugf("Response from AI engine: %s\n", result.toString());
+        logger.tracef("Response from AI engine: %s\n", result.toString());
 
         return result;
     }
@@ -73,7 +73,7 @@ public class GraniteAiEngine implements AiEngine {
         }
 
         return AiEngineUtils.getRiskFromDefaultResponse(response.get(),
-                (eval) -> logger.debugf("Granite evaluated risk: %f. Reason: %s", eval.risk(), eval.reason())
+                (eval) -> logger.tracef("Granite evaluated risk: %f. Reason: %s", eval.risk(), eval.reason())
         );
     }
 

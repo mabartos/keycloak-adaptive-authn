@@ -86,7 +86,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
 
             RecaptchaAssessmentResponse assessment = JsonSerialization.readValue(
                     response.getEntity().getContent(), RecaptchaAssessmentResponse.class);
-            Log.debugf("Got assessment response: %s", assessment);
+            Log.tracef("Got assessment response: %s", assessment);
 
             boolean valid = assessment.getTokenProperties().isValid();
             double score = assessment.getRiskAnalysis().getScore();

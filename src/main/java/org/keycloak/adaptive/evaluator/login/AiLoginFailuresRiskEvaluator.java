@@ -80,7 +80,7 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
                 Time.currentTimeMillis() - loginFailures.getLastFailure()
         );
 
-        logger.debugf("AI login failures request: %s", request);
+        logger.tracef("AI login failures request: %s", request);
         return request;
     }
 
@@ -88,20 +88,20 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     public Risk evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
-            logger.debug("Context realm is null");
+            logger.trace("Context realm is null");
             return Risk.invalid();
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
-            logger.debug("Context user is null");
+            logger.trace("Context user is null");
             return Risk.invalid();
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
-            logger.debug("Cannot obtain login failures");
+            logger.trace("Cannot obtain login failures");
             return Risk.invalid();
 
         }

@@ -81,7 +81,7 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
                 device.getLastAccess()
         );
 
-        logger.debugf("AI device request: %s", request);
+        logger.tracef("AI device request: %s", request);
         return request;
     }
 

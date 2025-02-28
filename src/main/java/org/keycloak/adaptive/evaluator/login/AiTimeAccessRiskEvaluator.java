@@ -55,7 +55,7 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
                 String.join("\n", accessTimes)
         );
 
-        logger.debugf("AI time access request: %s", request);
+        logger.tracef("AI time access request: %s", request);
         return request;
     }
 
