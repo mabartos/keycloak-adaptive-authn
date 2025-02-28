@@ -71,8 +71,7 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
 
         var data = locationContext.getData();
         if (data.isPresent()) {
-            logger.tracef("Location - City: %s, Country: %s", data.get().getCity(), data.get().getCountry());
-
+            logger.info(data.get().toString());
             // TODO save location to successful logins and then compare it here
             //session.singleUseObjects().put(getUserLocationKey(user),);
 
