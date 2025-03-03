@@ -24,6 +24,7 @@ import org.keycloak.adaptive.spi.context.UserContext;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.engine.RiskScoreAlgorithm;
 import org.keycloak.adaptive.spi.engine.StoredRiskProvider;
+import org.keycloak.adaptive.spi.evaluator.ContinuousRiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
@@ -78,26 +79,31 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, UserModel knownUser) {
+    public void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
+        evaluateRisk(evaluationPhase, null, null);
+    }
+
+    @Override
+    public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
         logger.debugf("Risk Engine - EVALUATING (phase: %s)", phase.name());
         var start = Time.currentTimeMillis();
 
         switch (phase) {
-            case CONTINUOUS -> handleContinuous(knownUser);
+            case CONTINUOUS -> handleContinuous(realm, knownUser);
             case BEFORE_AUTHN, USER_KNOWN -> handleAuthentication(phase);
         }
 
         logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
     }
 
-    protected void handleContinuous(UserModel knownUser) {
-        if (knownUser == null) {
-            logger.warn("Cannot execute continuous risk score evaluation, because we need to know who is the current user");
+    protected void handleContinuous(RealmModel realm, UserModel knownUser) {
+        if (realm == null || knownUser == null) {
+            logger.warn("Cannot execute continuous risk score evaluation, because we need to know who is the current user and what realm is used");
             return;
         }
 
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
-        evaluators.forEach(RiskEvaluator::evaluateRisk);
+        evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
         var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
         if (risk.isValid() && risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {

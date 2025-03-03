@@ -39,7 +39,7 @@ public class RiskEvaluatorAuthenticator implements Authenticator, ConfigurableRe
         if (storedRisk.isValid()) {
             logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
         } else {
-            riskEngine.evaluateRisk(phase, context.getUser());
+            riskEngine.evaluateRisk(phase, context.getRealm(), context.getUser());
         }
 
         context.success();

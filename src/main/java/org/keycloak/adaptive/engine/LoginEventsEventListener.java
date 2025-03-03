@@ -86,7 +86,7 @@ public class LoginEventsEventListener implements EventListenerProvider {
             var riskEngine = session.getProvider(RiskEngine.class);
             var realm = session.realms().getRealm(realmId);
             var user = session.users().getUserById(realm, userId);
-            riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, user);
+            riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, user);
         }
     }
 
