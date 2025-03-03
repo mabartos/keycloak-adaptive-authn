@@ -91,12 +91,21 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     protected void handleContinuous(UserModel knownUser) {
+        if (knownUser == null) {
+            logger.warn("Cannot execute continuous risk score evaluation, because we need to know who is the current user");
+            return;
+        }
+
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
         evaluators.forEach(RiskEvaluator::evaluateRisk);
         var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
         if (risk.isValid() && risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
-            // TODO log out user - remove all user's userSessions
+            session.sessions().removeUserSessions(realm, knownUser);
+            logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
+                    knownUser.getId(),
+                    risk.getScore().get(),
+                    risk.getReason().orElse(""));
         }
     }
 
