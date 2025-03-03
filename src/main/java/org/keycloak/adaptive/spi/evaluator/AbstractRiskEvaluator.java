@@ -11,7 +11,7 @@ import java.util.Set;
  * Abstraction over the {@link RiskEvaluator} to simplify risk evaluators
  */
 public abstract class AbstractRiskEvaluator implements RiskEvaluator {
-    private Risk risk = Risk.invalid();
+    protected Risk risk = Risk.invalid();
 
     public abstract KeycloakSession getSession();
 

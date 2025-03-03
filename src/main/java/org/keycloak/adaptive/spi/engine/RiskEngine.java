@@ -18,6 +18,7 @@ package org.keycloak.adaptive.spi.engine;
 
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
@@ -61,9 +62,7 @@ public interface RiskEngine extends Provider {
      *
      * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
      */
-    default void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
-        evaluateRisk(evaluationPhase, null);
-    }
+    void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
 
     /**
      * Start the risk scores evaluation for evaluation phase
@@ -71,7 +70,7 @@ public interface RiskEngine extends Provider {
      * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
      * @param knownUser       information about the user - if the {@code #evaluationPhase} is {@link RiskEvaluator.EvaluationPhase#BEFORE_AUTHN}, the {@code #knownUser} is null
      */
-    void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase, UserModel knownUser);
+    void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase, RealmModel realm, UserModel knownUser);
 
     @Override
     default void close() {

@@ -3,11 +3,14 @@ package org.keycloak.adaptive.evaluator.behavior;
 import org.jboss.logging.Logger;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
+import org.keycloak.adaptive.spi.evaluator.AbstractContinuousRiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 
 import java.time.Duration;
 import java.util.Date;
@@ -24,7 +27,7 @@ import static org.keycloak.events.EventType.UPDATE_CREDENTIAL_ERROR;
 import static org.keycloak.events.EventType.UPDATE_EMAIL;
 import static org.keycloak.events.EventType.UPDATE_EMAIL_ERROR;
 
-public class UserActionsRiskEvaluator extends AbstractRiskEvaluator {
+public class UserActionsRiskEvaluator extends AbstractContinuousRiskEvaluator {
     protected static final EventType[] SENSITIVE_EVENTS = {
             UPDATE_EMAIL,
             UPDATE_EMAIL_ERROR,
@@ -53,11 +56,6 @@ public class UserActionsRiskEvaluator extends AbstractRiskEvaluator {
         return session;
     }
 
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.CONTINUOUS);
-    }
-
     /**
      * Number of occurrences of sensitive events in specific time window
      * <p>
@@ -82,15 +80,13 @@ public class UserActionsRiskEvaluator extends AbstractRiskEvaluator {
      * >c*10x= HIGHEST
      */
     @Override
-    public Risk evaluate() {
-        var realm = getRealm();
-        if (realm.isEmpty()) {
+    public Risk evaluate(RealmModel realm, UserModel user) {
+        if (realm == null) {
             logger.trace("Cannot find realm");
             return Risk.invalid();
         }
 
-        var user = getUser();
-        if (user.isEmpty()) {
+        if (user == null) {
             logger.trace("Cannot find user");
             return Risk.invalid();
         }
@@ -107,8 +103,8 @@ public class UserActionsRiskEvaluator extends AbstractRiskEvaluator {
         var fromDate = new Date(Time.currentTimeMillis() - lookupTime);
 
         var count = eventStore.createQuery()
-                .realm(realm.get().getId())
-                .user(user.get().getId())
+                .realm(realm.getId())
+                .user(user.getId())
                 .type(SENSITIVE_EVENTS)
                 .fromDate(fromDate)
                 .getResultStream()
