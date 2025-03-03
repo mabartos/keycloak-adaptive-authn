@@ -7,6 +7,9 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.Set;
 
+/**
+ * Abstraction over the {@link RiskEvaluator} to simplify risk evaluators
+ */
 public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     private Risk risk = Risk.invalid();
 
@@ -21,6 +24,9 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
         return risk;
     }
 
+    /**
+     * Default/starting weight for the evaluator
+     */
     public double getDefaultWeight() {
         return Weight.DEFAULT;
     }
@@ -35,6 +41,12 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
         return EvaluatorUtils.isEvaluatorEnabled(getSession(), this.getClass());
     }
 
+    /**
+     * Evaluate risk and return the {@link Risk} object.
+     * Never returns null - return {@link Risk#invalid()} instead.
+     *
+     * @return risk object
+     */
     public abstract Risk evaluate();
 
     @Override
