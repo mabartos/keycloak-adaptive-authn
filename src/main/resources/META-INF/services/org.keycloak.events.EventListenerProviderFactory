@@ -1,1 +1,1 @@
-org.keycloak.adaptive.events.LoginEventsEventListenerFactory
+org.keycloak.adaptive.engine.LoginEventsEventListenerFactory

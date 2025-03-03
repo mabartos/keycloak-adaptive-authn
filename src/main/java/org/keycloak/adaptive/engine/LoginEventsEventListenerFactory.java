@@ -1,4 +1,4 @@
-package org.keycloak.adaptive.events;
+package org.keycloak.adaptive.engine;
 
 import org.keycloak.Config;
 import org.keycloak.events.EventListenerProvider;
