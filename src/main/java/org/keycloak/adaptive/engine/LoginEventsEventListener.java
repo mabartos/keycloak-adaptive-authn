@@ -11,13 +11,14 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.utils.StringUtil;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.keycloak.adaptive.engine.LoginEventsEventListenerFactory.RISK_SCORE_DETAIL;
+import static org.keycloak.adaptive.spi.engine.RiskEngine.DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES;
 
 public class LoginEventsEventListener implements EventListenerProvider {
     protected static final String USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET = "has_continuous_evaluations_timer_set";
-
     private final KeycloakSession session;
     private final StoredRiskProvider riskProvider;
     private final TimerProvider timerProvider;
@@ -54,10 +55,13 @@ public class LoginEventsEventListener implements EventListenerProvider {
             var timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
             if (!Boolean.parseBoolean(timerScheduled)) {
                 timerProvider.scheduleTask(session -> {
-                    var riskEngine = session.getProvider(RiskEngine.class);
-                    riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS);
-                }, 5000, getUserTimerName(userId)); //TODO change the time
+                            var riskEngine = session.getProvider(RiskEngine.class);
+                            riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, user);
+                        },
+                        Duration.ofMinutes(DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis(),
+                        getUserTimerName(userId));
                 user.setAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
+                Log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", userId, DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
             }
         }
     }
