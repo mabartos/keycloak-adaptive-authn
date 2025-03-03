@@ -6,6 +6,7 @@ import org.keycloak.adaptive.spi.engine.RiskScoreAlgorithm;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     private static final Logger logger = Logger.getLogger(WeightedAvgRiskAlgorithm.class);
@@ -22,16 +23,19 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
 
     @Override
     public Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase) {
-        var weightedRisk = evaluators.stream()
+        var filteredEvaluators = evaluators.stream()
                 .filter(eval -> eval.getRisk() != null)
-                .peek(WeightedAvgRiskAlgorithm::printEvaluatorDetails)
                 .filter(f -> Risk.isValid(f.getWeight()))
                 .filter(eval -> eval.getRisk() != Risk.none())
                 .filter(eval -> eval.getRisk().getScore().isPresent())
+                .collect(Collectors.toSet());
+
+        var weightedRisk = filteredEvaluators.stream()
+                .peek(WeightedAvgRiskAlgorithm::printEvaluatorDetails)
                 .mapToDouble(eval -> eval.getRisk().getScore().get() * eval.getWeight())
                 .sum();
 
-        var weights = evaluators.stream()
+        var weights = filteredEvaluators.stream()
                 .mapToDouble(RiskEvaluator::getWeight)
                 .sum();
 
