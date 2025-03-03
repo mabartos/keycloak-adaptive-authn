@@ -197,7 +197,9 @@
                                 <argument>--verbose</argument>
                                 <argument>--tracing-enabled=true</argument>
                                 <argument>--log-console-include-trace=false</argument>
-                                <argument>--log-level=org.keycloak.adaptive:debug</argument>
+                                <argument>
+                                    --log-level=org.keycloak.adaptive:debug,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
+                                </argument>
                             </arguments>
                         </configuration>
                     </execution>

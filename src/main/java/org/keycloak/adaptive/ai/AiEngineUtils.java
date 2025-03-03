@@ -56,7 +56,8 @@ public class AiEngineUtils {
 
             try (var response = client.execute(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    Log.errorf("%s: %s", response.getStatusLine().toString(), JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
+                    Log.warn("Request was not successful for the AI engine");
+                    Log.tracef("%s: %s", response.getStatusLine().toString(), JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
                     return Optional.empty();
                 }
                 var result = JsonSerialization.readValue(response.getEntity().getContent(), resultClass);
@@ -64,7 +65,8 @@ public class AiEngineUtils {
                 return Optional.of(result);
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {
-            Log.error(e);
+            Log.error("Cannot invoke request on the AI engine.");
+            Log.trace(e);
         }
         return Optional.empty();
     }

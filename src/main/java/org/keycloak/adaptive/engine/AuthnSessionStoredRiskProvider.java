@@ -99,7 +99,7 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
                 overallRisk = risk.getScore().get() > oppositeRisk.getScore().get() ? risk : oppositeRisk;
                 logger.debugf("Stored overall risk: max(%f ('%s'), %f ('%s')) = %f", risk.getScore().get(), phase.name(), oppositeRisk.getScore().get(), oppositePhase.name(), overallRisk.getScore().get());
             } else {
-                logger.debugf("Stored overall risk: %f ('%s')", risk.getScore().get(), phase.name());
+                logger.tracef("Stored overall risk: %f ('%s')", risk.getScore().get(), phase.name());
             }
 
             storeOverallRisk(overallRisk);

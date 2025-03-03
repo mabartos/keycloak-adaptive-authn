@@ -42,7 +42,7 @@ public class LoginEventsEventListener implements EventListenerProvider {
         riskProvider.printStoredRisk().ifPresent(risk -> {
             // does not persist AFAIK
             event.getDetails().put(RISK_SCORE_DETAIL, risk);
-            Log.debugf("Added risk score ('%s') to the login session", risk);
+            Log.tracef("Added risk score ('%s') to the login session", risk);
         });
 
         var realmId = event.getRealmId();
