@@ -8,6 +8,7 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.timer.ScheduledTask;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.utils.StringUtil;
 
@@ -44,9 +45,17 @@ public class LoginEventsEventListener implements EventListenerProvider {
             Log.debugf("Added risk score ('%s') to the login session", risk);
         });
 
+        var realmId = event.getRealmId();
         var userId = event.getUserId();
-        if (StringUtil.isNotBlank(userId)) {
-            var user = session.users().getUserById(session.getContext().getRealm(), userId);
+
+        if (StringUtil.isNotBlank(realmId) && StringUtil.isNotBlank(userId)) {
+            var realm = session.realms().getRealm(realmId);
+            if (realm == null) {
+                Log.warnf("Realm with realm ID '%s' does not exist, so no timer cannot be created.", realmId);
+                return;
+            }
+
+            var user = session.users().getUserById(realm, userId);
             if (user == null) {
                 Log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", userId);
                 return;
@@ -54,15 +63,30 @@ public class LoginEventsEventListener implements EventListenerProvider {
 
             var timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
             if (!Boolean.parseBoolean(timerScheduled)) {
-                timerProvider.scheduleTask(session -> {
-                            var riskEngine = session.getProvider(RiskEngine.class);
-                            riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, user);
-                        },
+                timerProvider.scheduleTask(new ScheduledContinuousRiskEvaluation(realmId, userId),
                         Duration.ofMinutes(DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis(),
                         getUserTimerName(userId));
                 user.setAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
                 Log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", userId, DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
             }
+        }
+    }
+
+    private static class ScheduledContinuousRiskEvaluation implements ScheduledTask {
+        private final String realmId;
+        private final String userId;
+
+        public ScheduledContinuousRiskEvaluation(String realmId, String userId) {
+            this.realmId = realmId;
+            this.userId = userId;
+        }
+
+        @Override
+        public void run(KeycloakSession session) {
+            var riskEngine = session.getProvider(RiskEngine.class);
+            var realm = session.realms().getRealm(realmId);
+            var user = session.users().getUserById(realm, userId);
+            riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, user);
         }
     }
 
