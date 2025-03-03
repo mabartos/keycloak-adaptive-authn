@@ -23,7 +23,8 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     @Override
     public Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase) {
         var weightedRisk = evaluators.stream()
-                .filter(eval -> eval.getRisk() != Risk.none())
+                .filter(f -> Risk.isValid(f.getWeight()))
+                .filter(eval -> eval.getRisk() != null && eval.getRisk() != Risk.none())
                 .filter(eval -> eval.getRisk().getScore().isPresent())
                 .peek(eval -> logger.debugf("Evaluator: %s", eval.getClass().getSimpleName()))
                 .peek(eval -> logger.debugf("Risk evaluated: %f (weight %f)", eval.getRisk().getScore().get(), eval.getWeight()))
