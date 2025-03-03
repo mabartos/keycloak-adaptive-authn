@@ -8,3 +8,4 @@
  org.keycloak.adaptive.evaluator.recaptcha.RecaptchaRiskEvaluatorFactory
  org.keycloak.adaptive.evaluator.login.LoginEventIpAddressRiskEvaluatorFactory
  org.keycloak.adaptive.evaluator.login.AiTimeAccessRiskEvaluatorFactory
+ org.keycloak.adaptive.evaluator.behavior.UserActionsRiskEvaluatorFactory
