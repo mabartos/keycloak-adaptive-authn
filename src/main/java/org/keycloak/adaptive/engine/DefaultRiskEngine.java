@@ -29,6 +29,7 @@ import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
@@ -77,19 +78,19 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public void evaluateRisk(RiskEvaluator.EvaluationPhase phase) {
+    public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, UserModel knownUser) {
         logger.debugf("Risk Engine - EVALUATING (phase: %s)", phase.name());
         var start = Time.currentTimeMillis();
 
         switch (phase) {
-            case CONTINUOUS -> handleContinuous();
+            case CONTINUOUS -> handleContinuous(knownUser);
             case BEFORE_AUTHN, USER_KNOWN -> handleAuthentication(phase);
         }
 
         logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
     }
 
-    protected void handleContinuous() {
+    protected void handleContinuous(UserModel knownUser) {
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
         evaluators.forEach(RiskEvaluator::evaluateRisk);
         var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
