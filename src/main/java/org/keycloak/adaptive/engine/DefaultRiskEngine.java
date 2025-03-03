@@ -34,6 +34,7 @@ import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -139,8 +140,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
                         .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries, timeout))
-                        .filter(f -> f.getRisk() != null && f.getRisk().isValid())
-                        .filter(f -> Risk.isValid(f.getWeight()))
+                        .filter(Objects::nonNull)
                         .collect()
                         .asSet();
 
