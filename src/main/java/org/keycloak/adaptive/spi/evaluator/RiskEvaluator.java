@@ -71,14 +71,15 @@ public interface RiskEvaluator extends Provider {
         BEFORE_AUTHN,
 
         /**
-         * Executed after determining user during the authentication process
-         * Usually after providing username + password to avoid any security threats
+         * Executed after determining user during the authentication process.
+         * Usually after providing username + password to avoid any security threats.
          * <p>Useful for evaluating risk of the attempting user such as role, login failures, login events, etc.</p>
          */
         USER_KNOWN,
 
         /**
-         * Executed on demand in runtime when some event occurs and the risk score for the authenticated user should be reevaluated
+         * Executed on demand in runtime when some event occurs and the risk score for the authenticated user should be reevaluated.
+         * We consider always having information about the authenticated user.
          * <p>Should be used in conjunction with event listener</p>
          */
         CONTINUOUS
