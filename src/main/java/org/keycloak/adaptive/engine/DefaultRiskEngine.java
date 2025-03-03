@@ -103,16 +103,19 @@ public class DefaultRiskEngine implements RiskEngine {
         }
 
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
-        evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
-        var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
-        if (risk.isValid() && risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
-            session.sessions().removeUserSessions(realm, knownUser);
-            logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
-                    knownUser.getId(),
-                    risk.getScore().get(),
-                    risk.getReason().orElse(""));
-        }
+        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
+            evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
+            var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
+
+            if (risk.isValid() && risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
+                session.sessions().removeUserSessions(realm, knownUser);
+                logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
+                        knownUser.getId(),
+                        risk.getScore().get(),
+                        risk.getReason().orElse(""));
+            }
+        });
     }
 
     protected void handleAuthentication(RiskEvaluator.EvaluationPhase phase) {
