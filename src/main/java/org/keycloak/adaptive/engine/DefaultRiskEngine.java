@@ -49,6 +49,8 @@ import static org.keycloak.adaptive.engine.DefaultRiskEngineFactory.EVALUATOR_TI
  * Default risk engine for the overall risk score evaluation leveraging asynchronous and parallel processing
  */
 public class DefaultRiskEngine implements RiskEngine {
+    // TODO have it configurable
+    protected static final double RISK_THRESHOLD_LOG_OUT_USER = 0.8;
     private static final Logger logger = Logger.getLogger(DefaultRiskEngine.class);
 
     private final KeycloakSession session;
@@ -75,8 +77,28 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public void evaluateRisk(RiskEvaluator.EvaluationPhase phase) {
-        logger.debugf("Risk Engine - EVALUATING");
+        logger.debugf("Risk Engine - EVALUATING (phase: %s)", phase.name());
+        var start = Time.currentTimeMillis();
 
+        switch (phase) {
+            case CONTINUOUS -> handleContinuous();
+            case BEFORE_AUTHN, USER_KNOWN -> handleAuthentication(phase);
+        }
+
+        logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
+    }
+
+    protected void handleContinuous() {
+        var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
+        evaluators.forEach(RiskEvaluator::evaluateRisk);
+        var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
+
+        if (risk.isValid() && risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
+            // TODO log out user - remove all user's userSessions
+        }
+    }
+
+    protected void handleAuthentication(RiskEvaluator.EvaluationPhase phase) {
         // It is not necessary to evaluate the risk multiple times for 'BEFORE_AUTHN' phase
         if (phase == RiskEvaluator.EvaluationPhase.BEFORE_AUTHN) {
             final var storedRisk = storedRiskProvider.getStoredRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
@@ -88,7 +110,6 @@ public class DefaultRiskEngine implements RiskEngine {
         }
 
         var requiresUser = phase == RiskEvaluator.EvaluationPhase.USER_KNOWN;
-        var start = Time.currentTimeMillis();
         var exec = executorsProvider.getExecutor("risk-engine");
 
         var timeout = getNumberRealmAttribute(EVALUATOR_TIMEOUT_CONFIG, Long::parseLong)
@@ -102,7 +123,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 .filter(f -> !f.isInitialized())
                 .filter(UserContext::isBlocking)
                 .forEach(UserContext::initData);
-        
+
         var evaluators = Multi.createFrom()
                 .items(getRiskEvaluators(phase))
                 .onItem()
@@ -118,7 +139,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
                         .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries, timeout))
-                        .filter(f -> f.getRisk().isValid())
+                        .filter(f -> f.getRisk() != null && f.getRisk().isValid())
                         .filter(f -> Risk.isValid(f.getWeight()))
                         .collect()
                         .asSet();
@@ -140,7 +161,6 @@ public class DefaultRiskEngine implements RiskEngine {
                 });
             });
         }), failure -> logger.error(failure.getCause()));
-        logger.debugf("Consumed time: '%d ms'", Time.currentTimeMillis() - start);
     }
 
     protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, boolean requiresUser, ExecutorService thread, int retries, Duration timeout) {
