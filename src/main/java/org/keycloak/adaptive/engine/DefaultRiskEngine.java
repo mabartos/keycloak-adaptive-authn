@@ -85,6 +85,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
+        logger.debug("--------------------------------------------------");
         logger.debugf("Risk Engine - EVALUATING (phase: %s)", phase.name());
         var start = Time.currentTimeMillis();
 
@@ -94,6 +95,7 @@ public class DefaultRiskEngine implements RiskEngine {
         }
 
         logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
+        logger.debug("--------------------------------------------------");
     }
 
     protected void handleContinuous(RealmModel realm, UserModel knownUser) {
