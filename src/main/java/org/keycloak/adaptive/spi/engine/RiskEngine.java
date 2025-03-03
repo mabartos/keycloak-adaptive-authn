@@ -29,6 +29,11 @@ import java.util.Set;
  */
 public interface RiskEngine extends Provider {
     /**
+     * Default period for continuous risk evaluation in minutes
+     */
+    int DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES = 10;
+
+    /**
      * Get the overall risk score for the authentication request
      * Never must be null - return {@link Risk#invalid()} instead
      *
