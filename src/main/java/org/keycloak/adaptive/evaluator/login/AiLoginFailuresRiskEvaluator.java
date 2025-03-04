@@ -111,7 +111,6 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
         }
 
-        Optional<Double> evaluatedRisk = aiEngine.getRisk(request(loginFailures));
-        return evaluatedRisk.map(Risk::of).orElse(Risk.invalid());
+        return aiEngine.getRisk(request(loginFailures));
     }
 }
