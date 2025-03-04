@@ -1,10 +1,21 @@
 ![Keycloak](docs/img/keycloak-adaptive-colored.png)
 
-# Keycloak Adaptive Authentication Extension
+# Keycloak Adaptive Authentication
+
+* Change **authentication requirements** in real-time based on wider context
+* **Strengthen security** - Require **MORE** factors when user attempt is suspicious or accessing sensitive resources
+* **Better User Experience** - Require **LESS** factors when risk of fraudulent user is low
+* **Integration with remote services** - For more information about the user or helping evaluating data via remote
+  services
+* Gather **more information about user** in a secure way
+* Uses **Risk-based** authentication
+* Uses **AI services** for more complex risk evaluations
+
+<img src="docs/img/github-risk-engine.png" alt="Risk Engine" width="1050"></img>
 
 ### Supported AI NLP Engines:
 
-- **OpenAI ChatGPT** - (preview)
+- **OpenAI ChatGPT**
 - **IBM Granite** - (experimental)
 
 For more information, refer to the [Start guide](docs/start.md).
