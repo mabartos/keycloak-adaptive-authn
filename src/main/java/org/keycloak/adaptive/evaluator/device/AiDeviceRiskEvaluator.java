@@ -21,6 +21,7 @@ import org.keycloak.adaptive.context.UserContexts;
 import org.keycloak.adaptive.context.device.DefaultDeviceContextFactory;
 import org.keycloak.adaptive.context.device.DeviceContext;
 import org.keycloak.adaptive.level.Risk;
+import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
@@ -52,7 +53,7 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
 
     @Override
     public double getDefaultWeight() {
-        return 0.15;
+        return Weight.LOW;
     }
 
     @Override
