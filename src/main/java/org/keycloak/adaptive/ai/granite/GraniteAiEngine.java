@@ -40,7 +40,7 @@ public class GraniteAiEngine implements AiEngine {
     }
 
     @Override
-    public <T> Optional<T> getResult(String context, String message, Class<T> clazz) {
+    public <T> Optional<T> getResult(String context, String message, Class<T> clazz, DefaultAiDataRequest.ResponseFormat responseFormat) {
         final var url = GraniteAiEngineFactory.getApiUrl();
         final var key = GraniteAiEngineFactory.getApiKey();
         final var model = GraniteAiEngineFactory.getModel();
@@ -51,6 +51,8 @@ public class GraniteAiEngine implements AiEngine {
         }
 
         var httpClient = httpClientProvider.getHttpClient();
+
+        //No response format for Granite now
 
         var result = AiEngineUtils.aiEngineRequest(
                 httpClient,

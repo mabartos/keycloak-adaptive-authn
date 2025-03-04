@@ -17,20 +17,58 @@
 
 package org.keycloak.adaptive.ai;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data request for common AI NLP engines (OpenAI ChatGPT, IBM Granite)
  */
 public record DefaultAiDataRequest(String model,
-                                   List<Message> messages) {
+                                   List<Message> messages,
+                                   @JsonProperty("response_format")
+                                   ResponseFormat format) {
 
     public record Message(String role,
                           String content) {
     }
 
+    public record ResponseFormat(String type,
+                                 @JsonProperty("json_schema")
+                                 JsonSchema jsonSchema) {
+        public record JsonSchema(String name,
+                                 Schema schema,
+                                 Boolean strict) {
+            public record Schema(String type,
+                                 Boolean additionalProperties,
+                                 Map<String, SchemaType> properties,
+                                 @JsonProperty("required")
+                                 List<String> requiredProperties) {
+            }
+        }
+    }
+
+    public record SchemaType(String type, String description) {
+    }
+
+    public static ResponseFormat newJsonResponseFormat(String schemaName, Map<String, SchemaType> properties) {
+        return new ResponseFormat("json_schema",
+                new ResponseFormat.JsonSchema(schemaName,
+                        new ResponseFormat.JsonSchema.Schema("object", false, properties, properties.keySet().stream().toList()),
+                        true));
+    }
+
+    public static ResponseFormat newTextResponseFormat() {
+        return new ResponseFormat("text", null);
+    }
+
+    public static DefaultAiDataRequest newRequest(String model, String systemMessage, String userMessage, ResponseFormat format) {
+        return new DefaultAiDataRequest(model, List.of(new DefaultAiDataRequest.Message("developer", systemMessage), new DefaultAiDataRequest.Message("user", userMessage)), format);
+    }
+
     public static DefaultAiDataRequest newRequest(String model, String systemMessage, String userMessage) {
-        return new DefaultAiDataRequest(model, List.of(new DefaultAiDataRequest.Message("system", systemMessage), new DefaultAiDataRequest.Message("user", userMessage)));
+        return newRequest(model, systemMessage, userMessage, null);
     }
 
     public static DefaultAiDataRequest newRequest(String model, String userMessage) {

@@ -16,14 +16,21 @@
  */
 package org.keycloak.adaptive.spi.ai;
 
+import org.keycloak.adaptive.ai.DefaultAiDataRequest;
 import org.keycloak.provider.Provider;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * Artificial Intelligence Natural Language Processing engine
  */
 public interface AiEngine extends Provider {
+
+    Map<String, DefaultAiDataRequest.SchemaType> DEFAULT_RISK_SCHEMA = Map.of(
+            "risk", new DefaultAiDataRequest.SchemaType("number", "Risk score (double) of the evaluation in range (0,1>."),
+            "reason", new DefaultAiDataRequest.SchemaType("string", "Reason why the score was evaluated like this - as briefly as possible."));
+
 
     /**
      * Get result from the AI engine
@@ -42,7 +49,11 @@ public interface AiEngine extends Provider {
      * @param message your query
      * @param clazz   what response type should be returned
      */
-    <T> Optional<T> getResult(String context, String message, Class<T> clazz);
+    default <T> Optional<T> getResult(String context, String message, Class<T> clazz) {
+        return getResult(context, message, clazz, null);
+    }
+
+    <T> Optional<T> getResult(String context, String message, Class<T> clazz, DefaultAiDataRequest.ResponseFormat schema);
 
     /**
      * Get evaluated risk score from the AI engine
