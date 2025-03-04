@@ -22,17 +22,13 @@ import org.keycloak.adaptive.evaluator.EvaluatorUtils;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory;
-import org.keycloak.adaptive.spi.level.RiskLevelsFactory;
-import org.keycloak.adaptive.spi.level.RiskLevelsProvider;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
-import org.keycloak.provider.ConfiguredProvider;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
-import org.keycloak.provider.ProviderFactory;
 import org.keycloak.services.ui.extend.UiTabProvider;
 import org.keycloak.services.ui.extend.UiTabProviderFactory;
 import org.keycloak.utils.StringUtil;
@@ -58,11 +54,9 @@ import static org.keycloak.adaptive.spi.evaluator.RiskEvaluatorFactory.isEnabled
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private static final Logger logger = Logger.getLogger(RiskBasedPoliciesUiTab.class);
 
-    private List<RiskLevelsFactory> riskLevelsFactories = Collections.emptyList();
     private List<RiskEvaluatorFactory> riskEvaluatorFactories = Collections.emptyList();
 
     public static final String RISK_BASED_AUTHN_ENABLED_CONFIG = "riskBasedAuthnEnabled";
-    public static final String RISK_LEVEL_PROVIDER_CONFIG = "riskLevelProvider";
 
     @Override
     public String getId() {
@@ -89,8 +83,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     @Override
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
         logger.tracef("onCreate execution");
-
-        updateRiskBasedLevel(realm, model);
 
         doIfPresent(model.get(RISK_BASED_AUTHN_ENABLED_CONFIG), value -> realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, value));
         doIfPresent(model.get(EVALUATOR_TIMEOUT_CONFIG), value -> realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, value));
@@ -122,7 +114,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         logger.tracef("onUpdate execution");
 
-        updateRiskBasedLevel(realm, newModel);
         doIfPresent(newModel.get(RISK_BASED_AUTHN_ENABLED_CONFIG), value -> realm.setAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG, value));
         doIfPresent(newModel.get(EVALUATOR_TIMEOUT_CONFIG), value -> realm.setAttribute(EVALUATOR_TIMEOUT_CONFIG, value));
         doIfPresent(newModel.get(EVALUATOR_RETRIES_CONFIG), value -> realm.setAttribute(EVALUATOR_RETRIES_CONFIG, value));
@@ -174,16 +165,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         });
     }
 
-    protected void updateRiskBasedLevel(RealmModel realm, ComponentModel model) {
-        var providerId = riskLevelsFactories.stream()
-                .filter(f -> f.getHelpText().equals(model.get(RISK_LEVEL_PROVIDER_CONFIG)))
-                .findAny()
-                .map(ProviderFactory::getId)
-                .orElse("");
-
-        realm.setAttribute(RISK_LEVEL_PROVIDER_CONFIG, providerId);
-    }
-
     protected void validateInteger(String value, String attributeDisplayName) {
         try {
             var timeout = Integer.parseInt(value);
@@ -203,14 +184,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .helpText("Whether risk-based authentication should be enabled")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
-                .add()
-                .property()
-                .name(RISK_LEVEL_PROVIDER_CONFIG)
-                .label("Risk levels")
-                .helpText("Which risk levels will be used for Risk Level conditions")
-                .type(ProviderConfigProperty.LIST_TYPE)
-                .defaultValue(riskLevelsFactories.stream().findFirst().map(ConfiguredProvider::getHelpText).orElse("No Levels"))
-                .options(riskLevelsFactories.stream().map(ConfiguredProvider::getHelpText).toList())
                 .add()
                 .property()
                 .name(EVALUATOR_TIMEOUT_CONFIG)
@@ -242,7 +215,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-        this.riskLevelsFactories = factory.getProviderFactoriesStream(RiskLevelsProvider.class).map(f -> (RiskLevelsFactory) f).toList();
         this.riskEvaluatorFactories = factory.getProviderFactoriesStream(RiskEvaluator.class).map(f -> (RiskEvaluatorFactory) f).toList();
     }
 
