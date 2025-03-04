@@ -21,6 +21,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.ai.AiEngineUtils;
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
 import org.keycloak.adaptive.ai.DefaultAiDataResponse;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.ai.AiEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
@@ -68,10 +69,10 @@ public class GraniteAiEngine implements AiEngine {
     }
 
     @Override
-    public Optional<Double> getRisk(String context, String message) {
+    public Risk getRisk(String context, String message) {
         var response = getResult(context, message, DefaultAiDataResponse.class);
         if (response.isEmpty()) {
-            return Optional.empty();
+            return Risk.invalid();
         }
 
         return AiEngineUtils.getRiskFromDefaultResponse(response.get(),

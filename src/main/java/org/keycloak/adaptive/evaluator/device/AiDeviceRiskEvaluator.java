@@ -99,8 +99,7 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
 
         var deviceRepresentation = deviceContext.getData();
         if (deviceRepresentation.isPresent()) {
-            Optional<Double> evaluatedRisk = aiEngine.getRisk(request(deviceRepresentation.get()));
-            return evaluatedRisk.map(Risk::of).orElse(Risk.invalid());
+            return aiEngine.getRisk(request(deviceRepresentation.get()));
         } else {
             logger.warnf("Device representation is null");
         }

@@ -17,6 +17,7 @@
 package org.keycloak.adaptive.spi.ai;
 
 import org.keycloak.adaptive.ai.DefaultAiDataRequest;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.provider.Provider;
 
 import java.util.Map;
@@ -60,7 +61,7 @@ public interface AiEngine extends Provider {
      *
      * @param message your query
      */
-    default Optional<Double> getRisk(String message) {
+    default Risk getRisk(String message) {
         return getRisk(AiRiskEvaluatorMessages.getContextMessage(), message);
     }
 
@@ -70,5 +71,5 @@ public interface AiEngine extends Provider {
      * @param context context message representing the overall general instruction for each request on how to evaluate risk
      * @param message your query
      */
-    Optional<Double> getRisk(String context, String message);
+    Risk getRisk(String context, String message);
 }

@@ -90,9 +90,7 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.none();
         }
 
-        return aiEngine.getRisk(request(currentTime, accessTimes))
-                .map(Risk::of)
-                .orElse(Risk.invalid());
+        return aiEngine.getRisk(request(currentTime, accessTimes));
     }
 
     // TODO we should take into account time zone of the user

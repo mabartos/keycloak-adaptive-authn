@@ -24,6 +24,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.keycloak.adaptive.level.Risk;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -74,7 +75,7 @@ public class AiEngineUtils {
     /**
      * Abstraction layer up to the DefaultAiDataResponse to obtain risk data from common AI NLP engines
      */
-    public static Optional<Double> getRiskFromDefaultResponse(DefaultAiDataResponse response, Consumer<DefaultAiRiskData> additionalOps) {
+    public static Risk getRiskFromDefaultResponse(DefaultAiDataResponse response, Consumer<DefaultAiRiskData> additionalOps) {
         var data = Optional.ofNullable(response)
                 .flatMap(f -> f.choices().stream().findAny())
                 .map(DefaultAiDataResponse.Choice::message)
@@ -89,6 +90,6 @@ public class AiEngineUtils {
                 });
 
         data.ifPresent(additionalOps);
-        return data.map(DefaultAiRiskData::risk);
+        return data.map(f -> Risk.of(f.risk(), f.reason())).orElse(Risk.invalid());
     }
 }
