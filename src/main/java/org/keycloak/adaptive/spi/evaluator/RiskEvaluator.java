@@ -61,6 +61,13 @@ public interface RiskEvaluator extends Provider {
     boolean isEnabled();
 
     /**
+     * Flag to determine whether evaluation should be retried when failure occurs
+     *
+     * @return true if retry mechanism can be used for this evaluator
+     */
+    boolean allowRetries();
+
+    /**
      * Evaluation phase representing in what phase/situation the risk should be evaluated
      */
     enum EvaluationPhase {

@@ -50,6 +50,11 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     public abstract Risk evaluate();
 
     @Override
+    public boolean allowRetries() {
+        return true;
+    }
+
+    @Override
     public void evaluateRisk() {
         this.risk = evaluate();
     }

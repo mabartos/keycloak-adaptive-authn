@@ -54,6 +54,11 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
+    public boolean allowRetries() {
+        return false;
+    }
+
+    @Override
     public Set<EvaluationPhase> evaluationPhases() {
         return Set.of(EvaluationPhase.USER_KNOWN);
     }
