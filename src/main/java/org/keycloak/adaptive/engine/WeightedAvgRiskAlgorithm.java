@@ -44,11 +44,11 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     }
 
     private static void printEvaluatorDetails(RiskEvaluator evaluator) {
-        logger.debugf("Evaluator: %s - Risk score: '%s' (weight '%f') %s",
+        logger.debugf("Evaluator: %s - Risk score: '%s' (weight '%f')%s",
                 evaluator.getClass().getSimpleName(),
                 evaluator.getRisk().getScore().orElse(-1.0),
                 Risk.isValid(evaluator.getWeight()) ? evaluator.getWeight() : -1.0,
-                evaluator.getRisk().getReason().orElse(""));
+                evaluator.getRisk().getReason().map(reason -> String.format(" - Reason: %s", reason)).orElse(""));
     }
 
     @Override
