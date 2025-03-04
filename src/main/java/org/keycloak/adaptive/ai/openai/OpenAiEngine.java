@@ -42,7 +42,7 @@ public class OpenAiEngine implements AiEngine {
     }
 
     @Override
-    public <T> Optional<T> getResult(String context, String message, Class<T> clazz) {
+    public <T> Optional<T> getResult(String context, String message, Class<T> clazz, DefaultAiDataRequest.ResponseFormat responseFormat) {
         final var url = OpenAiEngineFactory.getApiUrl();
         final var model = OpenAiEngineFactory.getModel();
         final var key = OpenAiEngineFactory.getApiKey();
@@ -59,7 +59,7 @@ public class OpenAiEngine implements AiEngine {
         var result = AiEngineUtils.aiEngineRequest(
                 httpClient,
                 url.get(),
-                () -> DefaultAiDataRequest.newRequest(model.get(), context, message),
+                () -> DefaultAiDataRequest.newRequest(model.get(), context, message, responseFormat),
                 Map.of("Authorization", String.format("Bearer %s", key.get()),
                         "OpenAI-Organization", organization.get(),
                         "OpenAI-Project", project.get()
@@ -73,7 +73,7 @@ public class OpenAiEngine implements AiEngine {
 
     @Override
     public Optional<Double> getRisk(String context, String message) {
-        var response = getResult(context, message, DefaultAiDataResponse.class);
+        var response = getResult(context, message, DefaultAiDataResponse.class, DefaultAiDataRequest.newJsonResponseFormat("risk_evaluation", AiEngine.DEFAULT_RISK_SCHEMA));
         if (response.isEmpty()) {
             return Optional.empty();
         }

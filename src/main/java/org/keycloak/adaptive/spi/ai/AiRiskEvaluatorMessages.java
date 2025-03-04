@@ -28,24 +28,9 @@ public final class AiRiskEvaluatorMessages {
                 - Values close to 1 mean the risk of user fraud is high.
                                
             Analyze the provided data and return risk values.
-            The message MUST be in JSON format, with two items - 'risk' and 'reason'.
-            The 'risk' item MUST contain the evaluated risk double value described above.
-            The 'reason' item MUST describe the reason why it was evaluated like that - as briefly as possible (maximum %s characters).
-                        
-            f.e.
-             {
-               "risk": 0.7,
-               "reason": "Many login failures, with a high probability of brute-force attack."
-             }
             """;
 
-    public static Integer MAX_CHARACTERS = 75;
-
-    public static String getContextMessage(int maxChars) {
-        return CONTEXT_MESSAGE.formatted(maxChars);
-    }
-
     public static String getContextMessage() {
-        return CONTEXT_MESSAGE.formatted(MAX_CHARACTERS);
+        return CONTEXT_MESSAGE;
     }
 }
