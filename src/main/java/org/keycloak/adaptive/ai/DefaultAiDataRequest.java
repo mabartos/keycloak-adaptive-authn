@@ -28,8 +28,11 @@ import java.util.Map;
 public record DefaultAiDataRequest(String model,
                                    List<Message> messages,
                                    @JsonProperty("response_format")
-                                   ResponseFormat format) {
+                                   ResponseFormat format,
+                                   Double temperature) {
 
+    // Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+    public static final Double DEFAULT_TEMPERATURE = 0.2;
     public record Message(String role,
                           String content) {
     }
@@ -64,7 +67,7 @@ public record DefaultAiDataRequest(String model,
     }
 
     public static DefaultAiDataRequest newRequest(String model, String systemMessage, String userMessage, ResponseFormat format) {
-        return new DefaultAiDataRequest(model, List.of(new DefaultAiDataRequest.Message("developer", systemMessage), new DefaultAiDataRequest.Message("user", userMessage)), format);
+        return new DefaultAiDataRequest(model, List.of(new DefaultAiDataRequest.Message("developer", systemMessage), new DefaultAiDataRequest.Message("user", userMessage)), format, DEFAULT_TEMPERATURE);
     }
 
     public static DefaultAiDataRequest newRequest(String model, String systemMessage, String userMessage) {
