@@ -189,7 +189,8 @@ public class DefaultRiskEngine implements RiskEngine {
                 .item(evaluator)
                 .onItem()
                 .invoke(eval -> tracingProvider.trace(eval.getClass(), "evaluate", span -> {
-                    for (int i = 0; i < retries; i++) {
+                    var retriesCount = eval.allowRetries() ? retries : 1;
+                    for (int i = 0; i < retriesCount; i++) {
                         eval.evaluateRisk();
                         if (eval.getRisk() != Risk.invalid()) {
                             break;
