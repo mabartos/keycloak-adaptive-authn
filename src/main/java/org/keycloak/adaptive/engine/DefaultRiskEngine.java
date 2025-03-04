@@ -107,16 +107,25 @@ public class DefaultRiskEngine implements RiskEngine {
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
         KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
-            var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
+            tracingProvider.trace(DefaultRiskEngine.class, "evaluateContinuous", span -> {
+                evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
+                var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
-            if (risk.isValid() && risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
-                session.sessions().removeUserSessions(realm, knownUser);
-                logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
-                        knownUser.getId(),
-                        risk.getScore().get(),
-                        risk.getReason().orElse(""));
-            }
+                if (risk.isValid()) {
+                    if (span.isRecording()) {
+                        span.setAttribute("keycloak.risk.engine.overall", risk.getScore().get());
+                        span.setAttribute("keycloak.risk.engine.phase", RiskEvaluator.EvaluationPhase.CONTINUOUS.name());
+                    }
+
+                    if (risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
+                        session.sessions().removeUserSessions(realm, knownUser);
+                        logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
+                                knownUser.getId(),
+                                risk.getScore().get(),
+                                risk.getReason().orElse(""));
+                    }
+                }
+            });
         });
     }
 
