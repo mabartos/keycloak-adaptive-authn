@@ -28,9 +28,16 @@ public final class AiRiskEvaluatorMessages {
                 - Values close to 1 mean the risk of user fraud is high.
                                
             Analyze the provided data and return risk values.
+            The output 'reason' must have maximum %s characters.
             """;
 
+    public static Integer MAX_CHARACTERS = 75;
+
+    public static String getContextMessage(int maxChars) {
+        return CONTEXT_MESSAGE.formatted(maxChars);
+    }
+
     public static String getContextMessage() {
-        return CONTEXT_MESSAGE;
+        return CONTEXT_MESSAGE.formatted(MAX_CHARACTERS);
     }
 }
