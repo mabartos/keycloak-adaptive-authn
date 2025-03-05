@@ -65,6 +65,11 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
+    public boolean isBlocking() {
+        return false;
+    }
+
+    @Override
     public Set<EvaluationPhase> evaluationPhases() {
         return Set.of(EvaluationPhase.USER_KNOWN);
     }

@@ -66,6 +66,11 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
         return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
+    @Override
+    public boolean isBlocking() {
+        return false;
+    }
+
     protected static String request(DeviceRepresentation device) {
         // we should be careful about the message poisoning
         var request = String.format("""

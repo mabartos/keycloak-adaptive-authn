@@ -25,6 +25,7 @@ import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
 
 import java.util.Optional;
 import java.util.Set;
@@ -53,6 +54,11 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Set<EvaluationPhase> evaluationPhases() {
         return Set.of(EvaluationPhase.USER_KNOWN);
+    }
+
+    @Override
+    public boolean isBlocking() {
+        return true;
     }
 
     @Override

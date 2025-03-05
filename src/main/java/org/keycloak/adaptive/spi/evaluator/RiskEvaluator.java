@@ -67,6 +67,10 @@ public interface RiskEvaluator extends Provider {
      */
     boolean allowRetries();
 
+    default boolean isBlocking() {
+        return true;
+    }
+
     /**
      * Evaluation phase representing in what phase/situation the risk should be evaluated
      */

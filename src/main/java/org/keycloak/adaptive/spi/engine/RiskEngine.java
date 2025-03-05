@@ -22,6 +22,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -53,9 +54,9 @@ public interface RiskEngine extends Provider {
     /**
      * Risk evaluators that contributes to the overall risk score calculations based on the requirement of knowing the user
      *
-     * @return set of risk evaluators
+     * @return list of risk evaluators
      */
-    Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase evaluationPhase);
+    List<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase evaluationPhase);
 
     /**
      * Start the risk scores evaluation for specific evaluation phase

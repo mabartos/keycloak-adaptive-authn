@@ -4,6 +4,7 @@ import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.provider.Provider;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,5 +29,5 @@ public interface RiskScoreAlgorithm extends Provider {
      * @param phase      evaluation phase
      * @return complex risk for a specific phase
      */
-    Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase);
+    Risk evaluateRisk(List<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase);
 }

@@ -63,6 +63,11 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     }
 
     @Override
+    public boolean isBlocking() {
+        return false;
+    }
+
+    @Override
     public Risk evaluate() {
         try {
             if (!configIsValid()) {

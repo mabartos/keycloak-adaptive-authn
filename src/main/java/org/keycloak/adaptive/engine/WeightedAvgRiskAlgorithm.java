@@ -5,7 +5,7 @@ import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.RiskScoreAlgorithm;
 import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
@@ -22,7 +22,7 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     }
 
     @Override
-    public Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase) {
+    public Risk evaluateRisk(List<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase) {
         var filteredEvaluators = evaluators.stream()
                 .peek(WeightedAvgRiskAlgorithm::printEvaluatorDetails)
                 .filter(eval -> eval.getRisk() != null)
