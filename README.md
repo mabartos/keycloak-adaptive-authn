@@ -86,15 +86,19 @@ for the image described in the [README](adaptive/README.md#integration-with-open
 
 ## Resources with more info
 
-1. **Adaptive Authentication**
-    - [KeyConf24](https://keyconf.dev/) @ Vienna, Austria
+1. **Adaptive Authentication (most recent)**
+   - [Keycloak DevDay](https://www.keycloak-day.dev/) @ Darmstadt, Germany 2025
+   - [Slides](https://drive.google.com/file/d/12-vAuVmWqUb3581D8WqWq0uutLbH7tsn/view?usp=sharing)
+   - Talk - will be added once available
+2. **Adaptive Authentication**
+    - [KeyConf24](https://keyconf.dev/) @ Vienna, Austria 2024
     - [Slides](https://drive.google.com/file/d/1PESlDBR8P9nQJyPz_H45R3ZS4LjtSV_W/view?usp=sharing)
     - [Talk](https://www.youtube.com/watch?v=0zWlc08CPuo)
     - [Demo](https://drive.google.com/file/d/1dv5zWM69-KZyT3OUjLe-3b1GcI8ErDJ2/view?usp=sharing)
-2. **AI-powered Keycloak**
-    - OpenShiftAI Roadshow @ Bratislava, Slovakia
+3. **AI-powered Keycloak**
+    - OpenShiftAI Roadshow @ Bratislava, Slovakia 2024
     - [Slides](https://drive.google.com/file/d/1WscEQlWpjYdrOwGDMj9IDV6bARY-4Utn/view?usp=sharing)
-3. **Adaptive Authentication**
+4. **Adaptive Authentication**
     - Master's thesis completed 2024
     - (Information might differ)
     - [Document](https://github.com/mabartos/adaptive-authn-docs/blob/main/Adaptive_Authentication_Final.pdf)
