@@ -418,6 +418,9 @@
     "lastName" : "User",
     "email" : "user@user",
     "emailVerified" : true,
+    "attributes" : {
+      "has_continuous_evaluations_timer_set" : [ "true" ]
+    },
     "createdTimestamp" : 1716930931775,
     "enabled" : true,
     "totp" : true,
@@ -1249,7 +1252,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper" ]
       }
     }, {
       "id" : "177c422a-5da4-495f-97bb-365930521275",
@@ -1258,7 +1261,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper" ]
       }
     }, {
       "id" : "f03f1114-52b9-4eda-8519-d379aab18f59",
@@ -1339,8 +1342,8 @@
         "riskLevelProvider" : [ "Risk levels - 3 levels (Low, Medium, High)" ],
         "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorTimeoutConfig" : [ "2500" ],
-        "riskBasedAuthnEnabled" : [ "true" ],
         "riskEvaluatorEnabledConfig-AiDeviceRiskEvaluatorFactory" : [ "true" ],
+        "riskBasedAuthnEnabled" : [ "true" ],
         "riskEvaluatorEnabledConfig-LoginFailuresRiskEvaluatorFactory" : [ "true" ]
       }
     } ]
@@ -2411,7 +2414,7 @@
     "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : "true",
     "riskLevelProvider" : "simple-risk-levels"
   },
-  "keycloakVersion" : "26.1.2",
+  "keycloakVersion" : "26.2.0",
   "userManagedAccessAllowed" : false,
   "organizationsEnabled" : false,
   "verifiableCredentialsEnabled" : false,

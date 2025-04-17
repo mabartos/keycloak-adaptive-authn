@@ -31,7 +31,7 @@
 
 
     <properties>
-        <keycloak.version>26.1.3</keycloak.version>
+        <keycloak.version>26.2.0</keycloak.version>
 
         <seancfoley.ipaddress.version>5.5.1</seancfoley.ipaddress.version>
 
@@ -198,7 +198,7 @@
                                 <argument>--tracing-enabled=true</argument>
                                 <argument>--log-console-include-trace=false</argument>
                                 <argument>
-                                    --log-level=org.keycloak.adaptive:debug,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
+                                    --log-level=org.keycloak.adaptive:trace,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
                                 </argument>
                             </arguments>
                         </configuration>
