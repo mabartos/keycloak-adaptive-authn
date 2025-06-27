@@ -20,7 +20,7 @@ jobs:
         cache: maven
 
     - name: Build extension
-      run: ./mvnw clean install -DskipTests
+      run: ./mvnw clean install -DskipTests -Pbuild-distribution
 
     - name: Test execute 'build' command
       run: ./mvnw exec:exec@build
