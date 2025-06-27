@@ -58,13 +58,21 @@ To build it from source, execute this command:
 ./mvnw clean install -DskipTests
 ```
 
-If you want to try it out, execute this command:
+If you want to try it out, follow this:
+
+1. Build it with profile `-Pbuild-distribution` as:
+
+```shell
+./mvnw clean install -DskipTests -Pbuild-distribution
+```
+
+2. Start the server with deployed extension
 
 ```shell
 ./mvnw exec:exec@start-server
 ```
 
-And access `localhost:8080/realms/adaptive/account`.
+3. Access `localhost:8080/realms/adaptive/account`.
 
 ### Container
 
