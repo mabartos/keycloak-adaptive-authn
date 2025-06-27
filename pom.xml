@@ -52,6 +52,7 @@
         <maven.plugins.javadoc.version>3.10.1</maven.plugins.javadoc.version>
         <maven.plugins.source.version>3.3.0</maven.plugins.source.version>
         <maven.plugins.deploy.version>3.1.3</maven.plugins.deploy.version>
+        <maven.plugins.shade.version>3.6.0</maven.plugins.shade.version>
         <maven.sonatype.publish.version>0.6.0</maven.sonatype.publish.version>
     </properties>
 
@@ -120,33 +121,6 @@
                                     <version>${keycloak.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/unpacked</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-extension-provider</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.github.seancfoley</groupId>
-                                    <artifactId>ipaddress</artifactId>
-                                    <version>${seancfoley.ipaddress.version}</version>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${keycloak.distribution.path}/providers</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -221,6 +195,55 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.plugins.shade.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <minimizeJar>true</minimizeJar>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.plugins.antrun.version}</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <configuration>
+                            <target>
+                                <unzip src="target/${project.artifactId}-${project.version}.zip" dest="target/unpacked/" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>copy-shaded-jar</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                      todir="${keycloak.distribution.path}/providers" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>${maven.plugins.assembly.version}</version>
                 <configuration>
@@ -279,24 +302,6 @@
                         <phase>deploy</phase>
                         <goals>
                             <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven.plugins.antrun.version}</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <configuration>
-                            <target>
-                                <unzip src="target/${project.artifactId}-${project.version}.zip" dest="target/unpacked/" />
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>
