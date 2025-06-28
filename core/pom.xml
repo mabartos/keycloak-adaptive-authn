@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>keycloak-adaptive-authn</artifactId>
-    <name>Keycloak Adaptive Authentication Runtime</name>
+    <name>Keycloak Adaptive Authentication Core</name>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
