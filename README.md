@@ -63,7 +63,7 @@ If you want to try it out, follow this:
 1. Build it with profile `-Pbuild-distribution` as:
 
 ```shell
-./mvnw clean install -DskipTests -Pbuild-distribution
+./mvnw -f core clean install -DskipTests -Pbuild-distribution
 ```
 
 2. Start the server with deployed extension
