@@ -1,9 +1,8 @@
 name: Keycloak Adaptive Authn
-#description: Do something useful.
+description: Adaptive authentication capabilities for Keycloak
 metadata:
-#  keywords:
-#    - keycloak-adaptive-authn
-#  guide: ... # To create and publish this guide, see https://github.com/quarkiverse/quarkiverse/wiki#documenting-your-extension
-#  categories:
-#    - "miscellaneous"
-#  status: "preview"
+  keywords:
+    - "keycloak"
+    - "keycloak-adaptive-authn"
+    - "security"
+  status: "preview"
