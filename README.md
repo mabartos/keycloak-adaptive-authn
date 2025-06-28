@@ -94,10 +94,10 @@ for the image described in the [README](adaptive/README.md#integration-with-open
 
 ## Resources with more info
 
-1. **Adaptive Authentication (most recent)**
+1. ** Unlocking Adaptive Authentication (most recent)**
    - [Keycloak DevDay](https://www.keycloak-day.dev/) @ Darmstadt, Germany 2025
    - [Slides](https://drive.google.com/file/d/12-vAuVmWqUb3581D8WqWq0uutLbH7tsn/view?usp=sharing)
-   - Talk - will be added once available
+   - [Talk](https://www.youtube.com/watch?v=TjanummQn7U)
 2. **Adaptive Authentication**
     - [KeyConf24](https://keyconf.dev/) @ Vienna, Austria 2024
     - [Slides](https://drive.google.com/file/d/1PESlDBR8P9nQJyPz_H45R3ZS4LjtSV_W/view?usp=sharing)
