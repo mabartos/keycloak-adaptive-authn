@@ -23,4 +23,4 @@ jobs:
       run: ./mvnw clean install -DskipTests -Pbuild-distribution
 
     - name: Test execute 'build' command
-      run: ./mvnw exec:exec@build
+      run: ./mvnw -f core exec:exec@build
