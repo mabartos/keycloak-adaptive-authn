@@ -47,9 +47,7 @@
         <keycloak.version>26.2.5</keycloak.version>
         <quarkus.version>3.20.1</quarkus.version>
 
-        <keycloak.distribution.path>${project.build.directory}/unpacked/keycloak-${keycloak.version}
-        </keycloak.distribution.path>
-        <keycloak.exec.distribution.path>${project.build.directory}/unpacked/${project.artifactId}-${project.version}</keycloak.exec.distribution.path>
+        <keycloak.exec.distribution.path>${project.basedir}/core/target/unpacked/keycloak-adaptive-authn-${project.version}</keycloak.exec.distribution.path>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -120,6 +118,72 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${maven.plugins.exec.version}</version>
+                    <configuration>
+                        <environmentVariables>
+                            <KC_BOOTSTRAP_ADMIN_USERNAME>admin</KC_BOOTSTRAP_ADMIN_USERNAME>
+                            <KC_BOOTSTRAP_ADMIN_PASSWORD>admin</KC_BOOTSTRAP_ADMIN_PASSWORD>
+                        </environmentVariables>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>export-realm</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>bash</executable>
+                                <arguments>
+                                    <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
+                                    <argument>export</argument>
+                                    <argument>--dir=src/main/resources</argument>
+                                    <argument>--users=realm_file</argument>
+                                    <argument>--realm=adaptive</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>start-server</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>bash</executable>
+                                <arguments>
+                                    <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
+                                    <argument>--debug</argument>
+                                    <argument>start-dev</argument>
+                                    <argument>--import-realm</argument>
+                                    <argument>--verbose</argument>
+                                    <argument>--tracing-enabled=true</argument>
+                                    <argument>--log-console-include-trace=false</argument>
+                                    <argument>
+                                        --log-level=org.keycloak.adaptive:trace,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
+                                    </argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>build</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>bash</executable>
+                                <arguments>
+                                    <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
+                                    <argument>build</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <groupId>io.quarkus</groupId>
                     <artifactId>quarkus-maven-plugin</artifactId>
