@@ -24,3 +24,6 @@ jobs:
 
     - name: Test execute 'build' command
       run: ./mvnw -f core exec:exec@build
+
+    - name: Basic tests
+      run: ./mvnw -f tests test
