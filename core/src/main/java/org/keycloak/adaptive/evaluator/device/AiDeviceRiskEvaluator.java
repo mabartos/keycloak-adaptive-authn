@@ -27,7 +27,6 @@ import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.representations.account.DeviceRepresentation;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**

@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator.os;
+package org.keycloak.adaptive.evaluator.browser;
 
 import org.keycloak.adaptive.context.UserContexts;
-import org.keycloak.adaptive.context.os.OperatingSystemCondition;
-import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
+import org.keycloak.adaptive.context.browser.BrowserCondition;
+import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**
- * Risk evaluator for OS properties
+ * Risk evaluator for browser properties
  */
-public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
+public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     private final KeycloakSession session;
-    private final OperatingSystemCondition condition;
+    private final BrowserCondition browserCondition;
 
-    public OperatingSystemRiskEvaluator(KeycloakSession session) {
+    public BrowserRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.condition = UserContexts.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
+        this.browserCondition = UserContexts.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
     }
 
     @Override
@@ -45,17 +44,17 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.LOW;
-    }
-
-    @Override
     public Set<EvaluationPhase> evaluationPhases() {
         return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     @Override
+    public double getDefaultWeight() {
+        return Weight.LOW;
+    }
+
+    @Override
     public Risk evaluate() {
-        return condition.isDefaultKnownOs() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
+        return browserCondition.isDefaultKnownBrowser() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
     }
 }

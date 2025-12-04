@@ -1,4 +1,4 @@
-package io.github.mabartos.keycloak.adaptive.authn.deployment;
+package org.keycloak.adaptive.deployment;
 
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Consume;

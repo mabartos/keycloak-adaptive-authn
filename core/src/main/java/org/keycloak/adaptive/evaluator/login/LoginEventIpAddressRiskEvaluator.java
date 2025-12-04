@@ -13,7 +13,6 @@ import org.keycloak.models.KeycloakSession;
 import java.util.Set;
 
 import static org.keycloak.adaptive.level.Risk.INTERMEDIATE;
-import static org.keycloak.adaptive.level.Risk.NONE;
 import static org.keycloak.adaptive.level.Risk.SMALL;
 import static org.keycloak.adaptive.level.Risk.VERY_HIGH;
 

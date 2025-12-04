@@ -4,7 +4,6 @@ import org.jboss.logging.Logger;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.spi.engine.RiskEngine;
 import org.keycloak.adaptive.spi.evaluator.AbstractContinuousRiskEvaluator;
-import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
@@ -14,7 +13,6 @@ import org.keycloak.models.UserModel;
 
 import java.time.Duration;
 import java.util.Date;
-import java.util.Set;
 
 import static org.keycloak.events.EventType.DELETE_ACCOUNT;
 import static org.keycloak.events.EventType.DELETE_ACCOUNT_ERROR;

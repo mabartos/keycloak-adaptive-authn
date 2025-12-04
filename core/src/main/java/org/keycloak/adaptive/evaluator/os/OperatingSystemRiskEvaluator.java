@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.adaptive.evaluator.browser;
+package org.keycloak.adaptive.evaluator.os;
 
 import org.keycloak.adaptive.context.UserContexts;
-import org.keycloak.adaptive.context.browser.BrowserCondition;
-import org.keycloak.adaptive.context.browser.BrowserConditionFactory;
+import org.keycloak.adaptive.context.os.OperatingSystemCondition;
+import org.keycloak.adaptive.context.os.OperatingSystemConditionFactory;
 import org.keycloak.adaptive.level.Risk;
 import org.keycloak.adaptive.level.Weight;
 import org.keycloak.adaptive.spi.evaluator.AbstractRiskEvaluator;
-import org.keycloak.adaptive.spi.evaluator.RiskEvaluator;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Set;
 
 /**
- * Risk evaluator for browser properties
+ * Risk evaluator for OS properties
  */
-public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
+public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     private final KeycloakSession session;
-    private final BrowserCondition browserCondition;
+    private final OperatingSystemCondition condition;
 
-    public BrowserRiskEvaluator(KeycloakSession session) {
+    public OperatingSystemRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.browserCondition = UserContexts.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
+        this.condition = UserContexts.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
     }
 
     @Override
@@ -45,17 +44,17 @@ public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
-    }
-
-    @Override
     public double getDefaultWeight() {
         return Weight.LOW;
     }
 
     @Override
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.BEFORE_AUTHN);
+    }
+
+    @Override
     public Risk evaluate() {
-        return browserCondition.isDefaultKnownBrowser() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
+        return condition.isDefaultKnownOs() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
     }
 }
