@@ -1,0 +1,11 @@
+ io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory
+ io.github.mabartos.evaluator.role.DefaultUserRoleEvaluatorFactory
+ io.github.mabartos.evaluator.login.LoginFailuresRiskEvaluatorFactory
+ io.github.mabartos.evaluator.os.OperatingSystemRiskEvaluatorFactory
+ io.github.mabartos.evaluator.location.LocationRiskEvaluatorFactory
+ io.github.mabartos.evaluator.device.AiDeviceRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.AiLoginFailuresRiskEvaluatorFactory
+ io.github.mabartos.evaluator.recaptcha.RecaptchaRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.LoginEventIpAddressRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.AiTimeAccessRiskEvaluatorFactory
+ io.github.mabartos.evaluator.behavior.UserActionsRiskEvaluatorFactory

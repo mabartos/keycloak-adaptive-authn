@@ -1,8 +1,8 @@
-org.keycloak.adaptive.spi.context.UserContextSpi
-org.keycloak.adaptive.spi.evaluator.RiskEvaluatorSpi
-org.keycloak.adaptive.spi.level.RiskLevelsSpi
-org.keycloak.adaptive.spi.engine.RiskEngineSpi
-org.keycloak.adaptive.spi.condition.UserContextConditionSpi
-org.keycloak.adaptive.spi.ai.AiEngineSpi
-org.keycloak.adaptive.spi.engine.StoredRiskSpi
-org.keycloak.adaptive.spi.engine.RiskScoreAlgorithmSpi
+io.github.mabartos.spi.context.UserContextSpi
+io.github.mabartos.spi.evaluator.RiskEvaluatorSpi
+io.github.mabartos.spi.level.RiskLevelsSpi
+io.github.mabartos.spi.engine.RiskEngineSpi
+io.github.mabartos.spi.condition.UserContextConditionSpi
+io.github.mabartos.spi.ai.AiEngineSpi
+io.github.mabartos.spi.engine.StoredRiskSpi
+io.github.mabartos.spi.engine.RiskScoreAlgorithmSpi

@@ -1,1 +1,1 @@
-org.keycloak.adaptive.engine.LoginEventsEventListenerFactory
+io.github.mabartos.engine.LoginEventsEventListenerFactory

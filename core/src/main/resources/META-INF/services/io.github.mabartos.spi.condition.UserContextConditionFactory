@@ -1,0 +1,5 @@
+io.github.mabartos.context.browser.BrowserConditionFactory
+io.github.mabartos.context.os.OperatingSystemConditionFactory
+io.github.mabartos.context.os.PhoneConditionFactory
+io.github.mabartos.context.ip.IpAddressConditionFactory
+io.github.mabartos.context.location.LocationConditionFactory
