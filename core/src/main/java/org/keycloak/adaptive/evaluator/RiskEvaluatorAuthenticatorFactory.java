@@ -23,7 +23,7 @@ public class RiskEvaluatorAuthenticatorFactory implements AuthenticatorFactory {
 
     @Override
     public String getDisplayType() {
-        return null;
+        return "Risk score evaluator for the adaptive authentication";
     }
 
     @Override

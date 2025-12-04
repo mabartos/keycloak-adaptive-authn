@@ -385,8 +385,8 @@
     "lastName" : "Admin",
     "email" : "admin@admin",
     "emailVerified" : true,
-    "createdTimestamp" : 1716930894995,
     "enabled" : true,
+    "createdTimestamp" : 1716930894995,
     "totp" : true,
     "credentials" : [ {
       "id" : "64f13009-ed9e-40f7-9e8b-5ccdd7a15e2e",
@@ -421,8 +421,8 @@
     "attributes" : {
       "has_continuous_evaluations_timer_set" : [ "true" ]
     },
-    "createdTimestamp" : 1716930931775,
     "enabled" : true,
+    "createdTimestamp" : 1716930931775,
     "totp" : true,
     "credentials" : [ {
       "id" : "fa7eaeca-42c5-4e79-bae3-feeb84da0f7d",
@@ -1252,7 +1252,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "177c422a-5da4-495f-97bb-365930521275",
@@ -1261,7 +1261,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "f03f1114-52b9-4eda-8519-d379aab18f59",
@@ -1340,16 +1340,15 @@
         "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : [ "true" ],
         "realm" : [ "adaptive" ],
         "riskLevelProvider" : [ "Risk levels - 3 levels (Low, Medium, High)" ],
-        "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorTimeoutConfig" : [ "2500" ],
+        "riskEvaluatorEnabledConfig-AiLoginFailuresRiskEvaluatorFactory" : [ "true" ],
         "riskEvaluatorEnabledConfig-AiDeviceRiskEvaluatorFactory" : [ "true" ],
-        "riskBasedAuthnEnabled" : [ "true" ],
-        "riskEvaluatorEnabledConfig-LoginFailuresRiskEvaluatorFactory" : [ "true" ]
+        "riskEvaluatorEnabledConfig-LoginFailuresRiskEvaluatorFactory" : [ "true" ],
+        "riskBasedAuthnEnabled" : [ "true" ]
       }
     } ]
   },
   "internationalizationEnabled" : false,
-  "supportedLocales" : [ ],
   "authenticationFlows" : [ {
     "id" : "86c2adbd-9c2a-45d9-aea5-9380442910e2",
     "alias" : "Account verification options",
@@ -2371,6 +2370,14 @@
     "priority" : 100,
     "config" : { }
   }, {
+    "alias" : "idp_link",
+    "name" : "Linking Identity Provider",
+    "providerId" : "idp_link",
+    "enabled" : true,
+    "defaultAction" : false,
+    "priority" : 120,
+    "config" : { }
+  }, {
     "alias" : "update_user_locale",
     "name" : "Update User Locale",
     "providerId" : "update_user_locale",
@@ -2414,7 +2421,7 @@
     "riskEvaluatorEnabledConfig-OperatingSystemRiskEvaluatorFactory" : "true",
     "riskLevelProvider" : "simple-risk-levels"
   },
-  "keycloakVersion" : "26.2.0",
+  "keycloakVersion" : "26.4.7",
   "userManagedAccessAllowed" : false,
   "organizationsEnabled" : false,
   "verifiableCredentialsEnabled" : false,
