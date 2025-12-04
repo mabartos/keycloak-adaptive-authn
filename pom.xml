@@ -44,8 +44,8 @@
     </distributionManagement>
 
     <properties>
-        <keycloak.version>26.3.0</keycloak.version>
-        <quarkus.version>3.20.1</quarkus.version>
+        <keycloak.version>26.4.7</keycloak.version>
+        <quarkus.version>3.27.1</quarkus.version>
 
         <keycloak.exec.distribution.path>${project.basedir}/core/target/unpacked/keycloak-adaptive-authn-${project.version}</keycloak.exec.distribution.path>
 
