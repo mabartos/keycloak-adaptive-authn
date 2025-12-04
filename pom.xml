@@ -22,6 +22,7 @@
     <modules>
         <module>deployment</module>
         <module>core</module>
+        <module>tests</module>
     </modules>
 
     <scm>
