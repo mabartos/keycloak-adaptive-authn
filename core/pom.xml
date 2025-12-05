@@ -64,6 +64,14 @@
             <artifactId>ipaddress</artifactId>
             <version>${seancfoley.ipaddress.version}</version>
         </dependency>
+
+        <!-- TESTING -->
+        <dependency>
+            <groupId>org.keycloak.testframework</groupId>
+            <artifactId>keycloak-test-framework-core</artifactId>
+            <version>${keycloak.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
