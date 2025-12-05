@@ -51,7 +51,7 @@ public class OpenAiEngine implements AiEngine {
         final var project = OpenAiEngineFactory.getProject();
 
         if (url.isEmpty() || model.isEmpty() || key.isEmpty() || organization.isEmpty() || project.isEmpty()) {
-            logger.errorf("Some of required environment variables are missing. Check the guide how to set this AI engine.");
+            logger.infof("Some of required environment variables are missing. Check the guide how to set this AI engine. Ignoring result");
             return Optional.empty();
         }
 

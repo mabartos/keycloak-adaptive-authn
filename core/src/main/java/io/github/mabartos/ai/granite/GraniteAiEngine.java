@@ -47,7 +47,7 @@ public class GraniteAiEngine implements AiEngine {
         final var model = GraniteAiEngineFactory.getModel();
 
         if (url.isEmpty() || key.isEmpty() || model.isEmpty()) {
-            logger.errorf("Some of required environment variables are missing. Check the guide how to set this AI engine.");
+            logger.infof("Some of required environment variables are missing. Check the guide how to set this AI engine. Ignoring result");
             return Optional.empty();
         }
 

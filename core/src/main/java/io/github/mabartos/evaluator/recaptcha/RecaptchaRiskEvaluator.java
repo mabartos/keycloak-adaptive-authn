@@ -73,7 +73,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
 
             var token = session.getContext().getAuthenticationSession().getAuthNote(CAPTCHA_TOKEN_KEY);
             if (StringUtil.isBlank(token)) {
-                log.error("No stored reCAPTCHA token");
+                log.warn("No stored reCAPTCHA token. Ignoring this evaluator.");
                 return Risk.invalid();
             }
 
@@ -108,7 +108,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
         setAuthenticatorConfig(context);
 
         if (!configIsValid()) {
-            log.error("Cannot obtain configuration for reCAPTCHA v3 risk evaluator: missing authenticator configuration, or env vars.");
+            log.warn("Cannot obtain configuration for reCAPTCHA v3 risk evaluator: missing authenticator configuration, or env vars. Ignoring this evaluator.");
             context.success();
             return;
         }
