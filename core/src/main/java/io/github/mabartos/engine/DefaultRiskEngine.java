@@ -36,12 +36,15 @@ import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
@@ -60,7 +63,7 @@ public class DefaultRiskEngine implements RiskEngine {
     private final RealmModel realm;
     private final TracingProvider tracingProvider;
     private final RiskScoreAlgorithm riskScoreAlgorithm;
-    private final Set<RiskEvaluator> riskEvaluators;
+    private final Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> riskEvaluators;
     private final Set<UserContext> userContexts;
     private final ExecutorsProvider executorsProvider;
     private final StoredRiskProvider storedRiskProvider;
@@ -72,10 +75,24 @@ public class DefaultRiskEngine implements RiskEngine {
         this.realm = session.getContext().getRealm();
         this.tracingProvider = TracingProviderUtil.getTracingProvider(session);
         this.riskScoreAlgorithm = session.getProvider(RiskScoreAlgorithm.class);
-        this.riskEvaluators = session.getAllProviders(RiskEvaluator.class);
         this.userContexts = session.getAllProviders(UserContext.class);
         this.executorsProvider = session.getProvider(ExecutorsProvider.class);
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
+        this.riskEvaluators = initializeRiskEvaluators(session);
+    }
+
+    private static Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> initializeRiskEvaluators(KeycloakSession session) {
+        Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> riskEvaluators = new EnumMap<>(RiskEvaluator.EvaluationPhase.class);
+        for (RiskEvaluator.EvaluationPhase phase : RiskEvaluator.EvaluationPhase.values()) {
+            riskEvaluators.put(phase, new LinkedHashSet<>());
+        }
+
+        session.getAllProviders(RiskEvaluator.class).stream()
+                .filter(RiskEvaluator::isEnabled)
+                .forEach(f -> f.evaluationPhases()
+                        .forEach(phase -> riskEvaluators.get(phase).add(f)));
+
+        return riskEvaluators;
     }
 
     @Override
@@ -235,10 +252,10 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase phase) {
-        return riskEvaluators.stream()
-                .filter(f -> f.evaluationPhases().contains(phase))
-                .filter(RiskEvaluator::isEnabled)
-                .collect(Collectors.toSet());
+        if (phase == null) {
+            return Collections.emptySet();
+        }
+        return riskEvaluators.get(phase);
     }
 
     protected <T extends Number> Optional<T> getNumberRealmAttribute(String attribute, Function<String, T> func) {
