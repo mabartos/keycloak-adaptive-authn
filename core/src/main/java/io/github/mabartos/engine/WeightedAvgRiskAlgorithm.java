@@ -41,7 +41,7 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
         // Weighted arithmetic mean
         if (weights == 0) {
             logger.warn("No valid evaluators found for phase: " + phase);
-            return Risk.invalid();
+            return Risk.invalid("No valid evaluators found for this phase");
         }
         return Risk.of(weightedRisk / weights);
     }

@@ -72,7 +72,7 @@ public class GraniteAiEngine implements AiEngine {
     public Risk getRisk(String context, String message) {
         var response = getResult(context, message, DefaultAiDataResponse.class);
         if (response.isEmpty()) {
-            return Risk.invalid();
+            return Risk.invalid("No response from the Granite AI");
         }
 
         return AiEngineUtils.getRiskFromDefaultResponse(response.get(),

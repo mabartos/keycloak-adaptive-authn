@@ -80,13 +80,11 @@ public class UserActionsRiskEvaluator extends AbstractContinuousRiskEvaluator {
     @Override
     public Risk evaluate(RealmModel realm, UserModel user) {
         if (realm == null) {
-            logger.trace("Cannot find realm");
-            return Risk.invalid();
+            return Risk.invalid("Cannot find realm");
         }
 
         if (user == null) {
-            logger.trace("Cannot find user");
-            return Risk.invalid();
+            return Risk.invalid("Cannot find user");
         }
 
 

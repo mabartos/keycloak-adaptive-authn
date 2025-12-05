@@ -99,22 +99,18 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     public Risk evaluate() {
         var realm = session.getContext().getRealm();
         if (realm == null) {
-            logger.trace("Context realm is null");
-            return Risk.invalid();
+            return Risk.invalid("Realm is null");
         }
 
         var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .map(AuthenticationSessionModel::getAuthenticatedUser);
         if (user.isEmpty()) {
-            logger.trace("Context user is null");
-            return Risk.invalid();
+            return Risk.invalid("User is null");
         }
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
         if (loginFailures == null) {
-            logger.trace("Cannot obtain login failures");
-            return Risk.invalid();
-
+            return Risk.notEnoughInfo("Cannot obtain login failures");
         }
 
         return aiEngine.getRisk(request(loginFailures));

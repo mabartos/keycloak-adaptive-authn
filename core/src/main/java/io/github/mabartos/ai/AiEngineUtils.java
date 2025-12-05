@@ -91,6 +91,6 @@ public class AiEngineUtils {
                 });
 
         data.ifPresent(additionalOps);
-        return data.map(f -> Risk.of(f.risk(), f.reason())).orElse(Risk.invalid());
+        return data.map(f -> Risk.of(f.risk(), f.reason())).orElse(Risk.invalid("Cannot obtain data from AI engine"));
     }
 }

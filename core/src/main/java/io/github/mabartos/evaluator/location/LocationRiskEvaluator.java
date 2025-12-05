@@ -57,15 +57,13 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Risk evaluate() {
         if (realm == null) {
-            logger.tracef("Realm is null");
-            return Risk.invalid();
+            return Risk.invalid("Realm is null");
         }
 
         var user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
 
         if (user == null) {
-            logger.tracef("User is null");
-            return Risk.invalid();
+            return Risk.invalid("User is null");
         }
 
         var data = locationContext.getData();
@@ -78,7 +76,7 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
             logger.tracef("Data for LocationRiskEvaluator is null");
         }
 
-        return Risk.invalid();
+        return Risk.invalid("Cannot obtain location information");
     }
 
     protected String getUserLocationKey(UserModel user) {

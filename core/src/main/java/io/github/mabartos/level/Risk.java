@@ -69,12 +69,20 @@ public class Risk {
         return INVALID;
     }
 
+    public static Risk invalid(String reason) {
+        return of(INVALID.score, reason);
+    }
+
     public static Risk none() {
         return NO_RISK;
     }
 
     public static Risk notEnoughInfo() {
         return NOT_ENOUGH_INFO;
+    }
+
+    public static Risk notEnoughInfo(String reason) {
+        return of(NOT_ENOUGH_INFO.score, reason);
     }
 
     public static boolean isValid(double score) {

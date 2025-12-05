@@ -40,18 +40,18 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Risk evaluate() {
         if (deviceContext.getData().isEmpty()) {
-            return Risk.invalid();
+            return Risk.invalid("No device information");
         }
 
         if (loginEvents.getData().isEmpty()) {
-            return Risk.invalid();
+            return Risk.invalid("No login events");
         }
 
         var events = loginEvents.getData().get();
 
         var eventsSize = events.size();
         if (eventsSize == 0) {
-            return Risk.invalid();
+            return Risk.invalid("No login events");
         }
 
         var device = deviceContext.getData().get();

@@ -103,7 +103,7 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
         logger.debug("--------------------------------------------------");
-        logger.debugf("Risk Engine - EVALUATING (phase: %s)", phase.name());
+        logger.debugf("Risk Engine - EVALUATING (username: '%s', phase: %s)", knownUser != null ? knownUser.getUsername() : "N/A", phase.name());
         var start = Time.currentTimeMillis();
 
         switch (phase) {
@@ -245,7 +245,7 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public Risk getRisk(RiskEvaluator.EvaluationPhase phase) {
         if (phase == null) {
-            return Risk.invalid();
+            return Risk.invalid("Invalid evaluation phase");
         }
         return storedRiskProvider.getStoredRisk(phase);
     }

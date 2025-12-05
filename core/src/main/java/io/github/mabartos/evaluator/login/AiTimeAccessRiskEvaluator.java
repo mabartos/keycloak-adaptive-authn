@@ -67,12 +67,12 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Risk evaluate() {
         if (loginEvents == null) {
-            return Risk.invalid();
+            return Risk.invalid("Cannot find login events");
         }
 
         var dataOptional = loginEvents.getData();
         if (dataOptional.isEmpty()) {
-            return Risk.notEnoughInfo();
+            return Risk.notEnoughInfo("Cannot parse login events");
         }
 
         var accessTimes = dataOptional.get().stream()
@@ -83,11 +83,11 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
         var currentTime = getFormattedTime(Time.currentTimeMillis());
 
         if (accessTimes.isEmpty()) {
-            return Risk.notEnoughInfo();
+            return Risk.notEnoughInfo("No access times");
         }
 
         if (accessTimes.size() < 5) {
-            return Risk.notEnoughInfo();
+            return Risk.notEnoughInfo("Only a few access times records");
         }
 
         return aiEngine.getRisk(request(currentTime, accessTimes));

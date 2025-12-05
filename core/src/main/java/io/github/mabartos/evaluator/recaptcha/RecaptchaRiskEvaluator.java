@@ -68,13 +68,13 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     public Risk evaluate() {
         try {
             if (!configIsValid()) {
-                return Risk.invalid();
+                return Risk.invalid("Configuration is not valid");
             }
 
             var token = session.getContext().getAuthenticationSession().getAuthNote(CAPTCHA_TOKEN_KEY);
             if (StringUtil.isBlank(token)) {
                 log.warn("No stored reCAPTCHA token. Ignoring this evaluator.");
-                return Risk.invalid();
+                return Risk.invalid("Cannot find stored reCAPTCHA token");
             }
 
             HttpPost request = buildAssessmentRequest(token);
@@ -83,7 +83,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.errorf("Could not create reCAPTCHA assessment: %s", response.getStatusLine());
                 EntityUtils.consumeQuietly(response.getEntity());
-                return Risk.invalid();
+                return Risk.invalid("Cannot create reCAPTCHA assessment");
             }
 
             RecaptchaAssessmentResponse assessment = JsonSerialization.readValue(

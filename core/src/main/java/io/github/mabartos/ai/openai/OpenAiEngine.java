@@ -76,7 +76,7 @@ public class OpenAiEngine implements AiEngine {
     public Risk getRisk(String context, String message) {
         var response = getResult(context, message, DefaultAiDataResponse.class, DefaultAiDataRequest.newJsonResponseFormat("risk_evaluation", AiEngine.DEFAULT_RISK_SCHEMA));
         if (response.isEmpty()) {
-            return Risk.invalid();
+            return Risk.invalid("No response from the OpenAPI ChatGPT");
         }
 
         return AiEngineUtils.getRiskFromDefaultResponse(response.get(),

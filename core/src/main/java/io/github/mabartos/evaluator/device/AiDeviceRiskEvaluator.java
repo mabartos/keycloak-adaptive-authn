@@ -93,16 +93,13 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Risk evaluate() {
         if (aiEngine == null) {
-            logger.warnf("Cannot find AI engine");
-            return Risk.invalid();
+            return Risk.invalid("Cannot find AI engine");
         }
 
         var deviceRepresentation = deviceContext.getData();
         if (deviceRepresentation.isPresent()) {
             return aiEngine.getRisk(request(deviceRepresentation.get()));
-        } else {
-            logger.warnf("Device representation is null");
         }
-        return Risk.invalid();
+        return Risk.invalid("Cannot find device information");
     }
 }
