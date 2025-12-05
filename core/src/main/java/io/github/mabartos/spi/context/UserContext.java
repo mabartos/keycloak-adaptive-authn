@@ -48,13 +48,24 @@ public interface UserContext<T> extends Provider {
     int getPriority();
 
     /**
-     * Flag to determine if the data should be always re-fetched
+     * Flag to determine if the data should be always re-fetched per request
      * <p>
-     * User contexts from remote locations should be fetched only once per session
+     * User contexts from remote locations should be fetched only once per request
      *
      * @return true if {@link UserContext#getData()} should always call {@link UserContext#initData()}
      */
-    boolean alwaysFetch();
+    default boolean alwaysFetch() {
+        return !isRemote();
+    }
+
+    /**
+     * Flag to determine whether the user context comes from remote location
+     * <p>
+     * When remote, the asynchronous calls should be used
+     */
+    default boolean isRemote() {
+        return false;
+    }
 
     /**
      * Flag to determine the data was correctly obtained
@@ -74,15 +85,4 @@ public interface UserContext<T> extends Provider {
      * @return specific data
      */
     Optional<T> getData();
-
-    /**
-     * Flag to determine whether the user context should be obtained in a synchronous blocking manner
-     * Otherwise, user context should be obtained asynchronously
-     * <p/>
-     * It should be se to 'true' when using I/O operations like accessing database.
-     * Otherwise, it's recommended to set to 'false' to improve performance.
-     */
-    default boolean isBlocking() {
-        return true;
-    }
 }

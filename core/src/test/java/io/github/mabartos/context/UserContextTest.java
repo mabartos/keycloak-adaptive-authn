@@ -16,8 +16,8 @@ public class UserContextTest {
 
         assertThat(context.requiresUser(), is(true));
         assertThat(context.getPriority(), is(100));
-        assertThat(context.alwaysFetch(), is(false));
-        assertThat(context.isBlocking(), is(true));
+        assertThat(context.alwaysFetch(), is(true));
+        assertThat(context.isRemote(), is(false));
     }
 
     @Test
@@ -66,32 +66,33 @@ public class UserContextTest {
     }
 
     @Test
-    public void testUserContextDefaultBlocking() {
+    public void testUserContextDefaultLocal() {
         TestUserContext context = new TestUserContext(false, 50, false, "data");
 
-        // Default isBlocking should be true
-        assertThat(context.isBlocking(), is(true));
+        assertThat(context.isRemote(), is(false));
+        assertThat(context.alwaysFetch(), is(true));
     }
 
     @Test
-    public void testUserContextNonBlocking() {
-        NonBlockingUserContext context = new NonBlockingUserContext();
+    public void testUserContextRemote() {
+        UserContext<?> context = new RemoteUserContext();
 
-        assertThat(context.isBlocking(), is(false));
+        assertThat(context.isRemote(), is(true));
+        assertThat(context.alwaysFetch(), is(false));
     }
 
     // Test implementation of UserContext
     static class TestUserContext implements UserContext<String> {
         private final boolean requiresUser;
         private final int priority;
-        private final boolean alwaysFetch;
+        private final boolean isRemote;
         private final String data;
         private boolean initialized = false;
 
-        TestUserContext(boolean requiresUser, int priority, boolean alwaysFetch, String data) {
+        TestUserContext(boolean requiresUser, int priority, boolean isRemote, String data) {
             this.requiresUser = requiresUser;
             this.priority = priority;
-            this.alwaysFetch = alwaysFetch;
+            this.isRemote = isRemote;
             this.data = data;
         }
 
@@ -103,11 +104,6 @@ public class UserContextTest {
         @Override
         public int getPriority() {
             return priority;
-        }
-
-        @Override
-        public boolean alwaysFetch() {
-            return alwaysFetch;
         }
 
         @Override
@@ -123,7 +119,7 @@ public class UserContextTest {
 
         @Override
         public Optional<String> getData() {
-            if (!initialized || alwaysFetch) {
+            if (!initialized || alwaysFetch()) {
                 return initData();
             }
             return Optional.ofNullable(data);
@@ -134,7 +130,7 @@ public class UserContextTest {
         }
     }
 
-    static class NonBlockingUserContext implements UserContext<String> {
+    static class RemoteUserContext implements UserContext<String> {
         @Override
         public boolean requiresUser() {
             return false;
@@ -143,11 +139,6 @@ public class UserContextTest {
         @Override
         public int getPriority() {
             return 0;
-        }
-
-        @Override
-        public boolean alwaysFetch() {
-            return false;
         }
 
         @Override
@@ -166,8 +157,8 @@ public class UserContextTest {
         }
 
         @Override
-        public boolean isBlocking() {
-            return false;
+        public boolean isRemote() {
+            return true;
         }
 
         @Override

@@ -28,14 +28,4 @@ public abstract class IpAddressContext extends AbstractUserContext<IPAddress> {
     public boolean requiresUser() {
         return false;
     }
-
-    @Override
-    public boolean alwaysFetch() {
-        return true;
-    }
-
-    @Override
-    public boolean isBlocking() {
-        return false;
-    }
 }

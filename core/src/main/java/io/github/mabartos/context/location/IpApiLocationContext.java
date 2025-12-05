@@ -16,15 +16,15 @@
  */
 package io.github.mabartos.context.location;
 
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.util.EntityUtils;
-import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.DefaultIpAddressFactory;
 import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.context.ip.client.TestIpAddressContextFactory;
 import io.github.mabartos.spi.context.UserContext;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.util.EntityUtils;
+import org.jboss.logging.Logger;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.quarkus.runtime.configuration.Configuration;
@@ -53,6 +53,11 @@ public class IpApiLocationContext extends LocationContext {
     @Override
     public KeycloakSession getSession() {
         return session;
+    }
+
+    @Override
+    public boolean isRemote() {
+        return true;
     }
 
     private boolean useTestingIpAddress() {

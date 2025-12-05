@@ -28,9 +28,4 @@ public abstract class DeviceContext extends AbstractUserContext<DeviceRepresenta
     public boolean requiresUser() {
         return false;
     }
-
-    @Override
-    public boolean isBlocking() {
-        return false;
-    }
 }

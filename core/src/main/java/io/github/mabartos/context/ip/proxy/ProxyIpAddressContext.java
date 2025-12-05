@@ -17,8 +17,8 @@
 package io.github.mabartos.context.ip.proxy;
 
 import inet.ipaddr.IPAddress;
-import jakarta.ws.rs.core.HttpHeaders;
 import io.github.mabartos.context.ip.IpAddressUtils;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
@@ -43,6 +43,11 @@ public class ProxyIpAddressContext extends IpProxyContext {
     @Override
     public KeycloakSession getSession() {
         return session;
+    }
+
+    @Override
+    public boolean alwaysFetch() {
+        return false;
     }
 
     @Override

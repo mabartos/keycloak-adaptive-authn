@@ -16,9 +16,6 @@
  */
 package io.github.mabartos.engine;
 
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import org.jboss.logging.Logger;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.context.UserContext;
 import io.github.mabartos.spi.engine.RiskEngine;
@@ -26,6 +23,9 @@ import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
+import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.models.KeycloakSession;
@@ -148,11 +148,11 @@ public class DefaultRiskEngine implements RiskEngine {
                 .orElse(DEFAULT_EVALUATOR_TIMEOUT);
         var retries = getNumberRealmAttribute(EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
 
-        // Init blocking user contexts
+        // Init local user contexts
         userContexts.stream()
                 .filter(f -> f.requiresUser() == requiresUser)
                 .filter(f -> !f.isInitialized())
-                .filter(UserContext::isBlocking)
+                .filter(f -> !f.isRemote())
                 .forEach(UserContext::initData);
 
         var evaluators = Multi.createFrom()

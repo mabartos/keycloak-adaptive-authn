@@ -33,11 +33,6 @@ public class DefaultDeviceContext extends DeviceContext {
     }
 
     @Override
-    public boolean alwaysFetch() {
-        return true;
-    }
-
-    @Override
     public KeycloakSession getSession() {
         return session;
     }

@@ -30,9 +30,4 @@ public abstract class UserRoleContext extends AbstractUserContext<Set<RoleModel>
     public boolean requiresUser() {
         return true;
     }
-
-    @Override
-    public boolean alwaysFetch() {
-        return true;
-    }
 }

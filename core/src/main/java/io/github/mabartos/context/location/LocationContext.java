@@ -27,14 +27,4 @@ public abstract class LocationContext extends AbstractUserContext<LocationData> 
     public boolean requiresUser() {
         return false;
     }
-
-    @Override
-    public boolean alwaysFetch() {
-        return false;
-    }
-
-    @Override
-    public boolean isBlocking() {
-        return false;
-    }
 }
