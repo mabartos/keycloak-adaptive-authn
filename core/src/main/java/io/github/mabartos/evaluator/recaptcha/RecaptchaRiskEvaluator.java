@@ -1,6 +1,8 @@
 package io.github.mabartos.evaluator.recaptcha;
 
-import io.quarkus.logging.Log;
+import io.github.mabartos.level.Risk;
+import io.github.mabartos.level.Weight;
+import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpResponse;
@@ -9,9 +11,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import io.github.mabartos.level.Risk;
-import io.github.mabartos.level.Weight;
-import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.forms.RecaptchaAssessmentRequest;
@@ -30,6 +30,8 @@ import java.util.Set;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 
 public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Authenticator {
+    private static final Logger log = Logger.getLogger(RecaptchaRiskEvaluator.class);
+
     protected static final String CAPTCHA_TOKEN_KEY = "captcha_token";
     protected static final String G_RECAPTCHA_RESPONSE = "g-recaptcha-response";
 
@@ -71,7 +73,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
 
             var token = session.getContext().getAuthenticationSession().getAuthNote(CAPTCHA_TOKEN_KEY);
             if (StringUtil.isBlank(token)) {
-                Log.error("No stored reCAPTCHA token");
+                log.error("No stored reCAPTCHA token");
                 return Risk.invalid();
             }
 
@@ -79,14 +81,14 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
             HttpResponse response = httpClient.execute(request);
 
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                Log.errorf("Could not create reCAPTCHA assessment: %s", response.getStatusLine());
+                log.errorf("Could not create reCAPTCHA assessment: %s", response.getStatusLine());
                 EntityUtils.consumeQuietly(response.getEntity());
                 return Risk.invalid();
             }
 
             RecaptchaAssessmentResponse assessment = JsonSerialization.readValue(
                     response.getEntity().getContent(), RecaptchaAssessmentResponse.class);
-            Log.tracef("Got assessment response: %s", assessment);
+            log.tracef("Got assessment response: %s", assessment);
 
             boolean valid = assessment.getTokenProperties().isValid();
             double score = assessment.getRiskAnalysis().getScore();
@@ -106,7 +108,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
         setAuthenticatorConfig(context);
 
         if (!configIsValid()) {
-            Log.error("Cannot obtain configuration for reCAPTCHA v3 risk evaluator: missing authenticator configuration, or env vars.");
+            log.error("Cannot obtain configuration for reCAPTCHA v3 risk evaluator: missing authenticator configuration, or env vars.");
             context.success();
             return;
         }
@@ -172,7 +174,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
         request.setEntity(new StringEntity(JsonSerialization.writeValueAsString(body)));
         request.setHeader("Content-type", "application/json; charset=utf-8");
 
-        Log.tracef("Built assessment request: %s", body);
+        log.tracef("Built assessment request: %s", body);
         return request;
     }
 }

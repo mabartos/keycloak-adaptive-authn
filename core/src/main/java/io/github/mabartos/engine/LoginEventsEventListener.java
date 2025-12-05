@@ -1,9 +1,9 @@
 package io.github.mabartos.engine;
 
-import io.quarkus.logging.Log;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -19,6 +19,8 @@ import static io.github.mabartos.engine.LoginEventsEventListenerFactory.RISK_SCO
 import static io.github.mabartos.spi.engine.RiskEngine.DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES;
 
 public class LoginEventsEventListener implements EventListenerProvider {
+    private static final Logger log = Logger.getLogger(LoginEventsEventListener.class);
+
     protected static final String USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET = "has_continuous_evaluations_timer_set";
     private final KeycloakSession session;
     private final StoredRiskProvider riskProvider;
@@ -42,7 +44,7 @@ public class LoginEventsEventListener implements EventListenerProvider {
         riskProvider.printStoredRisk().ifPresent(risk -> {
             // does not persist AFAIK
             event.getDetails().put(RISK_SCORE_DETAIL, risk);
-            Log.tracef("Added risk score ('%s') to the login session", risk);
+            log.tracef("Added risk score ('%s') to the login session", risk);
         });
 
         var realmId = event.getRealmId();
@@ -51,13 +53,13 @@ public class LoginEventsEventListener implements EventListenerProvider {
         if (StringUtil.isNotBlank(realmId) && StringUtil.isNotBlank(userId)) {
             var realm = session.realms().getRealm(realmId);
             if (realm == null) {
-                Log.warnf("Realm with realm ID '%s' does not exist, so no timer cannot be created.", realmId);
+                log.warnf("Realm with realm ID '%s' does not exist, so no timer cannot be created.", realmId);
                 return;
             }
 
             var user = session.users().getUserById(realm, userId);
             if (user == null) {
-                Log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", userId);
+                log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", userId);
                 return;
             }
 
@@ -67,7 +69,7 @@ public class LoginEventsEventListener implements EventListenerProvider {
                         Duration.ofMinutes(DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis(),
                         getUserTimerName(userId));
                 user.setAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
-                Log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", userId, DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
+                log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", userId, DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
             }
         }
     }
@@ -94,7 +96,7 @@ public class LoginEventsEventListener implements EventListenerProvider {
         if (StringUtil.isNotBlank(event.getUserId())) {
             var user = session.users().getUserById(session.getContext().getRealm(), event.getUserId());
             if (user == null) {
-                Log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", event.getUserId());
+                log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", event.getUserId());
                 return;
             }
             timerProvider.cancelTask(getUserTimerName(event.getId()));

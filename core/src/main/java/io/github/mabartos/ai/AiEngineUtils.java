@@ -17,14 +17,14 @@
 
 package io.github.mabartos.ai;
 
-import io.quarkus.logging.Log;
+import io.github.mabartos.level.Risk;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import io.github.mabartos.level.Risk;
+import org.jboss.logging.Logger;
 import org.keycloak.util.JsonSerialization;
 
 import java.io.IOException;
@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class AiEngineUtils {
+    private static final Logger log = Logger.getLogger(AiEngineUtils.class);
 
     /**
      * Abstraction layer up to the HttpClient to obtain data from common AI NLP engines
@@ -57,8 +58,8 @@ public class AiEngineUtils {
 
             try (var response = client.execute(request)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    Log.warn("Request was not successful for the AI engine");
-                    Log.tracef("%s: %s", response.getStatusLine().toString(), JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
+                    log.warn("Request was not successful for the AI engine");
+                    log.tracef("%s: %s", response.getStatusLine().toString(), JsonSerialization.writeValueAsPrettyString(EntityUtils.toString(response.getEntity())));
                     return Optional.empty();
                 }
                 var result = JsonSerialization.readValue(response.getEntity().getContent(), resultClass);
@@ -66,8 +67,8 @@ public class AiEngineUtils {
                 return Optional.of(result);
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {
-            Log.error("Cannot invoke request on the AI engine.");
-            Log.trace(e);
+            log.error("Cannot invoke request on the AI engine.");
+            log.trace(e);
         }
         return Optional.empty();
     }
@@ -84,7 +85,7 @@ public class AiEngineUtils {
                     try {
                         return JsonSerialization.readValue(f, DefaultAiRiskData.class);
                     } catch (IOException e) {
-                        Log.error(e);
+                        log.error(e);
                         return null;
                     }
                 });
