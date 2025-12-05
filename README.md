@@ -51,7 +51,7 @@ You can install this extension to your Keycloak deployment either using the gene
 This is common approach on how to include Keycloak extension to Keycloak deployment.
 You can just use the generated JAR present in the [GitHub releases]([Latest Release](https://github.com/mabartos/keycloak-adaptive-authn/releases/latest)) assets for this project and put it into the `/providers` folder of your Keycloak installation.
 
-Or you can build your own JAR locally, described in the [Getting started](#getting-started) section below, and put it in the foldewr.
+Or you can build your own JAR locally, described in the  [Start guide](docs/start.md), and put it in the folder.
 
 For more details on how to add the JAR to Keycloak installation, see [Installing provider](https://www.keycloak.org/server/configuration-provider#_installing_and_uninstalling_a_provider).
 
@@ -70,50 +70,6 @@ You can just add the extension to arbitrary version of Keycloak like this:
 
 For more details, see the [Add Keycloak Adaptive Authentication extension](https://github.com/mabartos/keycloak-quarkus-extensions/blob/main/examples/keycloak-adaptive-authn.md) guide.
 
-## Getting started
-### Building from Source
-
-To build it from source, execute this command:
-
-```shell
-./mvnw clean install -DskipTests
-```
-
-If you want to try it out, follow this:
-
-1. Build it with profile `-Pbuild-distribution` as:
-
-```shell
-./mvnw -f core clean install -DskipTests -Pbuild-distribution
-```
-
-2. Start the server with deployed extension
-
-```shell
-./mvnw exec:exec@start-server
-```
-
-3. Access `localhost:8080/realms/adaptive/account`.
-
-### Container
-
-You can build your own containerized Keycloak installation with this extension as described in this guide: [Add Keycloak Adaptive Authentication extension](https://github.com/mabartos/keycloak-quarkus-extensions/blob/main/examples/keycloak-adaptive-authn.md).
-
-**NOTE**: This is an old release with the authentication policies that are not part of this repository anymore.
-Recommended way is to build it from source for now or follow steps on the guide mentioned above.
-
-You can use the container image by running:
-
-    podman run -p 8080:8080 quay.io/mabartos/keycloak-adaptive-all start
-
-This command starts Keycloak exposed on the local port 8080 (`localhost:8080`).
-
-In order to see the functionality in action, navigate to `localhost:8080/realms/authn-policy-adaptive/account`.
-
-ℹ️ **INFO:** If you want to use the OpenAI capabilities, set the environment variables (by setting `-e OPEN_AI_API_*`)
-for the image described in the [README](adaptive/README.md#integration-with-openai) of the `adaptive` module..
-
-ℹ️ **INFO:** If you have installed Docker, use `docker` instead of `podman`.
 
 ## Connected Authentication Policies
 
