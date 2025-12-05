@@ -72,7 +72,7 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
 
         var dataOptional = loginEvents.getData();
         if (dataOptional.isEmpty()) {
-            return Risk.invalid();
+            return Risk.notEnoughInfo();
         }
 
         var accessTimes = dataOptional.get().stream()
@@ -83,11 +83,11 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
         var currentTime = getFormattedTime(Time.currentTimeMillis());
 
         if (accessTimes.isEmpty()) {
-            return Risk.none();
+            return Risk.notEnoughInfo();
         }
 
         if (accessTimes.size() < 5) {
-            return Risk.none();
+            return Risk.notEnoughInfo();
         }
 
         return aiEngine.getRisk(request(currentTime, accessTimes));

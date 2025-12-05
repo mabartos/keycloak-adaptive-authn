@@ -218,7 +218,7 @@ public class DefaultRiskEngine implements RiskEngine {
                     var retriesCount = eval.allowRetries() ? retries : 1;
                     for (int i = 0; i < retriesCount; i++) {
                         eval.evaluateRisk();
-                        if (eval.getRisk() != Risk.invalid()) {
+                        if (!eval.getRisk().isValid()) {
                             break;
                         }
                     }

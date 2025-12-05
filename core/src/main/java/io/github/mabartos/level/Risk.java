@@ -31,7 +31,8 @@ public class Risk {
     public static double VERY_HIGH = 0.85;
     public static double HIGHEST = 1.0;
 
-    private static final Risk INVALID = of(-1);
+    private static final Risk INVALID = of(-1, "Invalid risk evaluation");
+    private static final Risk NOT_ENOUGH_INFO = of(-2, "Not enough information for the evaluation");
     private static final Risk NO_RISK = of(0);
 
     private final boolean valid;
@@ -70,6 +71,10 @@ public class Risk {
 
     public static Risk none() {
         return NO_RISK;
+    }
+
+    public static Risk notEnoughInfo() {
+        return NOT_ENOUGH_INFO;
     }
 
     public static boolean isValid(double score) {
