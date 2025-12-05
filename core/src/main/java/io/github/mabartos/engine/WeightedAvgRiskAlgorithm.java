@@ -24,10 +24,9 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     @Override
     public Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase) {
         var filteredEvaluators = evaluators.stream()
-                .peek(WeightedAvgRiskAlgorithm::printEvaluatorDetails)
                 .filter(eval -> eval.getRisk() != null)
+                .peek(WeightedAvgRiskAlgorithm::printEvaluatorDetails)
                 .filter(f -> Risk.isValid(f.getWeight()))
-                .filter(eval -> eval.getRisk() != Risk.none())
                 .filter(eval -> eval.getRisk().getScore().isPresent())
                 .collect(Collectors.toSet());
 
@@ -40,15 +39,24 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
                 .sum();
 
         // Weighted arithmetic mean
+        if (weights == 0) {
+            logger.warn("No valid evaluators found for phase: " + phase);
+            return Risk.invalid();
+        }
         return Risk.of(weightedRisk / weights);
     }
 
     private static void printEvaluatorDetails(RiskEvaluator evaluator) {
+        Risk risk = evaluator.getRisk();
+        if (risk == null) {
+            logger.debugf("Evaluator: %s - Risk score: NULL", evaluator.getClass().getSimpleName());
+            return;
+        }
         logger.debugf("Evaluator: %s - Risk score: '%s' (weight '%f')%s",
                 evaluator.getClass().getSimpleName(),
-                evaluator.getRisk().getScore().map(score -> String.format("%.2f", score)).orElse("N/A"),
+                risk.getScore().map(score -> String.format("%.2f", score)).orElse("N/A"),
                 Risk.isValid(evaluator.getWeight()) ? evaluator.getWeight() : -1.0,
-                evaluator.getRisk().getReason().map(reason -> String.format(" - Reason: %s", reason)).orElse(""));
+                risk.getReason().map(reason -> String.format(" - Reason: %s", reason)).orElse(""));
     }
 
     @Override
