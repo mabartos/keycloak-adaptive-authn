@@ -57,7 +57,8 @@ public class BasicAdaptiveAuthnTest {
         @Override
         public KeycloakServerConfigBuilder configure(KeycloakServerConfigBuilder builder) {
             builder.log().categoryLevel("io.github.mabartos", "debug");
-            return builder.dependency("io.github.mabartos", "keycloak-adaptive-authn");
+            return builder.dependency("io.github.mabartos", "keycloak-adaptive-authn")
+                    .option("tracing-enabled", "true");
         }
     }
 
