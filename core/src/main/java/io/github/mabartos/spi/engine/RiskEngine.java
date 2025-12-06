@@ -72,6 +72,13 @@ public interface RiskEngine extends Provider {
      */
     void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase, RealmModel realm, UserModel knownUser);
 
+    /**
+     * Check if risk-based authentication is enabled for the current realm
+     *
+     * @return true if risk-based authentication is enabled, false otherwise
+     */
+    boolean isRiskBasedAuthnEnabled();
+
     @Override
     default void close() {
 

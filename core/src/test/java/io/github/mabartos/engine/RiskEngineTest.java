@@ -208,6 +208,11 @@ public class RiskEngineTest {
         }
 
         @Override
+        public boolean isRiskBasedAuthnEnabled() {
+            return true;
+        }
+
+        @Override
         public void close() {
         }
     }

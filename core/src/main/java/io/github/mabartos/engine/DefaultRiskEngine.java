@@ -50,6 +50,7 @@ import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUAT
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG;
 
 /**
  * Default risk engine for the overall risk score evaluation leveraging asynchronous and parallel processing
@@ -102,6 +103,11 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
+        if (!isRiskBasedAuthnEnabled()) {
+            logger.debug("Risk-based authentication is disabled. Skipping risk evaluation.");
+            return;
+        }
+
         logger.debug("--------------------------------------------------");
         logger.debugf("Risk Engine - EVALUATING (username: '%s', phase: %s)", knownUser != null ? knownUser.getUsername() : "N/A", phase.name());
         var start = Time.currentTimeMillis();
@@ -113,6 +119,13 @@ public class DefaultRiskEngine implements RiskEngine {
 
         logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
         logger.debug("--------------------------------------------------");
+    }
+
+    @Override
+    public boolean isRiskBasedAuthnEnabled() {
+        return Optional.ofNullable(this.realm.getAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG))
+                .map(Boolean::parseBoolean)
+                .orElse(true); // Default to enabled if not configured
     }
 
     protected void handleContinuous(RealmModel realm, UserModel knownUser) {
