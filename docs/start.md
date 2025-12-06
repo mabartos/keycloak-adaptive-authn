@@ -23,7 +23,7 @@ If you want to try it out, follow this:
 ./mvnw exec:exec@start-server
 ```
 
-4. Then you can access [User account](`http://localhost:8080/realms/adaptive/account`) to see the functionality in action.
+4. Then you can access [User account](http://localhost:8080/realms/adaptive/account) to see the functionality in action.
 
 ### Container
 
