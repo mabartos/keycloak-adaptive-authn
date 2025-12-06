@@ -3,17 +3,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-pom.xml.versionsBackup
+# Ignore all folders starting with dot except the exceptions
+.*/
 
-### IntelliJ IDEA ###
-.idea/
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
+pom.xml.versionsBackup
 
 ### Eclipse ###
 .apt_generated
@@ -29,13 +22,9 @@ pom.xml.versionsBackup
 /nbbuild/
 /dist/
 /nbdist/
-/.nb-gradle/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
 
 ### Mac OS ###
 .DS_Store
