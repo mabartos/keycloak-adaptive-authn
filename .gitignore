@@ -8,6 +8,11 @@ target/
 
 pom.xml.versionsBackup
 
+### IntelliJ IDEA ###
+*.iws
+*.iml
+*.ipr
+
 ### Eclipse ###
 .apt_generated
 .classpath
