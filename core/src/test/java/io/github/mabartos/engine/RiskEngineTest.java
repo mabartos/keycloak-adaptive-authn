@@ -133,6 +133,56 @@ public class RiskEngineTest {
         assertThat(userKnownEvaluators.size(), is(1));
     }
 
+    @Test
+    public void testRiskBasedAuthnDisabledSkipsEvaluation() {
+        MockRiskEngine engine = new MockRiskEngine();
+        engine.setRiskBasedAuthnEnabled(false);
+        engine.addEvaluator(createEvaluator(0.8, Weight.IMPORTANT, RiskEvaluator.EvaluationPhase.BEFORE_AUTHN));
+
+        engine.evaluateRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
+
+        // When disabled, risk should remain invalid (not evaluated)
+        Risk overallRisk = engine.getOverallRisk();
+        assertThat(overallRisk.isValid(), is(false));
+
+        Risk phaseRisk = engine.getRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
+        assertThat(phaseRisk.isValid(), is(false));
+    }
+
+    @Test
+    public void testRiskBasedAuthnDisabledSkipsAllPhases() {
+        MockRiskEngine engine = new MockRiskEngine();
+        engine.setRiskBasedAuthnEnabled(false);
+        engine.addEvaluator(createEvaluator(0.5, Weight.NORMAL, RiskEvaluator.EvaluationPhase.BEFORE_AUTHN));
+        engine.addEvaluator(createEvaluator(0.7, Weight.NORMAL, RiskEvaluator.EvaluationPhase.USER_KNOWN));
+        engine.addEvaluator(createEvaluator(0.9, Weight.IMPORTANT, RiskEvaluator.EvaluationPhase.CONTINUOUS));
+
+        // Evaluate all phases
+        engine.evaluateRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
+        engine.evaluateRisk(RiskEvaluator.EvaluationPhase.USER_KNOWN);
+        engine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS);
+
+        // All risks should remain invalid when disabled
+        assertThat(engine.getRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN).isValid(), is(false));
+        assertThat(engine.getRisk(RiskEvaluator.EvaluationPhase.USER_KNOWN).isValid(), is(false));
+        assertThat(engine.getRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS).isValid(), is(false));
+        assertThat(engine.getOverallRisk().isValid(), is(false));
+    }
+
+    @Test
+    public void testRiskBasedAuthnEnabledEvaluatesNormally() {
+        MockRiskEngine engine = new MockRiskEngine();
+        engine.setRiskBasedAuthnEnabled(true);
+        engine.addEvaluator(createEvaluator(0.6, Weight.NORMAL, RiskEvaluator.EvaluationPhase.BEFORE_AUTHN));
+
+        engine.evaluateRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
+
+        // When enabled, risk should be evaluated
+        Risk overallRisk = engine.getOverallRisk();
+        assertThat(overallRisk.isValid(), is(true));
+        assertThat(overallRisk.getScore().get(), is(0.6));
+    }
+
     // Helper methods
     private RiskEvaluator createEvaluator(double score, double weight, RiskEvaluator.EvaluationPhase phase) {
         return new TestRiskEvaluator(score, weight, Set.of(phase));
@@ -150,9 +200,14 @@ public class RiskEngineTest {
         private Risk beforeAuthnRisk = Risk.invalid();
         private Risk userKnownRisk = Risk.invalid();
         private Risk continuousRisk = Risk.invalid();
+        private boolean riskBasedAuthnEnabled = true;
 
         public void addEvaluator(RiskEvaluator evaluator) {
             evaluators.add(evaluator);
+        }
+
+        public void setRiskBasedAuthnEnabled(boolean enabled) {
+            this.riskBasedAuthnEnabled = enabled;
         }
 
         @Override
@@ -186,6 +241,11 @@ public class RiskEngineTest {
         public void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase,
                                 org.keycloak.models.RealmModel realm,
                                 org.keycloak.models.UserModel knownUser) {
+            // Skip evaluation if risk-based authentication is disabled
+            if (!isRiskBasedAuthnEnabled()) {
+                return;
+            }
+
             Set<RiskEvaluator> phaseEvaluators = getRiskEvaluators(evaluationPhase);
 
             // Evaluate all evaluators
@@ -209,7 +269,7 @@ public class RiskEngineTest {
 
         @Override
         public boolean isRiskBasedAuthnEnabled() {
-            return true;
+            return riskBasedAuthnEnabled;
         }
 
         @Override
