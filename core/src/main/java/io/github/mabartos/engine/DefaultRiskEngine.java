@@ -104,7 +104,7 @@ public class DefaultRiskEngine implements RiskEngine {
     @Override
     public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
         if (!isRiskBasedAuthnEnabled()) {
-            logger.debug("Risk-based authentication is disabled. Skipping risk evaluation.");
+            logger.warn("Risk-based authentication is disabled. Skipping risk evaluation.");
             return;
         }
 
