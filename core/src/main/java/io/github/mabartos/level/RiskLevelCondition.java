@@ -16,9 +16,10 @@
  */
 package io.github.mabartos.level;
 
-import org.jboss.logging.Logger;
+import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.level.RiskLevelsProvider;
+import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -46,6 +47,13 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
         final AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
 
         if (authConfig != null) {
+            // Check if risk-based authentication is enabled
+            var riskEngine = context.getSession().getProvider(RiskEngine.class);
+            if (riskEngine != null && !riskEngine.isRiskBasedAuthnEnabled()) {
+                logger.warn("Risk-based authentication is disabled. Skipping risk level condition check.");
+                return false;
+            }
+
             if (riskLevelsProvider == null) {
                 logger.errorf("Cannot find risk level provider");
                 throw new IllegalStateException("Risk Level Provider is not found");

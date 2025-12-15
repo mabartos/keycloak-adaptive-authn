@@ -34,6 +34,12 @@ public class LoginEventsEventListener implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
+        var riskEngine = session.getProvider(RiskEngine.class);
+        if (riskEngine != null && !riskEngine.isRiskBasedAuthnEnabled()) {
+            log.debug("Risk-based authentication is disabled for this realm.");
+            return;
+        }
+
         switch (event.getType()) {
             case LOGIN -> handleLogin(event);
             case LOGOUT -> handleLogout(event);
