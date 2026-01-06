@@ -93,6 +93,7 @@ public class LoginEventsEventListener implements EventListenerProvider {
         public void run(KeycloakSession session) {
             var riskEngine = session.getProvider(RiskEngine.class);
             var realm = session.realms().getRealm(realmId);
+            session.getContext().setRealm(realm);
             var user = session.users().getUserById(realm, userId);
             riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, user);
         }
