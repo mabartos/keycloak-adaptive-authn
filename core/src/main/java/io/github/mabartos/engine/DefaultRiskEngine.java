@@ -123,7 +123,8 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public boolean isRiskBasedAuthnEnabled() {
-        return Optional.ofNullable(this.realm.getAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG))
+        var realm = session.getContext().getRealm();
+        return Optional.ofNullable(realm.getAttribute(RISK_BASED_AUTHN_ENABLED_CONFIG))
                 .map(Boolean::parseBoolean)
                 .orElse(true); // Default to enabled if not configured
     }
