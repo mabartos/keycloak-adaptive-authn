@@ -98,11 +98,11 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
+                    .condition((dev, val) -> List.of(val.split("##")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
+                    .condition((dev, val) -> !List.of(val.split("##")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
                 .add()
                 .build();
     }
