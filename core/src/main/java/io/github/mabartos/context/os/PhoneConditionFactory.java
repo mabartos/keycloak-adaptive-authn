@@ -69,7 +69,7 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
 
     @Override
     public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class)
+        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.BOOLEAN_TYPE)
                 .operation()
                 .operationKey(DefaultOperation.IS)
                 .condition(this::isMobilePhone)

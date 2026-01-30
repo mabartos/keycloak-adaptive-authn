@@ -17,9 +17,14 @@
 package io.github.mabartos.spi.condition;
 
 import io.github.mabartos.spi.context.UserContext;
+import org.keycloak.models.Constants;
+import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.utils.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 
 /**
@@ -29,13 +34,15 @@ import java.util.function.BiPredicate;
  */
 public class OperationsBuilder<T extends UserContext<?>> {
     private final List<Operation<T>> operations;
+    private final String inputType;
 
-    private OperationsBuilder() {
+    private OperationsBuilder(String inputType) {
+        this.inputType = inputType;
         this.operations = new ArrayList<>();
     }
 
-    public static <U extends UserContext<?>> OperationsBuilder<U> builder(Class<U> ignore) {
-        return new OperationsBuilder<>();
+    public static <U extends UserContext<?>> OperationsBuilder<U> builder(Class<U> ignore, String inputType) {
+        return new OperationsBuilder<>(inputType);
     }
 
     public OperationBuilder<T> operation() {
@@ -46,12 +53,21 @@ public class OperationsBuilder<T extends UserContext<?>> {
         return operations;
     }
 
+    private static final Map<String, String> INPUT_TYPE_MULTIVALUED_DELIMITERS = Map.of(
+            ProviderConfigProperty.STRING_TYPE, ","
+    );
+
     public class OperationBuilder<U> {
-        private String symbol = "";
+        private String symbol;
         private String text = "";
-        private BiPredicate<T, String> condition = (k, v) -> false;
+        private boolean isMultiValued;
+        private String multiValuedDelimiter;
+        private BiPredicate<T, List<String>> condition = (k, v) -> false;
 
         private OperationBuilder() {
+            this.multiValuedDelimiter = Optional.ofNullable(inputType)
+                    .map(INPUT_TYPE_MULTIVALUED_DELIMITERS::get)
+                    .orElse(null);
         }
 
         public OperationBuilder<U> symbol(String symbol) {
@@ -71,12 +87,26 @@ public class OperationsBuilder<T extends UserContext<?>> {
         }
 
         public OperationBuilder<U> condition(BiPredicate<T, String> condition) {
+            this.condition = (obj, list) -> condition.test(obj, list.getFirst());
+            return this;
+        }
+
+        public OperationBuilder<U> multiValuedCondition(BiPredicate<T, List<String>> condition) {
+            return multiValuedCondition(condition, null);
+        }
+
+        public OperationBuilder<U> multiValuedCondition(BiPredicate<T, List<String>> condition, String valuesDelimiter) {
+            this.isMultiValued = true;
             this.condition = condition;
+            this.multiValuedDelimiter = valuesDelimiter;
             return this;
         }
 
         public OperationsBuilder<T> add() {
-            OperationsBuilder.this.operations.add(new Operation<T>(symbol, text, condition));
+            if (StringUtil.isBlank(symbol)) {
+                throw new IllegalArgumentException("Symbol for operation cannot be empty or null");
+            }
+            operations.add(new Operation<T>(symbol, text, condition, isMultiValued, multiValuedDelimiter));
             return OperationsBuilder.this;
         }
     }

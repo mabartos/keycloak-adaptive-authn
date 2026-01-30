@@ -44,7 +44,7 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
 
     @Override
     public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class)
+        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
                     .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getBrowser).filter(f -> f.startsWith(val)).isPresent())
@@ -55,16 +55,14 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> {
-                        List<String> browsers = List.of(val.split("##"));
+                    .multiValuedCondition((dev, browsers) -> {
                         String detectedBrowser = dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>");
                         return browsers.stream().anyMatch(detectedBrowser::startsWith);
                     })
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> {
-                        List<String> browsers = List.of(val.split("##"));
+                    .multiValuedCondition((dev, browsers) -> {
                         String detectedBrowser = dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>");
                         return browsers.stream().noneMatch(detectedBrowser::startsWith);
                     })

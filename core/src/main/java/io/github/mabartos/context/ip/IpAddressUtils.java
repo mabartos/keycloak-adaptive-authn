@@ -21,6 +21,7 @@ import inet.ipaddr.IPAddressString;
 import inet.ipaddr.IncompatibleAddressException;
 import jakarta.ws.rs.core.HttpHeaders;
 import io.github.mabartos.context.device.DeviceContext;
+import org.keycloak.common.util.CollectionUtil;
 import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.utils.StringUtil;
 
@@ -36,10 +37,10 @@ public class IpAddressUtils {
     public static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
     public static final Pattern FORWARDED_FOR_PATTERN = Pattern.compile("for=([^;]+)");
 
-    public static boolean isInRange(DeviceContext context, String value) {
-        if (StringUtil.isBlank(value)) throw new IllegalArgumentException("Cannot parse IP Address");
+    public static boolean isInRange(DeviceContext context, List<String> list) {
+        if (CollectionUtil.isEmpty(list)) throw new IllegalArgumentException("Cannot parse IP Address");
 
-        return Arrays.stream(value.split(","))
+        return list.stream()
                 .filter(f -> f.contains("-"))
                 .anyMatch(f -> manageRange(context, f));
     }

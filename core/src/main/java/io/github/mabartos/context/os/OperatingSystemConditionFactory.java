@@ -85,9 +85,13 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .orElse(false);
     }
 
+    protected static boolean isOsSpecified(DeviceContext device, List<String> specifiedSystems) {
+        return specifiedSystems.contains(device.getData().map(DeviceRepresentation::getOs).orElse("<unknown>"));
+    }
+
     @Override
     public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class)
+        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
                     .condition(OperatingSystemConditionFactory::isOs)
@@ -98,11 +102,11 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split("##")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
+                    .multiValuedCondition(OperatingSystemConditionFactory::isOsSpecified)
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split("##")).contains(dev.getData().map(DeviceRepresentation::getOs).orElse("<unknown>")))
+                    .multiValuedCondition((dev, list) -> !isOsSpecified(dev,list))
                 .add()
                 .build();
     }

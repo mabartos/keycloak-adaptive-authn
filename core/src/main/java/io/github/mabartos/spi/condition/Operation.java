@@ -17,7 +17,9 @@
 package io.github.mabartos.spi.condition;
 
 import io.github.mabartos.spi.context.UserContext;
+import org.keycloak.models.Constants;
 
+import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
@@ -26,18 +28,32 @@ import java.util.function.BiPredicate;
  * @param <T> evaluated user context
  */
 public class Operation<T extends UserContext<?>> {
+    public static final String DEFAULT_MULTI_VALUES_DELIMITER = Constants.CFG_DELIMITER;
+
     private final String symbol;
     private final String text;
-    private final BiPredicate<T, String> condition;
+    private final BiPredicate<T, List<String>> condition;
+    private final boolean isMultiValued;
+    private final String multiValuedDelimiter;
 
-    public Operation(String symbol, String text, BiPredicate<T, String> condition) {
+    public Operation(String symbol, String text, BiPredicate<T, List<String>> condition, boolean isMultiValued, String multiValuedDelimiter) {
         this.symbol = symbol;
         this.text = text;
         this.condition = condition;
+        this.isMultiValued = isMultiValued;
+        this.multiValuedDelimiter = multiValuedDelimiter != null ? multiValuedDelimiter : DEFAULT_MULTI_VALUES_DELIMITER;
     }
 
-    public Operation(DefaultOperation.OperationKey ruleKey, BiPredicate<T, String> condition) {
-        this(ruleKey.symbol(), ruleKey.text(), condition);
+    public Operation(String symbol, String text, BiPredicate<T, List<String>> condition, boolean isMultiValued) {
+        this(symbol, text, condition, isMultiValued, null);
+    }
+
+    public Operation(String symbol, String text, BiPredicate<T, List<String>> condition) {
+        this(symbol, text, condition, false);
+    }
+
+    public Operation(DefaultOperation.OperationKey ruleKey, BiPredicate<T, List<String>> condition) {
+        this(ruleKey.symbol(), ruleKey.text(), condition, ruleKey.isMultiValued());
     }
 
     public String getSymbol() {
@@ -48,7 +64,21 @@ public class Operation<T extends UserContext<?>> {
         return text;
     }
 
+    public boolean isMultiValued() {
+        return isMultiValued;
+    }
+
+    public String getMultiValuedDelimiter() {
+        return multiValuedDelimiter;
+    }
+
     public boolean match(T object, String value) {
-        return condition.test(object, value);
+        if (isMultiValued()) {
+            return condition.test(object, value != null ?
+                    List.of(value.split(getMultiValuedDelimiter())) :
+                    List.of(value));
+        } else {
+            return condition.test(object, List.of(value));
+        }
     }
 }

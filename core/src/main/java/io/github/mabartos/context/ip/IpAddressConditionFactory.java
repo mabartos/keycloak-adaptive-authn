@@ -79,7 +79,7 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
 
     @Override
     public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class)
+        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.STRING_TYPE)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
                     .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isPresent())
@@ -90,19 +90,19 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
+                    .multiValuedCondition((dev, list) -> list.contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
+                    .multiValuedCondition((dev, list) -> !list.contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.IN_RANGE)
-                    .condition(IpAddressUtils::isInRange)
+                    .multiValuedCondition(IpAddressUtils::isInRange)
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NOT_IN_RANGE)
-                    .condition(IpAddressUtils::isInRange)
+                    .multiValuedCondition(IpAddressUtils::isInRange)
                 .add()
                 .build();
     }
