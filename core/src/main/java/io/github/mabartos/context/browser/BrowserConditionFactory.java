@@ -55,11 +55,19 @@ public class BrowserConditionFactory extends UserContextConditionFactory<DeviceC
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .condition((dev, val) -> List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>")))
+                    .condition((dev, val) -> {
+                        List<String> browsers = List.of(val.split("##"));
+                        String detectedBrowser = dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>");
+                        return browsers.stream().anyMatch(detectedBrowser::startsWith);
+                    })
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .condition((dev, val) -> !List.of(val.split(",")).contains(dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>")))
+                    .condition((dev, val) -> {
+                        List<String> browsers = List.of(val.split("##"));
+                        String detectedBrowser = dev.getData().map(DeviceRepresentation::getBrowser).orElse("<unknown>");
+                        return browsers.stream().noneMatch(detectedBrowser::startsWith);
+                    })
                 .add()
                 .build();
     }
