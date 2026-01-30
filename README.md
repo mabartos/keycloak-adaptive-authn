@@ -78,7 +78,7 @@ repository [mabartos/keycloak-authn-policies](https://github.com/mabartos/keyclo
 
 ## Resources with more info
 
-1. ** Unlocking Adaptive Authentication (most recent)**
+1. **Unlocking Adaptive Authentication (most recent)**
    - [Keycloak DevDay](https://www.keycloak-day.dev/) @ Darmstadt, Germany 2025
    - [Slides](https://drive.google.com/file/d/12-vAuVmWqUb3581D8WqWq0uutLbH7tsn/view?usp=sharing)
    - [Talk](https://www.youtube.com/watch?v=TjanummQn7U)
