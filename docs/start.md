@@ -25,6 +25,50 @@ If you want to try it out, follow this:
 
 4. Then you can access [User account](http://localhost:8080/realms/adaptive/account) to see the functionality in action.
 
+### Building with Different Keycloak Versions
+
+The project uses **Keycloak nightly builds (999.0.0-SNAPSHOT) by default**. All dependencies and the distribution are fetched from GitHub releases. You can also build with any specific released version.
+
+#### Use Nightly Build (Default)
+```shell
+./mvnw -f core clean install -DskipTests -Pbuild-distribution
+```
+- Uses Keycloak version: `999.0.0-SNAPSHOT` for all dependencies
+- Downloads distribution from: `https://github.com/keycloak/keycloak/releases/download/nightly/keycloak-999.0.0-SNAPSHOT.zip`
+
+#### Use Specific Release
+
+To build with a specific Keycloak release, set both the version and the GitHub tag:
+
+Example for Keycloak 26.5.2:
+```shell
+./mvnw -f core clean install -DskipTests -Pbuild-distribution \
+  -Dkeycloak.version=26.5.2 \
+  -Dkeycloak.github.tag=26.5.2
+```
+- Uses Keycloak version: `26.5.2` for all dependencies
+- Downloads distribution from: `https://github.com/keycloak/keycloak/releases/download/26.5.2/keycloak-26.5.2.zip`
+
+Example for Keycloak 26.5.4:
+```shell
+./mvnw -f core clean install -DskipTests -Pbuild-distribution \
+  -Dkeycloak.version=26.5.4 \
+  -Dkeycloak.github.tag=26.5.4
+```
+
+**Key Points:**
+- **Nightly is default** - Both Maven dependencies and the distribution use `999.0.0-SNAPSHOT` from the `nightly` tag
+- **For specific versions** - Set both `-Dkeycloak.version` and `-Dkeycloak.github.tag` to the same version
+- **Downloads are cached** in `~/.m2/repository/.cache/keycloak/{tag}/` for faster rebuilds
+- **All distributions come from GitHub** - no Maven Central dependency
+
+**Clear Download Cache:**
+
+If you need to re-download a fresh copy:
+```shell
+rm -rf ~/.m2/repository/.cache/keycloak/
+```
+
 ### Container
 
 You can build your own containerized Keycloak installation with this extension as described in this
