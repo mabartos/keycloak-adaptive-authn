@@ -21,40 +21,28 @@ import io.github.mabartos.context.browser.BrowserCondition;
 import io.github.mabartos.context.browser.BrowserConditionFactory;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
-import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
-
-import java.util.Set;
+import org.keycloak.models.RealmModel;
 
 /**
  * Risk evaluator for browser properties
  */
-public class BrowserRiskEvaluator extends AbstractRiskEvaluator {
-    private final KeycloakSession session;
+public class BrowserRiskEvaluator extends DeviceRiskEvaluator {
     private final BrowserCondition browserCondition;
 
     public BrowserRiskEvaluator(KeycloakSession session) {
-        this.session = session;
         this.browserCondition = UserContexts.getContextCondition(session, BrowserConditionFactory.PROVIDER_ID);
     }
 
     @Override
-    public KeycloakSession getSession() {
-        return session;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
+    public Risk evaluate(@Nonnull RealmModel realm) {
+        return browserCondition.isDefaultKnownBrowser(realm) ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
     }
 
     @Override
     public double getDefaultWeight() {
         return Weight.LOW;
-    }
-
-    @Override
-    public Risk evaluate() {
-        return browserCondition.isDefaultKnownBrowser() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
     }
 }

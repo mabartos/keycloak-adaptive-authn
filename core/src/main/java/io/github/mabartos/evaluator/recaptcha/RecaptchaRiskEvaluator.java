@@ -2,7 +2,8 @@ package io.github.mabartos.evaluator.recaptcha;
 
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
-import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+import jakarta.annotation.Nonnull;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.apache.http.HttpResponse;
@@ -25,11 +26,10 @@ import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
 import java.io.IOException;
-import java.util.Set;
 
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 
-public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Authenticator {
+public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authenticator {
     private static final Logger log = Logger.getLogger(RecaptchaRiskEvaluator.class);
 
     protected static final String CAPTCHA_TOKEN_KEY = "captcha_token";
@@ -50,22 +50,12 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
     }
 
     @Override
-    public KeycloakSession getSession() {
-        return session;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
-    }
-
-    @Override
     public double getDefaultWeight() {
         return Weight.IMPORTANT;
     }
 
     @Override
-    public Risk evaluate() {
+    public Risk evaluate(@Nonnull RealmModel realm) {
         try {
             if (!configIsValid()) {
                 return Risk.invalid("Configuration is not valid");

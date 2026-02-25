@@ -1,5 +1,7 @@
 package io.github.mabartos.evaluator.login;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
@@ -10,6 +12,8 @@ import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -19,19 +23,12 @@ import java.util.Set;
 
 public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
     private final static Logger logger = Logger.getLogger(AiTimeAccessRiskEvaluator.class);
-    private final KeycloakSession session;
     private final LoginEventsContext loginEvents;
     private final AiEngine aiEngine;
 
     public AiTimeAccessRiskEvaluator(KeycloakSession session) {
-        this.session = session;
         this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiEngine.class);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -65,12 +62,16 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        if (knownUser == null) {
+            return Risk.invalid("User is null");
+        }
+
         if (loginEvents == null) {
             return Risk.invalid("Cannot find login events");
         }
 
-        var dataOptional = loginEvents.getData();
+        var dataOptional = loginEvents.getData(realm, knownUser);
         if (dataOptional.isEmpty()) {
             return Risk.notEnoughInfo("Cannot parse login events");
         }

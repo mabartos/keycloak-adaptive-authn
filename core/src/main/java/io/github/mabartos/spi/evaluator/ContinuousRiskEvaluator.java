@@ -1,18 +1,11 @@
 package io.github.mabartos.spi.evaluator;
 
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import java.util.Set;
 
-/**
- * Continuous risk evaluator
- */
-public interface ContinuousRiskEvaluator extends RiskEvaluator {
+public abstract class ContinuousRiskEvaluator extends AbstractRiskEvaluator {
 
-    /**
-     * Execute evaluation of the risk score for continuous risk evaluator
-     *
-     * @param realm current realm
-     * @param user  known user
-     */
-    void evaluateRisk(RealmModel realm, UserModel user);
+    @Override
+    public Set<EvaluationPhase> evaluationPhases() {
+        return Set.of(EvaluationPhase.CONTINUOUS);
+    }
 }

@@ -6,6 +6,8 @@ import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
@@ -18,9 +20,11 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG;
 
@@ -47,25 +51,16 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         this.riskEvaluators = initializeRiskEvaluators(session);
     }
 
-    protected abstract Risk evaluateRiskContinuous(RealmModel realm, UserModel knownUser);
+    protected abstract Risk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
 
-    protected abstract Risk evaluateRiskBeforeAuthn(RealmModel realm);
+    protected abstract Risk evaluateRiskBeforeAuthn(@Nonnull RealmModel realm);
 
-    protected abstract Risk evaluateRiskUserKnown(RealmModel realm, UserModel knownUser);
-
-    @Override
-    public Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
-        return evaluateRisk(evaluationPhase, null, null);
-    }
+    protected abstract Risk evaluateRiskUserKnown(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
 
     @Override
-    public Risk evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
+    public Risk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         if (!isRiskBasedAuthnEnabled()) {
             return Risk.invalid("Risk-based authentication is disabled. Skipping risk evaluation.");
-        }
-
-        if (realm == null) {
-            return Risk.invalid("Cannot execute risk score evaluation, because the realm is null");
         }
 
         if (phase.requiresKnownUser && knownUser == null) {
@@ -82,9 +77,9 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         var start = Time.currentTimeMillis();
 
         var risk = switch (phase) {
-            case CONTINUOUS -> evaluateRiskContinuous(realm, knownUser);
+            case CONTINUOUS -> evaluateRiskContinuous(realm, Objects.requireNonNull(knownUser));
             case BEFORE_AUTHN -> evaluateRiskBeforeAuthn(realm);
-            case USER_KNOWN -> evaluateRiskUserKnown(realm, knownUser);
+            case USER_KNOWN -> evaluateRiskUserKnown(realm, Objects.requireNonNull(knownUser));
         };
 
         logger.debugf("Risk Engine (Virtual Threads) - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
@@ -114,12 +109,11 @@ public abstract class AbstractRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase phase) {
-        if (phase == null) {
-            logger.debug("Invalid evaluation phase - no risk evaluators returned");
-            return Collections.emptySet();
-        }
-        return riskEvaluators.get(phase);
+    public Set<RiskEvaluator> getRiskEvaluators(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase, @Nonnull RealmModel realm) {
+        return riskEvaluators.get(evaluationPhase)
+                .stream()
+                .filter(f -> f.isEnabled(realm))
+                .collect(Collectors.toSet());
     }
 
     protected static Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> initializeRiskEvaluators(KeycloakSession session) {
@@ -128,10 +122,8 @@ public abstract class AbstractRiskEngine implements RiskEngine {
             riskEvaluators.put(phase, new LinkedHashSet<>());
         }
 
-        session.getAllProviders(RiskEvaluator.class).stream()
-                .filter(RiskEvaluator::isEnabled)
-                .forEach(f -> f.evaluationPhases()
-                        .forEach(phase -> riskEvaluators.get(phase).add(f)));
+        session.getAllProviders(RiskEvaluator.class)
+                .forEach(f -> f.evaluationPhases().forEach(phase -> riskEvaluators.get(phase).add(f)));
 
         return riskEvaluators;
     }

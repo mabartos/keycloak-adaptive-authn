@@ -93,13 +93,13 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             var enabled = model.get(isEnabledConfig(evalFactory.evaluatorClass()));
             doIfPresent(enabled, value -> {
                 logger.tracef("stored state '%s' for evaluator '%s' ('%s')", value, evalFactory.getName(), evalFactory.evaluatorClass().getSimpleName());
-                EvaluatorUtils.setEvaluatorEnabled(session, evalFactory.evaluatorClass(), Boolean.parseBoolean(value));
+                EvaluatorUtils.setEvaluatorEnabled(realm, evalFactory.evaluatorClass(), Boolean.parseBoolean(value));
             });
 
             var weight = model.get(getWeightConfig(evalFactory.evaluatorClass()));
             doIfPresent(weight, value -> {
                 logger.tracef("putting weight '%f' for evaluator '%s' ('%s')", value, evalFactory.getName(),evalFactory.evaluatorClass());
-                EvaluatorUtils.storeEvaluatorWeight(session, evalFactory.evaluatorClass(), Double.parseDouble(value));
+                EvaluatorUtils.storeEvaluatorWeight(realm, evalFactory.evaluatorClass(), Double.parseDouble(value));
             });
         });
     }
@@ -125,7 +125,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 if (!Objects.equals(oldEnabled, newEnabled)) {
                     doIfPresent(newEnabled, value -> {
                         logger.tracef("setting new value for '%s' = '%s'", isEnabledConfig(f.evaluatorClass()), Boolean.parseBoolean(value));
-                        EvaluatorUtils.setEvaluatorEnabled(session, f.evaluatorClass(), Boolean.parseBoolean(value));
+                        EvaluatorUtils.setEvaluatorEnabled(realm, f.evaluatorClass(), Boolean.parseBoolean(value));
                     });
                 }
             }
@@ -136,7 +136,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 if (!Objects.equals(oldWeight, newWeight)) {
                     doIfPresent(newWeight, value -> {
                         logger.tracef("setting new value for '%s' = '%s'", getWeightConfig(f.evaluatorClass()), value);
-                        EvaluatorUtils.storeEvaluatorWeight(session, f.evaluatorClass(), Double.parseDouble(value));
+                        EvaluatorUtils.storeEvaluatorWeight(realm, f.evaluatorClass(), Double.parseDouble(value));
                     });
                 }
             }

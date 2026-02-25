@@ -1,9 +1,10 @@
 package io.github.mabartos.evaluator.behavior;
 
-import org.jboss.logging.Logger;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.engine.RiskEngine;
-import io.github.mabartos.spi.evaluator.AbstractContinuousRiskEvaluator;
+import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.EventType;
@@ -25,7 +26,7 @@ import static org.keycloak.events.EventType.UPDATE_CREDENTIAL_ERROR;
 import static org.keycloak.events.EventType.UPDATE_EMAIL;
 import static org.keycloak.events.EventType.UPDATE_EMAIL_ERROR;
 
-public class UserActionsRiskEvaluator extends AbstractContinuousRiskEvaluator {
+public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
     protected static final EventType[] SENSITIVE_EVENTS = {
             UPDATE_EMAIL,
             UPDATE_EMAIL_ERROR,
@@ -38,20 +39,12 @@ public class UserActionsRiskEvaluator extends AbstractContinuousRiskEvaluator {
             REMOVE_CREDENTIAL,
             REMOVE_CREDENTIAL_ERROR
     };
-    private static final Logger logger = Logger.getLogger(UserActionsRiskEvaluator.class);
     private static final long COEFFICIENT_BASE = Duration.ofMinutes(10).toMillis();
 
-    private final KeycloakSession session;
     private final EventStoreProvider eventStore;
 
     public UserActionsRiskEvaluator(KeycloakSession session) {
-        this.session = session;
         this.eventStore = session.getProvider(EventStoreProvider.class);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     /**
@@ -78,15 +71,10 @@ public class UserActionsRiskEvaluator extends AbstractContinuousRiskEvaluator {
      * >c*10x= HIGHEST
      */
     @Override
-    public Risk evaluate(RealmModel realm, UserModel user) {
-        if (realm == null) {
-            return Risk.invalid("Cannot find realm");
-        }
-
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel user) {
         if (user == null) {
             return Risk.invalid("Cannot find user");
         }
-
 
         // TODO have it configurable
         var lookupTime = Duration.ofMinutes(RiskEngine.DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis();

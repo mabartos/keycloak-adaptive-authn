@@ -16,12 +16,15 @@
  */
 package io.github.mabartos.evaluator.location;
 
-import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.location.IpApiLocationContext;
 import io.github.mabartos.context.location.IpApiLocationContextFactory;
 import io.github.mabartos.context.location.LocationContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -34,19 +37,10 @@ import java.util.Set;
 public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(LocationRiskEvaluator.class);
 
-    private final KeycloakSession session;
-    private final RealmModel realm;
-    private final LocationContext locationContext;
+    private final IpApiLocationContext locationContext;
 
     public LocationRiskEvaluator(KeycloakSession session) {
-        this.session = session;
-        this.realm = session.getContext().getRealm();
         this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -55,18 +49,12 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
-        if (realm == null) {
-            return Risk.invalid("Realm is null");
-        }
-
-        var user = session.getContext().getAuthenticationSession().getAuthenticatedUser();
-
-        if (user == null) {
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        if (knownUser == null) {
             return Risk.invalid("User is null");
         }
 
-        var data = locationContext.getData();
+        var data = locationContext.getData(realm, knownUser);
         if (data.isPresent()) {
             logger.trace(data.get().toString());
             // TODO save location to successful logins and then compare it here

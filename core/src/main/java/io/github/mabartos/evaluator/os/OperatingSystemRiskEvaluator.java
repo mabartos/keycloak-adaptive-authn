@@ -21,26 +21,19 @@ import io.github.mabartos.context.os.OperatingSystemCondition;
 import io.github.mabartos.context.os.OperatingSystemConditionFactory;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
-import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
-
-import java.util.Set;
+import org.keycloak.models.RealmModel;
 
 /**
  * Risk evaluator for OS properties
  */
-public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
-    private final KeycloakSession session;
+public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
     private final OperatingSystemCondition condition;
 
     public OperatingSystemRiskEvaluator(KeycloakSession session) {
-        this.session = session;
         this.condition = UserContexts.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -49,12 +42,7 @@ public class OperatingSystemRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
-    }
-
-    @Override
-    public Risk evaluate() {
-        return condition.isDefaultKnownOs() ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
+    public Risk evaluate(@Nonnull RealmModel realm) {
+        return condition.isDefaultKnownOs(realm) ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
     }
 }

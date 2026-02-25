@@ -2,6 +2,10 @@ package io.github.mabartos.spi.engine;
 
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
 import java.util.Set;
@@ -26,7 +30,12 @@ public interface RiskScoreAlgorithm extends Provider {
      *
      * @param evaluators risk evaluators
      * @param phase      evaluation phase
+     * @param realm      realm
+     * @param knownUser  knownUser
      * @return complex risk for a specific phase
      */
-    Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase);
+    Risk evaluateRisk(@Nonnull Set<RiskEvaluator> evaluators,
+                      @Nonnull RiskEvaluator.EvaluationPhase phase,
+                      @Nonnull RealmModel realm,
+                      @Nullable UserModel knownUser);
 }

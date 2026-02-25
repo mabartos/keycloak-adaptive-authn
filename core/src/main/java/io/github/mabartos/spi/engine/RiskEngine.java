@@ -18,6 +18,8 @@ package io.github.mabartos.spi.engine;
 
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
@@ -55,14 +57,7 @@ public interface RiskEngine extends Provider {
      *
      * @return set of risk evaluators
      */
-    Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase evaluationPhase);
-
-    /**
-     * Start the risk scores evaluation for specific evaluation phase
-     *
-     * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
-     */
-    Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
+    Set<RiskEvaluator> getRiskEvaluators(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase, @Nonnull RealmModel realm);
 
     /**
      * Start the risk scores evaluation for evaluation phase
@@ -70,7 +65,9 @@ public interface RiskEngine extends Provider {
      * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
      * @param knownUser       information about the user - if the {@code #evaluationPhase} is {@link RiskEvaluator.EvaluationPhase#BEFORE_AUTHN}, the {@code #knownUser} is null
      */
-    Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase, RealmModel realm, UserModel knownUser);
+    Risk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase,
+                      @Nonnull RealmModel realm,
+                      @Nullable UserModel knownUser);
 
     /**
      * Check if risk-based authentication is enabled for the current realm

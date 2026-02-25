@@ -1,9 +1,13 @@
 package io.github.mabartos.engine;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,20 +26,23 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     }
 
     @Override
-    public Risk evaluateRisk(Set<RiskEvaluator> evaluators, RiskEvaluator.EvaluationPhase phase) {
+    public Risk evaluateRisk(@Nonnull Set<RiskEvaluator> evaluators,
+                             @Nonnull RiskEvaluator.EvaluationPhase phase,
+                             @Nonnull RealmModel realm,
+                             @Nullable UserModel knownUser) {
         var filteredEvaluators = evaluators.stream()
                 .filter(eval -> eval.getRisk() != null)
-                .peek(WeightedAvgRiskAlgorithm::printEvaluatorDetails)
-                .filter(f -> Risk.isValid(f.getWeight()))
+                .peek(evaluator -> printEvaluatorDetails(evaluator, realm))
+                .filter(f -> Risk.isValid(f.getWeight(realm)))
                 .filter(eval -> eval.getRisk().getScore().isPresent())
                 .collect(Collectors.toSet());
 
         var weightedRisk = filteredEvaluators.stream()
-                .mapToDouble(eval -> eval.getRisk().getScore().get() * eval.getWeight())
+                .mapToDouble(eval -> eval.getRisk().getScore().get() * eval.getWeight(realm))
                 .sum();
 
         var weights = filteredEvaluators.stream()
-                .mapToDouble(RiskEvaluator::getWeight)
+                .mapToDouble(f -> f.getWeight(realm))
                 .sum();
 
         // Weighted arithmetic mean
@@ -46,16 +53,18 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
         return Risk.of(weightedRisk / weights);
     }
 
-    private static void printEvaluatorDetails(RiskEvaluator evaluator) {
+    private static void printEvaluatorDetails(@Nonnull RiskEvaluator evaluator, @Nonnull RealmModel realm) {
         Risk risk = evaluator.getRisk();
         if (risk == null) {
             logger.debugf("Evaluator: %s - Risk score: NULL", evaluator.getClass().getSimpleName());
             return;
         }
+        var weight = evaluator.getWeight(realm);
+
         logger.debugf("Evaluator: %s - Risk score: '%s' (weight '%f')%s",
                 evaluator.getClass().getSimpleName(),
                 risk.getScore().map(score -> String.format("%.2f", score)).orElse("N/A"),
-                Risk.isValid(evaluator.getWeight()) ? evaluator.getWeight() : -1.0,
+                Risk.isValid(weight) ? weight : -1.0,
                 risk.getReason().map(reason -> String.format(" - Reason: %s", reason)).orElse(""));
     }
 

@@ -25,6 +25,8 @@ import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.executors.ExecutorsProvider;
@@ -36,7 +38,6 @@ import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -45,6 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
 import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
@@ -88,8 +90,7 @@ public class DefaultRiskEngine implements RiskEngine {
             riskEvaluators.put(phase, new LinkedHashSet<>());
         }
 
-        session.getAllProviders(RiskEvaluator.class).stream()
-                .filter(RiskEvaluator::isEnabled)
+        session.getAllProviders(RiskEvaluator.class)
                 .forEach(f -> f.evaluationPhases()
                         .forEach(phase -> riskEvaluators.get(phase).add(f)));
 
@@ -97,12 +98,9 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
-        return evaluateRisk(evaluationPhase, null, null);
-    }
-
-    @Override
-    public Risk evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
+    public Risk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase phase,
+                             @Nonnull RealmModel realm,
+                             @Nullable UserModel knownUser) {
         if (!isRiskBasedAuthnEnabled()) {
             return Risk.invalid("Risk-based authentication is disabled. Skipping risk evaluation.");
         }
@@ -113,7 +111,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
         var risk = switch (phase) {
             case CONTINUOUS -> handleContinuous(realm, knownUser);
-            case BEFORE_AUTHN, USER_KNOWN -> handleAuthentication(phase);
+            case BEFORE_AUTHN, USER_KNOWN -> handleAuthentication(phase, realm, knownUser);
         };
 
         logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
@@ -134,12 +132,12 @@ public class DefaultRiskEngine implements RiskEngine {
             return Risk.invalid("Cannot execute continuous risk score evaluation, because we need to know who is the current user and what realm is used");
         }
 
-        var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
+        var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm);
 
         return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), _ ->
                 tracingProvider.trace(DefaultRiskEngine.class, "evaluateContinuous", span -> {
                     evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
-                    var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
+                    var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
 
                     if (risk.isValid()) {
                         if (span.isRecording()) {
@@ -159,7 +157,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 }), "DefaultRiskEngine.handleContinuous");
     }
 
-    protected Risk handleAuthentication(RiskEvaluator.EvaluationPhase phase) {
+    protected Risk handleAuthentication(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         // It is not necessary to evaluate the risk multiple times for 'BEFORE_AUTHN' phase
         if (phase == RiskEvaluator.EvaluationPhase.BEFORE_AUTHN) {
             final var storedRisk = storedRiskProvider.getStoredRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
@@ -182,10 +180,10 @@ public class DefaultRiskEngine implements RiskEngine {
                 .filter(f -> f.requiresUser() == requiresUser)
                 .filter(f -> !f.isInitialized())
                 .filter(f -> !f.isRemote())
-                .forEach(UserContext::initData);
+                .forEach(f -> f.initData(realm, knownUser));
 
         var evaluators = Multi.createFrom()
-                .items(getRiskEvaluators(phase))
+                .items(getRiskEvaluators(phase, realm))
                 .onItem()
                 .transformToIterable(f -> f)
                 .collect()
@@ -198,13 +196,13 @@ public class DefaultRiskEngine implements RiskEngine {
             tracingProvider.trace(DefaultRiskEngine.class, "evaluateAll", span -> {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
-                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, requiresUser, exec, retries, timeout))
+                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, realm, knownUser, requiresUser, exec, retries, timeout))
                         .filter(Objects::nonNull)
                         .collect()
                         .asSet();
 
                 evaluatedRisks.subscribe().with(risks -> {
-                    this.risk = riskScoreAlgorithm.evaluateRisk(risks, phase);
+                    this.risk = riskScoreAlgorithm.evaluateRisk(risks, phase, realm, knownUser);
 
                     if (risk.isValid()) {
                         logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore().get(), phase);
@@ -224,14 +222,14 @@ public class DefaultRiskEngine implements RiskEngine {
         return risk;
     }
 
-    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, boolean requiresUser, ExecutorService thread, int retries, Duration timeout) {
+    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, boolean requiresUser, ExecutorService thread, int retries, Duration timeout) {
         var item = Uni.createFrom()
                 .item(evaluator)
                 .onItem()
                 .invoke(eval -> tracingProvider.trace(eval.getClass(), "evaluate", span -> {
                     var retriesCount = eval.allowRetries() ? retries : 1;
                     for (int i = 0; i < retriesCount; i++) {
-                        eval.evaluateRisk();
+                        eval.evaluateRisk(realm, knownUser);
                         if (!eval.getRisk().isValid()) {
                             break;
                         }
@@ -240,7 +238,7 @@ public class DefaultRiskEngine implements RiskEngine {
                     if (span.isRecording()) {
                         span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRisk().getScore().orElse(-1.0));
                         eval.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                        span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight());
+                        span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight(realm));
                     }
                 }))
                 .onFailure()
@@ -265,11 +263,8 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Set<RiskEvaluator> getRiskEvaluators(RiskEvaluator.EvaluationPhase phase) {
-        if (phase == null) {
-            return Collections.emptySet();
-        }
-        return riskEvaluators.get(phase);
+    public Set<RiskEvaluator> getRiskEvaluators(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase, @Nonnull RealmModel realm) {
+        return riskEvaluators.get(evaluationPhase).stream().filter(f -> f.isEnabled(realm)).collect(Collectors.toSet());
     }
 
     protected <T extends Number> Optional<T> getNumberRealmAttribute(String attribute, Function<String, T> func) {

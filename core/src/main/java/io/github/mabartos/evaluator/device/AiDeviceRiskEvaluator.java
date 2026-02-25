@@ -16,38 +16,31 @@
  */
 package io.github.mabartos.evaluator.device;
 
-import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
 import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
-import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.ai.AiEngine;
-import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+import jakarta.annotation.Nonnull;
+import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.representations.account.DeviceRepresentation;
-
-import java.util.Set;
 
 /**
  * Risk evaluator for checking device properties evaluated by AI NLP engine
  */
-public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
+public class AiDeviceRiskEvaluator extends DeviceRiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiDeviceRiskEvaluator.class);
 
-    private final KeycloakSession session;
-    private final DeviceContext deviceContext;
+    private final DeviceRepresentationContext deviceContext;
     private final AiEngine aiEngine;
 
     public AiDeviceRiskEvaluator(KeycloakSession session) {
-        this.session = session;
         this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiEngine.class);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -58,11 +51,6 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public boolean allowRetries() {
         return false;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     protected static String request(DeviceRepresentation device) {
@@ -91,12 +79,12 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
+    public Risk evaluate(@Nonnull RealmModel realm) {
         if (aiEngine == null) {
             return Risk.invalid("Cannot find AI engine");
         }
 
-        var deviceRepresentation = deviceContext.getData();
+        var deviceRepresentation = deviceContext.getData(realm);
         if (deviceRepresentation.isPresent()) {
             return aiEngine.getRisk(request(deviceRepresentation.get()));
         }

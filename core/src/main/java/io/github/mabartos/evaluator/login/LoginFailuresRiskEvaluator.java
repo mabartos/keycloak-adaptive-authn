@@ -17,15 +17,18 @@
 package io.github.mabartos.evaluator.login;
 
 import inet.ipaddr.IPAddress;
-import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory;
 import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.utils.StringUtil;
 
 import java.util.Optional;
@@ -43,11 +46,6 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     public LoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.ipAddressContext = UserContexts.getContext(session, DefaultIpAddressContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -74,8 +72,8 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         }
     }
 
-    protected Optional<Double> getRiskLastIP(String lastIP) {
-        var currentIp = ipAddressContext.getData().map(IPAddress::toString).orElse("");
+    protected Optional<Double> getRiskLastIP(RealmModel realmModel, UserModel knownUser, String lastIP) {
+        var currentIp = ipAddressContext.getData(realmModel, knownUser).map(IPAddress::toString).orElse("");
 
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIP)) {
             if (!currentIp.equals(lastIP)) {
@@ -89,19 +87,12 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
-        var realm = session.getContext().getRealm();
-        if (realm == null) {
-            return Risk.invalid("Realm is null");
-        }
-
-        var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
-                .map(AuthenticationSessionModel::getAuthenticatedUser);
-        if (user.isEmpty()) {
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        if (knownUser == null) {
             return Risk.invalid("User is null");
         }
 
-        var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
+        var loginFailures = session.loginFailures().getUserLoginFailure(realm, knownUser.getId());
         if (loginFailures == null) {
             return Risk.invalid("Cannot obtain login failures");
         }
@@ -109,7 +100,7 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         // Number of failures
         var numFailures = loginFailures.getNumFailures();
 
-        return getRiskLastIP(loginFailures.getLastIPFailure())
+        return getRiskLastIP(realm, knownUser, loginFailures.getLastIPFailure())
                 .map(score -> Math.max(score, getRiskLoginFailures(numFailures)))
                 .map(Risk::of)
                 .orElseGet(() -> Risk.of(getRiskLoginFailures(numFailures)));

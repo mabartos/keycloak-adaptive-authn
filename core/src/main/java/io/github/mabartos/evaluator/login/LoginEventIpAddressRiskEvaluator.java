@@ -1,14 +1,18 @@
 package io.github.mabartos.evaluator.login;
 
 import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
 import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
-import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.keycloak.events.Event;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 
 import java.util.Set;
 
@@ -17,19 +21,12 @@ import static io.github.mabartos.level.Risk.SMALL;
 import static io.github.mabartos.level.Risk.VERY_HIGH;
 
 public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
-    private final KeycloakSession session;
-    private final LoginEventsContext loginEvents;
-    private final DeviceContext deviceContext;
+    private final LoginEventsContext loginEventsContext;
+    private final DeviceRepresentationContext deviceContext;
 
     public LoginEventIpAddressRiskEvaluator(KeycloakSession session) {
-        this.session = session;
-        this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
+        this.loginEventsContext = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
         this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -38,32 +35,30 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
-        if (deviceContext.getData().isEmpty()) {
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        if (knownUser == null) {
+            return Risk.invalid("User is null");
+        }
+
+        var deviceRepresentation = deviceContext.getData(realm, knownUser).orElse(null);
+        if (deviceRepresentation == null) {
             return Risk.invalid("No device information");
         }
 
-        if (loginEvents.getData().isEmpty()) {
+        var events = loginEventsContext.getData(realm, knownUser).orElse(null);
+        if (events == null || events.isEmpty()) {
             return Risk.invalid("No login events");
         }
-
-        var events = loginEvents.getData().get();
-
-        var eventsSize = events.size();
-        if (eventsSize == 0) {
-            return Risk.invalid("No login events");
-        }
-
-        var device = deviceContext.getData().get();
 
         var numberOccurrences = events.stream()
                 .map(Event::getIpAddress)
-                .filter(f -> f.equals(device.getIpAddress()))
+                .filter(f -> f.equals(deviceRepresentation.getIpAddress()))
                 .count();
 
         if (numberOccurrences == 0) {
             return Risk.of(VERY_HIGH);
         } else {
+            var eventsSize = events.size();
             if (eventsSize > 3) {
                 long threshold = eventsSize / 3;
                 if (numberOccurrences >= threshold) {

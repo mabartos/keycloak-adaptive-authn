@@ -19,6 +19,10 @@ package io.github.mabartos.spi.evaluator;
 import io.github.mabartos.spi.context.UserContext;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.level.Risk;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
 import java.util.Set;
@@ -48,19 +52,26 @@ public interface RiskEvaluator extends Provider {
      *
      * @return weight of the evaluation in range (0,1>
      */
-    double getWeight();
+    double getWeight(@Nonnull RealmModel realm);
 
     /**
      * Execute evaluation of the risk score
      */
-    void evaluateRisk();
+    default void evaluateRisk(@Nonnull RealmModel realm) {
+        evaluateRisk(realm, null);
+    }
+
+    /**
+     * Execute evaluation of the risk score
+     */
+    void evaluateRisk(@Nonnull RealmModel realm, @Nullable UserModel knownUser);
 
     /**
      * Flag to determine whether the evaluator should evaluate the risk score
      *
      * @return true if is enabled, otherwise false
      */
-    boolean isEnabled();
+    boolean isEnabled(@Nonnull RealmModel realm);
 
     /**
      * Flag to determine whether evaluation should be retried when failure occurs

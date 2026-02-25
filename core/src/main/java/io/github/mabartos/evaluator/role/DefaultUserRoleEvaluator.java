@@ -21,9 +21,13 @@ import io.github.mabartos.context.user.KcUserRoleContextFactory;
 import io.github.mabartos.context.user.UserRoleContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.keycloak.models.AdminRoles;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserModel;
 
 import java.util.Collection;
 import java.util.Set;
@@ -32,17 +36,10 @@ import java.util.Set;
  * Risk evaluator for user role properties
  */
 public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
-    private final KeycloakSession session;
     private final UserRoleContext context;
 
     public DefaultUserRoleEvaluator(KeycloakSession session) {
-        this.session = session;
         this.context = UserContexts.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override
@@ -51,8 +48,12 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
-        boolean isAdmin = context.getData()
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        if (knownUser == null) {
+            return Risk.invalid("User is null");
+        }
+
+        boolean isAdmin = context.getData(realm, knownUser)
                 .stream()
                 .flatMap(Collection::stream)
                 .map(RoleModel::getName)

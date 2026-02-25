@@ -17,6 +17,8 @@
 package io.github.mabartos.evaluator.login;
 
 import inet.ipaddr.IPAddress;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory;
@@ -27,7 +29,9 @@ import io.github.mabartos.spi.ai.AiEngine;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserLoginFailureModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.util.Optional;
@@ -50,11 +54,6 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public KeycloakSession getSession() {
-        return session;
-    }
-
-    @Override
     public double getDefaultWeight() {
         return Weight.LOW;
     }
@@ -69,7 +68,7 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
-    protected String request(UserLoginFailureModel loginFailures) {
+    protected String request(RealmModel realm, UserModel knownUser, UserLoginFailureModel loginFailures) {
         // we should be careful about the message poisoning
         var request = String.format("""
                         Give me the overall risk that the user trying to authenticate is a fraud based on its parameters.
@@ -86,7 +85,7 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
                         """,
                 loginFailures.getNumFailures(),
                 loginFailures.getLastIPFailure(),
-                ipAddressContext.getData().map(IPAddress::toString).orElse("unknown"),
+                ipAddressContext.getData(realm, knownUser).map(IPAddress::toString).orElse("unknown"),
                 loginFailures.getNumTemporaryLockouts(),
                 Time.currentTimeMillis() - loginFailures.getLastFailure()
         );
@@ -96,23 +95,16 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public Risk evaluate() {
-        var realm = session.getContext().getRealm();
-        if (realm == null) {
-            return Risk.invalid("Realm is null");
-        }
-
-        var user = Optional.ofNullable(session.getContext().getAuthenticationSession())
-                .map(AuthenticationSessionModel::getAuthenticatedUser);
-        if (user.isEmpty()) {
+    public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        if (knownUser == null) {
             return Risk.invalid("User is null");
         }
 
-        var loginFailures = session.loginFailures().getUserLoginFailure(realm, user.get().getId());
+        var loginFailures = session.loginFailures().getUserLoginFailure(realm, knownUser.getId());
         if (loginFailures == null) {
             return Risk.notEnoughInfo("Cannot obtain login failures");
         }
 
-        return aiEngine.getRisk(request(loginFailures));
+        return aiEngine.getRisk(request(realm, knownUser, loginFailures));
     }
 }

@@ -17,9 +17,9 @@
 package io.github.mabartos.engine;
 
 import io.github.mabartos.level.Risk;
-import io.github.mabartos.spi.context.UserContext;
-import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -49,13 +49,13 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
     }
 
     @Override
-    protected Risk evaluateRiskContinuous(RealmModel realm, UserModel knownUser) {
-        var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
+    protected Risk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
+        var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm);
 
         return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), _ ->
                 tracingProvider.trace(DefaultVTRiskEngine.class, "evaluateContinuous", span -> {
-                    evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
-                    var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
+                    evaluators.forEach(evaluator -> evaluator.evaluateRisk(realm, knownUser));
+                    var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
 
                     if (risk.isValid()) {
                         if (span.isRecording()) {
@@ -76,17 +76,17 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
     }
 
     @Override
-    protected Risk evaluateRiskBeforeAuthn(RealmModel realm) {
-        return evaluateRiskAuthentication(realm, RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
+    protected Risk evaluateRiskBeforeAuthn(@Nonnull RealmModel realm) {
+        return evaluateRiskAuthentication(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN, realm, null);
     }
 
     @Override
-    protected Risk evaluateRiskUserKnown(RealmModel realm, UserModel knownUser) {
-        return evaluateRiskAuthentication(realm, RiskEvaluator.EvaluationPhase.USER_KNOWN);
+    protected Risk evaluateRiskUserKnown(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
+        return evaluateRiskAuthentication(RiskEvaluator.EvaluationPhase.USER_KNOWN, realm, knownUser);
     }
 
     // propagate UserModel user
-    protected Risk evaluateRiskAuthentication(RealmModel realm, RiskEvaluator.EvaluationPhase phase) {
+    protected Risk evaluateRiskAuthentication(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         var timeout = getNumberRealmAttribute(realm, EVALUATOR_TIMEOUT_CONFIG, Long::parseLong)
                 .map(Duration::ofMillis)
                 .orElse(DEFAULT_EVALUATOR_TIMEOUT);
@@ -96,14 +96,14 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                 .filter(f -> f.requiresUser() == phase.requiresKnownUser)
                 .filter(f -> !f.isInitialized())
                 .filter(f -> !f.isRemote())
-                .forEach(UserContext::initData);
+                .forEach(f -> f.initData(realm, knownUser));
 
-        var evaluators = getRiskEvaluators(phase);
-        var evaluatedRisks = evaluateInParallel(evaluators, retries, timeout);
+        var evaluators = getRiskEvaluators(phase, realm);
+        var evaluatedRisks = evaluateInParallel(evaluators, realm, knownUser, retries, timeout);
 
         return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), s ->
                 tracingProvider.trace(DefaultVTRiskEngine.class, "evaluateAll", span -> {
-                    this.risk = riskScoreAlgorithm.evaluateRisk(evaluatedRisks, phase);
+                    this.risk = riskScoreAlgorithm.evaluateRisk(evaluatedRisks, phase, realm, knownUser);
 
                     if (risk.isValid()) {
                         logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore().get(), phase);
@@ -119,7 +119,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                 }), "DefaultVTRiskEngine.evaluateRiskAuthentication");
     }
 
-    protected Set<RiskEvaluator> evaluateInParallel(Set<RiskEvaluator> evaluators, int retries, Duration timeout) {
+    protected Set<RiskEvaluator> evaluateInParallel(Set<RiskEvaluator> evaluators, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, @Nonnull Duration timeout) {
         Map<RiskEvaluator, Boolean> completedEvaluators = new ConcurrentHashMap<>();
 
         try (var scope = new StructuredTaskScope<RiskEvaluator>()) {
@@ -131,7 +131,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                                 session.getKeycloakSessionFactory(),
                                 session.getContext(),
                                 s -> {
-                                    processEvaluator(evaluator, retries, timeout);
+                                    processEvaluator(evaluator, realm, knownUser, retries);
                                     completedEvaluators.put(evaluator, true);
                                     return evaluator;
                                 }
@@ -162,12 +162,12 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                 .collect(Collectors.toSet());
     }
 
-    protected void processEvaluator(RiskEvaluator evaluator, int retries, Duration timeout) {
+    protected void processEvaluator(@Nonnull RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries) {
         tracingProvider.trace(evaluator.getClass(), "evaluate", span -> {
             var retriesCount = evaluator.allowRetries() ? retries : 1;
             for (int i = 0; i < retriesCount; i++) {
                 try {
-                    evaluator.evaluateRisk();
+                    evaluator.evaluateRisk(realm, knownUser);
                     if (evaluator.getRisk().isValid()) {
                         break;
                     }
@@ -182,7 +182,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
             if (span.isRecording()) {
                 span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().orElse(-1.0));
                 evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                span.setAttribute("keycloak.risk.engine.evaluator.weight", evaluator.getWeight());
+                span.setAttribute("keycloak.risk.engine.evaluator.weight", evaluator.getWeight(realm));
             }
         });
     }
