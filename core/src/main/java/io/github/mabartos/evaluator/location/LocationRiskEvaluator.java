@@ -19,7 +19,6 @@ package io.github.mabartos.evaluator.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.location.IpApiLocationContext;
 import io.github.mabartos.context.location.IpApiLocationContextFactory;
-import io.github.mabartos.context.location.LocationContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
@@ -28,8 +27,11 @@ import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.quarkus.runtime.configuration.Configuration;
 
 import java.util.Set;
+
+import static io.github.mabartos.context.ip.client.TestIpAddressContextFactory.USE_TESTING_IP_PROP;
 
 /**
  * Risk evaluator for location properties
@@ -54,12 +56,20 @@ public class LocationRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.invalid("User is null");
         }
 
-        var data = locationContext.getData(realm, knownUser);
-        if (data.isPresent()) {
-            logger.trace(data.get().toString());
+        var data = locationContext.getData(realm, knownUser).orElse(null);
+        if (data != null) {
+            logger.trace(data.toString());
             // TODO save location to successful logins and then compare it here
             //session.singleUseObjects().put(getUserLocationKey(user),);
 
+            // TODO implement it properly
+            if (Configuration.isTrue(USE_TESTING_IP_PROP)) {
+                if (data.getCity().contains("Prague")) {
+                    return Risk.of(Risk.MEDIUM, "Don't know, but requests from Prague are suspicious :P");
+                }
+            }
+
+            return Risk.none();
         } else {
             logger.tracef("Data for LocationRiskEvaluator is null");
         }
