@@ -41,10 +41,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getWeightConfig;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
 

@@ -18,5 +18,12 @@ package io.github.mabartos.spi.engine;
 
 import org.keycloak.provider.ProviderFactory;
 
+import java.time.Duration;
+
 public interface RiskEngineFactory extends ProviderFactory<RiskEngine> {
+    Duration DEFAULT_EVALUATOR_TIMEOUT = Duration.ofMillis(2500L);
+    int DEFAULT_EVALUATOR_RETRIES = 3;
+
+    String EVALUATOR_TIMEOUT_CONFIG = "riskEvaluatorTimeoutConfig";
+    String EVALUATOR_RETRIES_CONFIG = "riskEvaluatorRetriesConfig";
 }

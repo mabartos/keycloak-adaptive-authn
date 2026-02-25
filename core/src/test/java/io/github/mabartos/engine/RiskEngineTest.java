@@ -233,17 +233,17 @@ public class RiskEngineTest {
         }
 
         @Override
-        public void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
-            evaluateRisk(evaluationPhase, null, null);
+        public Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
+            return evaluateRisk(evaluationPhase, null, null);
         }
 
         @Override
-        public void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase,
+        public Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase,
                                 org.keycloak.models.RealmModel realm,
                                 org.keycloak.models.UserModel knownUser) {
             // Skip evaluation if risk-based authentication is disabled
             if (!isRiskBasedAuthnEnabled()) {
-                return;
+                return Risk.invalid();
             }
 
             Set<RiskEvaluator> phaseEvaluators = getRiskEvaluators(evaluationPhase);
@@ -265,6 +265,7 @@ public class RiskEngineTest {
             if (phaseRisk.isValid()) {
                 overallRisk = phaseRisk;
             }
+            return phaseRisk;
         }
 
         @Override

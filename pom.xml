@@ -127,6 +127,7 @@
                         <environmentVariables>
                             <KC_BOOTSTRAP_ADMIN_USERNAME>admin</KC_BOOTSTRAP_ADMIN_USERNAME>
                             <KC_BOOTSTRAP_ADMIN_PASSWORD>admin</KC_BOOTSTRAP_ADMIN_PASSWORD>
+                            <JAVA_OPTS_APPEND>--enable-preview</JAVA_OPTS_APPEND>
                         </environmentVariables>
                     </configuration>
                     <executions>
@@ -166,6 +167,7 @@
                                     <argument>
                                         --log-level=io.github.mabartos:trace,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
                                     </argument>
+                                    <argument>--spi-risk-engine--provider=default-vt</argument>
                                 </arguments>
                             </configuration>
                         </execution>

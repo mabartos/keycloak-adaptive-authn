@@ -22,12 +22,15 @@ import io.github.mabartos.spi.engine.RiskEngineFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
-public class DefaultRiskEngineFactory implements RiskEngineFactory {
-    public static final String PROVIDER_ID = "default";
+/**
+ * Creates risk engine with the virtual threads support
+ */
+public class DefaultVTRiskEngineFactory implements RiskEngineFactory {
+    public static final String PROVIDER_ID = "default-vt";
 
     @Override
     public RiskEngine create(KeycloakSession session) {
-        return new DefaultRiskEngine(session);
+        return new DefaultVTRiskEngine(session);
     }
 
     @Override

@@ -62,7 +62,7 @@ public interface RiskEngine extends Provider {
      *
      * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
      */
-    void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
+    Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase);
 
     /**
      * Start the risk scores evaluation for evaluation phase
@@ -70,7 +70,7 @@ public interface RiskEngine extends Provider {
      * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
      * @param knownUser       information about the user - if the {@code #evaluationPhase} is {@link RiskEvaluator.EvaluationPhase#BEFORE_AUTHN}, the {@code #knownUser} is null
      */
-    void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase, RealmModel realm, UserModel knownUser);
+    Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase, RealmModel realm, UserModel knownUser);
 
     /**
      * Check if risk-based authentication is enabled for the current realm

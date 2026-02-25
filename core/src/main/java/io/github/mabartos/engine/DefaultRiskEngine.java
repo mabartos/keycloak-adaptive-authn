@@ -97,28 +97,28 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     @Override
-    public void evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
-        evaluateRisk(evaluationPhase, null, null);
+    public Risk evaluateRisk(RiskEvaluator.EvaluationPhase evaluationPhase) {
+        return evaluateRisk(evaluationPhase, null, null);
     }
 
     @Override
-    public void evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
+    public Risk evaluateRisk(RiskEvaluator.EvaluationPhase phase, RealmModel realm, UserModel knownUser) {
         if (!isRiskBasedAuthnEnabled()) {
-            logger.warn("Risk-based authentication is disabled. Skipping risk evaluation.");
-            return;
+            return Risk.invalid("Risk-based authentication is disabled. Skipping risk evaluation.");
         }
 
         logger.debug("--------------------------------------------------");
         logger.debugf("Risk Engine - EVALUATING (username: '%s', phase: %s)", knownUser != null ? knownUser.getUsername() : "N/A", phase.name());
         var start = Time.currentTimeMillis();
 
-        switch (phase) {
+        var risk = switch (phase) {
             case CONTINUOUS -> handleContinuous(realm, knownUser);
             case BEFORE_AUTHN, USER_KNOWN -> handleAuthentication(phase);
-        }
+        };
 
         logger.debugf("Risk Engine - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
         logger.debug("--------------------------------------------------");
+        return risk;
     }
 
     @Override
@@ -129,45 +129,43 @@ public class DefaultRiskEngine implements RiskEngine {
                 .orElse(true); // Default to enabled if not configured
     }
 
-    protected void handleContinuous(RealmModel realm, UserModel knownUser) {
+    protected Risk handleContinuous(RealmModel realm, UserModel knownUser) {
         if (realm == null || knownUser == null) {
-            logger.warn("Cannot execute continuous risk score evaluation, because we need to know who is the current user and what realm is used");
-            return;
+            return Risk.invalid("Cannot execute continuous risk score evaluation, because we need to know who is the current user and what realm is used");
         }
 
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
-        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            tracingProvider.trace(DefaultRiskEngine.class, "evaluateContinuous", span -> {
-                evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
-                var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
+        return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), _ ->
+                tracingProvider.trace(DefaultRiskEngine.class, "evaluateContinuous", span -> {
+                    evaluators.forEach(evaluator -> ((ContinuousRiskEvaluator) evaluator).evaluateRisk(realm, knownUser));
+                    var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS);
 
-                if (risk.isValid()) {
-                    if (span.isRecording()) {
-                        span.setAttribute("keycloak.risk.engine.overall", risk.getScore().get());
-                        span.setAttribute("keycloak.risk.engine.phase", RiskEvaluator.EvaluationPhase.CONTINUOUS.name());
-                    }
+                    if (risk.isValid()) {
+                        if (span.isRecording()) {
+                            span.setAttribute("keycloak.risk.engine.overall", risk.getScore().get());
+                            span.setAttribute("keycloak.risk.engine.phase", RiskEvaluator.EvaluationPhase.CONTINUOUS.name());
+                        }
 
-                    if (risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
-                        session.sessions().removeUserSessions(realm, knownUser);
-                        logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
-                                knownUser.getId(),
-                                risk.getScore().get(),
-                                risk.getReason().orElse(""));
+                        if (risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
+                            session.sessions().removeUserSessions(realm, knownUser);
+                            logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
+                                    knownUser.getId(),
+                                    risk.getScore().get(),
+                                    risk.getReason().orElse(""));
+                        }
                     }
-                }
-            });
-        });
+                    return risk;
+                }), "DefaultRiskEngine.handleContinuous");
     }
 
-    protected void handleAuthentication(RiskEvaluator.EvaluationPhase phase) {
+    protected Risk handleAuthentication(RiskEvaluator.EvaluationPhase phase) {
         // It is not necessary to evaluate the risk multiple times for 'BEFORE_AUTHN' phase
         if (phase == RiskEvaluator.EvaluationPhase.BEFORE_AUTHN) {
             final var storedRisk = storedRiskProvider.getStoredRisk(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN);
             if (storedRisk.isValid()) {
                 logger.debugf("Risk for the phase 'NO_USER' was already evaluated (score: %f). Skipping the evaluation", storedRisk.getScore().get());
-                this.risk = storedRisk;
-                return;
+                return storedRisk;
             }
         }
 
@@ -222,6 +220,8 @@ public class DefaultRiskEngine implements RiskEngine {
                 });
             });
         }), failure -> logger.error(failure.getCause()));
+        //probably not a good option
+        return risk;
     }
 
     protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, boolean requiresUser, ExecutorService thread, int retries, Duration timeout) {
