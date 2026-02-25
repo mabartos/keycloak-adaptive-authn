@@ -32,7 +32,6 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
                              @Nullable UserModel knownUser) {
         var filteredEvaluators = evaluators.stream()
                 .filter(eval -> eval.getRisk() != null)
-                .peek(evaluator -> printEvaluatorDetails(evaluator, realm))
                 .filter(f -> Risk.isValid(f.getWeight(realm)))
                 .filter(eval -> eval.getRisk().getScore().isPresent())
                 .collect(Collectors.toSet());
@@ -51,21 +50,6 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
             return Risk.invalid("No valid evaluators found for this phase");
         }
         return Risk.of(weightedRisk / weights);
-    }
-
-    private static void printEvaluatorDetails(@Nonnull RiskEvaluator evaluator, @Nonnull RealmModel realm) {
-        Risk risk = evaluator.getRisk();
-        if (risk == null) {
-            logger.debugf("Evaluator: %s - Risk score: NULL", evaluator.getClass().getSimpleName());
-            return;
-        }
-        var weight = evaluator.getWeight(realm);
-
-        logger.debugf("Evaluator: %s - Risk score: '%s' (weight '%f')%s",
-                evaluator.getClass().getSimpleName(),
-                risk.getScore().map(score -> String.format("%.2f", score)).orElse("N/A"),
-                Risk.isValid(weight) ? weight : -1.0,
-                risk.getReason().map(reason -> String.format(" - Reason: %s", reason)).orElse(""));
     }
 
     @Override

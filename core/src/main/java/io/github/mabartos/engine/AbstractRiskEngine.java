@@ -135,4 +135,77 @@ public abstract class AbstractRiskEngine implements RiskEngine {
             return Optional.empty();
         }
     }
+
+    /**
+     * Helper class to track individual evaluator execution results
+     */
+    protected static class EvaluatorResult {
+        private final String evaluatorName;
+        private final String score;
+        private final String weight;
+        private final long durationMs;
+
+        public EvaluatorResult(String evaluatorName, String score, String weight, long durationMs) {
+            this.evaluatorName = evaluatorName;
+            this.score = score;
+            this.weight = weight;
+            this.durationMs = durationMs;
+        }
+
+        public String format() {
+            return String.format("Evaluator: %s - Risk score: '%s' (weight '%s') - %d ms",
+                    evaluatorName, score, weight, durationMs);
+        }
+    }
+
+    /**
+     * Helper class to collect evaluator results in order
+     */
+    protected static class EvaluatorResults {
+        private final java.util.List<EvaluatorResult> results = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+        public void add(EvaluatorResult result) {
+            results.add(result);
+        }
+
+        public void logAll() {
+            results.forEach(r -> logger.debug(r.format()));
+        }
+    }
+
+    /**
+     * Executes an evaluator with timing and collects the result
+     *
+     * @param evaluator the evaluator to execute
+     * @param realm the realm
+     * @param knownUser the user (can be null)
+     * @param retries number of retries allowed
+     * @param results optional results collector
+     */
+    protected void executeEvaluator(@Nonnull RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, @Nullable EvaluatorResults results) {
+        var startTime = org.keycloak.common.util.Time.currentTimeMillis();
+        try {
+            var retriesCount = evaluator.allowRetries() ? retries : 1;
+            for (int i = 0; i < retriesCount; i++) {
+                try {
+                    evaluator.evaluateRisk(realm, knownUser);
+                    if (evaluator.getRisk().isValid()) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    logger.warnf("Evaluator %s failed on attempt %d: %s", evaluator.getClass().getSimpleName(), i + 1, e.getMessage());
+                    if (i == retriesCount - 1) {
+                        logger.errorf("Evaluator %s failed after %d retries", evaluator.getClass().getSimpleName(), retriesCount);
+                    }
+                }
+            }
+        } finally {
+            var duration = org.keycloak.common.util.Time.currentTimeMillis() - startTime;
+            if (results != null) {
+                var score = evaluator.getRisk().getScore().map(s -> String.format("%.2f", s)).orElse("N/A");
+                var weight = String.format("%.6f", evaluator.getWeight(realm));
+                results.add(new EvaluatorResult(evaluator.getClass().getSimpleName(), score, weight, duration));
+            }
+        }
+    }
 }

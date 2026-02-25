@@ -32,11 +32,9 @@ import java.util.Optional;
 public class GraniteAiEngine implements AiEngine {
     private static final Logger logger = Logger.getLogger(GraniteAiEngine.class);
 
-    private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
 
     public GraniteAiEngine(KeycloakSession session) {
-        this.session = session;
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
     }
 
@@ -47,7 +45,7 @@ public class GraniteAiEngine implements AiEngine {
         final var model = GraniteAiEngineFactory.getModel();
 
         if (url.isEmpty() || key.isEmpty() || model.isEmpty()) {
-            logger.infof("Some of required environment variables are missing. Check the guide how to set this AI engine. Ignoring result");
+            logger.warnf("Some of required environment variables are missing. Check the guide how to set this AI engine. Ignoring result");
             return Optional.empty();
         }
 

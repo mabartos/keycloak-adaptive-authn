@@ -54,7 +54,8 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
 
         return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), _ ->
                 tracingProvider.trace(DefaultRiskEngine.class, "evaluateContinuous", span -> {
-                    evaluators.forEach(evaluator -> evaluator.evaluateRisk(realm, knownUser));
+                    var results = new EvaluatorResults();
+                    evaluators.forEach(evaluator -> executeEvaluator(evaluator, realm, knownUser, 1, results));
                     var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
 
                     if (risk.isValid()) {
@@ -71,6 +72,7 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                                     risk.getReason().orElse(""));
                         }
                     }
+                    results.logAll();
                     return risk;
                 }), "DefaultRiskEngine.handleContinuous");
     }
@@ -100,6 +102,8 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                 .filter(f -> !f.isRemote())
                 .forEach(f -> f.initData(realm, knownUser));
 
+        var results = new EvaluatorResults();
+
         var evaluators = Multi.createFrom()
                 .items(getRiskEvaluators(phase, realm))
                 .onItem()
@@ -114,7 +118,7 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
             tracingProvider.trace(DefaultRiskEngine.class, "evaluateAll", span -> {
                 var evaluatedRisks = Multi.createFrom()
                         .items(e.stream())
-                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, realm, knownUser, phase.requiresKnownUser, exec, retries, timeout))
+                        .onItem().transformToUniAndConcatenate(risk -> processEvaluator(risk, realm, knownUser, phase.requiresKnownUser, exec, retries, timeout, results))
                         .filter(Objects::nonNull)
                         .collect()
                         .asSet();
@@ -133,6 +137,7 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                         storedRiskProvider.storeRisk(risk, phase);
                     }
 
+                    results.logAll();
                 });
             });
         }), failure -> logger.error(failure.getCause()));
@@ -140,18 +145,12 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
         return risk;
     }
 
-    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, boolean requiresUser, ExecutorService thread, int retries, Duration timeout) {
+    protected Uni<RiskEvaluator> processEvaluator(RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, boolean requiresUser, ExecutorService thread, int retries, Duration timeout, EvaluatorResults results) {
         var item = Uni.createFrom()
                 .item(evaluator)
                 .onItem()
                 .invoke(eval -> tracingProvider.trace(eval.getClass(), "evaluate", span -> {
-                    var retriesCount = eval.allowRetries() ? retries : 1;
-                    for (int i = 0; i < retriesCount; i++) {
-                        eval.evaluateRisk(realm, knownUser);
-                        if (!eval.getRisk().isValid()) {
-                            break;
-                        }
-                    }
+                    executeEvaluator(eval, realm, knownUser, retries, results);
 
                     if (span.isRecording()) {
                         span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRisk().getScore().orElse(-1.0));

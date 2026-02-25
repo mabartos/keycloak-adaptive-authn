@@ -34,11 +34,9 @@ import java.util.Optional;
 public class OpenAiEngine implements AiEngine {
     private static final Logger logger = Logger.getLogger(OpenAiEngine.class);
 
-    private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
 
     public OpenAiEngine(KeycloakSession session) {
-        this.session = session;
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
     }
 
@@ -51,7 +49,7 @@ public class OpenAiEngine implements AiEngine {
         final var project = OpenAiEngineFactory.getProject();
 
         if (url.isEmpty() || model.isEmpty() || key.isEmpty() || organization.isEmpty() || project.isEmpty()) {
-            logger.infof("Some of required environment variables are missing. Check the guide how to set this AI engine. Ignoring result");
+            logger.warnf("Some of required environment variables are missing. Check the guide how to set this AI engine. Ignoring result");
             return Optional.empty();
         }
 

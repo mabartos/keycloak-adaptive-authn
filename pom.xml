@@ -165,7 +165,7 @@
                                     <argument>--tracing-enabled=true</argument>
                                     <argument>--log-console-include-trace=false</argument>
                                     <argument>
-                                        --log-level=io.github.mabartos:trace,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
+                                        --log-level=io.github.mabartos:debug,io.quarkus.opentelemetry.runtime.exporter.otlp.sender:error,io.opentelemetry.exporter.internal.grpc:error
                                     </argument>
                                     <argument>--spi-risk-engine--provider=default-vt</argument>
                                 </arguments>

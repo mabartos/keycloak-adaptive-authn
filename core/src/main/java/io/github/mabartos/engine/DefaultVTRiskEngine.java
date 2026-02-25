@@ -54,7 +54,8 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
 
         return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), _ ->
                 tracingProvider.trace(DefaultVTRiskEngine.class, "evaluateContinuous", span -> {
-                    evaluators.forEach(evaluator -> evaluator.evaluateRisk(realm, knownUser));
+                    var results = new EvaluatorResults();
+                    evaluators.forEach(evaluator -> executeEvaluator(evaluator, realm, knownUser, 1, results));
                     var risk = riskScoreAlgorithm.evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
 
                     if (risk.isValid()) {
@@ -71,6 +72,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                                     risk.getReason().orElse(""));
                         }
                     }
+                    results.logAll();
                     return risk;
                 }), "DefaultVTRiskEngine.evaluateRiskContinuous");
     }
@@ -121,6 +123,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
 
     protected Set<RiskEvaluator> evaluateInParallel(Set<RiskEvaluator> evaluators, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, @Nonnull Duration timeout) {
         Map<RiskEvaluator, Boolean> completedEvaluators = new ConcurrentHashMap<>();
+        var results = new EvaluatorResults();
 
         try (var scope = new StructuredTaskScope<RiskEvaluator>()) {
             for (var evaluator : evaluators) {
@@ -131,7 +134,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                                 session.getKeycloakSessionFactory(),
                                 session.getContext(),
                                 s -> {
-                                    processEvaluator(evaluator, realm, knownUser, retries);
+                                    processEvaluator(evaluator, realm, knownUser, retries, results);
                                     completedEvaluators.put(evaluator, true);
                                     return evaluator;
                                 }
@@ -157,27 +160,16 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
             logger.error("Error during parallel risk evaluation", e);
         }
 
+        results.logAll();
+
         return completedEvaluators.keySet().stream()
                 .filter(e -> e.getRisk().isValid())
                 .collect(Collectors.toSet());
     }
 
-    protected void processEvaluator(@Nonnull RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries) {
+    protected void processEvaluator(@Nonnull RiskEvaluator evaluator, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, EvaluatorResults results) {
         tracingProvider.trace(evaluator.getClass(), "evaluate", span -> {
-            var retriesCount = evaluator.allowRetries() ? retries : 1;
-            for (int i = 0; i < retriesCount; i++) {
-                try {
-                    evaluator.evaluateRisk(realm, knownUser);
-                    if (evaluator.getRisk().isValid()) {
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.warnf("Evaluator %s failed on attempt %d: %s", evaluator.getClass().getSimpleName(), i + 1, e.getMessage());
-                    if (i == retriesCount - 1) {
-                        logger.errorf("Evaluator %s failed after %d retries", evaluator.getClass().getSimpleName(), retriesCount);
-                    }
-                }
-            }
+            executeEvaluator(evaluator, realm, knownUser, retries, results);
 
             if (span.isRecording()) {
                 span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().orElse(-1.0));
