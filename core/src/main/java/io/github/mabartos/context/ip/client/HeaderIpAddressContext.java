@@ -17,8 +17,11 @@
 package io.github.mabartos.context.ip.client;
 
 import inet.ipaddr.IPAddress;
+import io.github.mabartos.context.DeviceContext;
+import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 
 import java.util.Optional;
 
@@ -29,7 +32,7 @@ import static io.github.mabartos.context.ip.IpAddressUtils.getIpAddressFromHeade
 /**
  * IP address obtained from the 'Forwarded' or 'X-Forwarded-For' headers
  */
-public class HeaderIpAddressContext extends IpAddressContext {
+public class HeaderIpAddressContext extends DeviceContext<IPAddress> {
     private final KeycloakSession session;
 
     public HeaderIpAddressContext(KeycloakSession session) {
@@ -42,7 +45,7 @@ public class HeaderIpAddressContext extends IpAddressContext {
     }
 
     @Override
-    public Optional<IPAddress> initData() {
+    public Optional<IPAddress> initData(@Nonnull RealmModel realm) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)
                 .map(headers -> getIpAddressFromHeader(headers, "Forwarded", FORWARDED_FOR_PATTERN)

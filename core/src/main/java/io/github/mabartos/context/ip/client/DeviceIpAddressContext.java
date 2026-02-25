@@ -18,10 +18,13 @@ package io.github.mabartos.context.ip.client;
 
 import inet.ipaddr.IPAddress;
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
 import io.github.mabartos.context.ip.IpAddressUtils;
+import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.Optional;
@@ -29,7 +32,7 @@ import java.util.Optional;
 /**
  * IP address obtained from the {@link DeviceContext}
  */
-public class DeviceIpAddressContext extends IpAddressContext {
+public class DeviceIpAddressContext extends DeviceContext<IPAddress> {
     private final KeycloakSession session;
 
     public DeviceIpAddressContext(KeycloakSession session) {
@@ -47,10 +50,10 @@ public class DeviceIpAddressContext extends IpAddressContext {
     }
 
     @Override
-    public Optional<IPAddress> initData() {
-        final DeviceContext deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+    public Optional<IPAddress> initData(@Nonnull RealmModel realm) {
+        final DeviceRepresentationContext deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
 
-        return deviceContext.getData()
+        return deviceContext.getData(realm)
                 .map(DeviceRepresentation::getIpAddress)
                 .flatMap(IpAddressUtils::getIpAddress);
     }

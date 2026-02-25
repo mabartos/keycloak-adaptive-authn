@@ -14,39 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mabartos.context.user;
+package io.github.mabartos.context;
 
+import io.github.mabartos.spi.context.AbstractUserContext;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserModel;
 
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * Obtain user role from the authentication session
+ * Context related to device itself not requiring known user - representation, IP, user agent,...
  */
-public class KcUserRoleContext extends UserRoleContext {
-    private final KeycloakSession session;
+public abstract class DeviceContext<T> extends AbstractUserContext<T> {
 
-    public KcUserRoleContext(KeycloakSession session) {
-        this.session = session;
+    public abstract Optional<T> initData(@Nonnull RealmModel realm);
+
+    @Override
+    public boolean requiresUser() {
+        return false;
     }
 
     @Override
-    public KeycloakSession getSession() {
-        return session;
+    public boolean alwaysFetch() {
+        return false;
     }
 
     @Override
-    public Optional<Set<RoleModel>> initData(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
-        Objects.requireNonNull(knownUser, "User cannot be null");
-
-        return Optional.of(knownUser.getRoleMappingsStream().collect(Collectors.toSet()));
+    public Optional<T> initData(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        return initData(realm);
     }
 }

@@ -16,19 +16,20 @@
  */
 package io.github.mabartos.context.os;
 
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
 import io.github.mabartos.spi.condition.DefaultOperation;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.OperationsBuilder;
 import io.github.mabartos.spi.condition.UserContextConditionFactory;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
 
-public class PhoneConditionFactory extends UserContextConditionFactory<DeviceContext> {
+public class PhoneConditionFactory extends UserContextConditionFactory<DeviceRepresentationContext> {
     public static final String PROVIDER_ID = "conditional-mobile-authenticator";
     public static final String IS_MOBILE_CONF = "is-mobile";
 
@@ -68,8 +69,8 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
     }
 
     @Override
-    public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.BOOLEAN_TYPE)
+    public List<Operation<DeviceRepresentationContext>> initOperations() {
+        return OperationsBuilder.builder(DeviceRepresentationContext.class, ProviderConfigProperty.BOOLEAN_TYPE)
                 .operation()
                 .operationKey(DefaultOperation.IS)
                 .condition(this::isMobilePhone)
@@ -77,8 +78,8 @@ public class PhoneConditionFactory extends UserContextConditionFactory<DeviceCon
                 .build();
     }
 
-    protected boolean isMobilePhone(DeviceContext context, String value) {
-        return context.getData()
+    protected boolean isMobilePhone(RealmModel realm, DeviceRepresentationContext context, String value) {
+        return context.getData(realm)
                 .map(f -> Boolean.valueOf(f.isMobile()).toString())
                 .map(f -> f.equals(value))
                 .orElse(false);

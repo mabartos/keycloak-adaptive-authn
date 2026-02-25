@@ -16,15 +16,10 @@
  */
 package io.github.mabartos.context.location;
 
-import io.github.mabartos.spi.context.AbstractUserContext;
+import io.github.mabartos.context.DeviceContext;
 
 /**
  * Context for obtaining location data
  */
-public abstract class LocationContext extends AbstractUserContext<LocationData> {
-
-    @Override
-    public boolean requiresUser() {
-        return false;
-    }
+public abstract class LocationContext extends DeviceContext<LocationData> {
 }

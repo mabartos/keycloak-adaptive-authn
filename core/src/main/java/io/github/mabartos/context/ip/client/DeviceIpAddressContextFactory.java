@@ -19,11 +19,11 @@ package io.github.mabartos.context.ip.client;
 import io.github.mabartos.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class DeviceIpAddressContextFactory implements UserContextFactory<IpAddressContext> {
+public class DeviceIpAddressContextFactory implements UserContextFactory<DeviceIpAddressContext> {
     public static final String PROVIDER_ID = "device-ip-address-context";
 
     @Override
-    public IpAddressContext create(KeycloakSession session) {
+    public DeviceIpAddressContext create(KeycloakSession session) {
         return new DeviceIpAddressContext(session);
     }
 

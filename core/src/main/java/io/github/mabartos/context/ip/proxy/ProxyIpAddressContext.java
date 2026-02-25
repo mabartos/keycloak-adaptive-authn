@@ -17,10 +17,13 @@
 package io.github.mabartos.context.ip.proxy;
 
 import inet.ipaddr.IPAddress;
+import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.context.ip.IpAddressUtils;
+import jakarta.annotation.Nonnull;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.keycloak.models.KeycloakContext;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.utils.StringUtil;
 
 import java.util.Collection;
@@ -46,12 +49,7 @@ public class ProxyIpAddressContext extends IpProxyContext {
     }
 
     @Override
-    public boolean alwaysFetch() {
-        return false;
-    }
-
-    @Override
-    public Optional<Set<IPAddress>> initData() {
+    public Optional<Set<IPAddress>> initData(@Nonnull RealmModel realm) {
         return Optional.ofNullable(session.getContext())
                 .map(KeycloakContext::getRequestHeaders)
                 .map(headers -> Stream.concat(

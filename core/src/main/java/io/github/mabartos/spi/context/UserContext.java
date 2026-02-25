@@ -16,6 +16,11 @@
  */
 package io.github.mabartos.spi.context;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Null;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
 import java.util.Optional;
@@ -77,12 +82,20 @@ public interface UserContext<T> extends Provider {
     /**
      * Initialize the process of obtaining the required data
      */
-    Optional<T> initData();
+    Optional<T> initData(@Nonnull RealmModel realm, @Nullable UserModel knownUser);
+
+    default Optional<T> initData(@Nonnull RealmModel realm) {
+        return initData(realm, null);
+    }
 
     /**
      * Get the specific user context data.
      *
      * @return specific data
      */
-    Optional<T> getData();
+    Optional<T> getData(@Nonnull RealmModel realm, @Nullable UserModel knownUser);
+
+    default Optional<T> getData(@Nonnull RealmModel realm) {
+        return getData(realm, null);
+    }
 }

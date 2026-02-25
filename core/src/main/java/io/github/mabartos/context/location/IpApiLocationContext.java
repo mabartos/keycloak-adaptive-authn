@@ -16,17 +16,19 @@
  */
 package io.github.mabartos.context.location;
 
+import inet.ipaddr.IPAddress;
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.ip.client.DefaultIpAddressFactory;
-import io.github.mabartos.context.ip.client.IpAddressContext;
+import io.github.mabartos.context.DeviceContext;
+import io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory;
 import io.github.mabartos.context.ip.client.TestIpAddressContextFactory;
-import io.github.mabartos.spi.context.UserContext;
+import jakarta.annotation.Nonnull;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.quarkus.runtime.configuration.Configuration;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
@@ -40,7 +42,7 @@ import static io.github.mabartos.context.ip.client.TestIpAddressContextFactory.U
 /**
  * Obtain location data based on the IP address from 'ipapi.co' server
  */
-public class IpApiLocationContext extends LocationContext {
+public class IpApiLocationContext extends DeviceContext<LocationData> {
     private static final Logger log = Logger.getLogger(IpApiLocationContext.class);
     private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
@@ -65,15 +67,15 @@ public class IpApiLocationContext extends LocationContext {
     }
 
     @Override
-    public Optional<LocationData> initData() {
+    public Optional<LocationData> initData(@Nonnull RealmModel realm) {
         try {
-            final var contextProvider = useTestingIpAddress() ? TestIpAddressContextFactory.PROVIDER_ID : DefaultIpAddressFactory.PROVIDER_ID;
-            final IpAddressContext ipAddressContext = UserContexts.getContext(session, contextProvider);
+            final var contextProvider = useTestingIpAddress() ? TestIpAddressContextFactory.PROVIDER_ID : DefaultIpAddressContextFactory.PROVIDER_ID;
+            final DeviceContext<IPAddress> ipAddressContext = UserContexts.getContext(session, contextProvider);
 
             var client = httpClientProvider.getHttpClient();
 
             var uriString = Optional.ofNullable(ipAddressContext)
-                    .map(UserContext::getData)
+                    .map(f -> f.getData(realm))
                     .flatMap(f->f.stream().findAny())
                     .map(IpApiLocationContextFactory.SERVICE_URL)
                     .filter(StringUtil::isNotBlank);

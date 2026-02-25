@@ -17,14 +17,15 @@
 package io.github.mabartos.context.browser;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.utils.StringUtil;
 
@@ -35,11 +36,11 @@ import java.util.Optional;
  * Condition for checking browser properties
  */
 public class BrowserCondition implements UserContextCondition, ConditionalAuthenticator {
-    private final DeviceContext deviceContext;
-    private final List<Operation<DeviceContext>> rules;
+    private final DeviceRepresentationContext deviceContext;
+    private final List<Operation<DeviceRepresentationContext>> rules;
 
-    public BrowserCondition(KeycloakSession session, List<Operation<DeviceContext>> rules) {
-        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+    public BrowserCondition(KeycloakSession session, List<Operation<DeviceRepresentationContext>> rules) {
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
@@ -48,16 +49,16 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
         return false;
     }
 
-    public Optional<String> getBrowserName() {
-        return deviceContext.getData().map(DeviceRepresentation::getBrowser).map(browser -> browser.contains("/") ? browser.substring(0, browser.indexOf("/")) : browser);
+    public Optional<String> getBrowserName(RealmModel realm) {
+        return deviceContext.getData(realm).map(DeviceRepresentation::getBrowser).map(browser -> browser.contains("/") ? browser.substring(0, browser.indexOf("/")) : browser);
     }
 
-    public boolean isBrowser(String browser) {
-        return getBrowserName().filter(b -> b.startsWith(browser)).isPresent();
+    public boolean isBrowser(RealmModel realm, String browser) {
+        return getBrowserName(realm).filter(b -> b.startsWith(browser)).isPresent();
     }
 
-    public boolean isDefaultKnownBrowser() {
-        return DefaultBrowsers.DEFAULT_BROWSERS.stream().anyMatch(this::isBrowser);
+    public boolean isDefaultKnownBrowser(RealmModel realm) {
+        return DefaultBrowsers.DEFAULT_BROWSERS.stream().anyMatch(browser -> isBrowser(realm, browser));
     }
 
     @Override
@@ -70,7 +71,7 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
             if (StringUtil.isBlank(operation) || StringUtil.isBlank(browser)) return false;
             return rules.stream()
                     .filter(f -> f.getText().equals(operation))
-                    .allMatch(f -> f.match(deviceContext, browser));
+                    .allMatch(f -> f.match(context.getRealm(), deviceContext, browser));
         }
         return false;
     }

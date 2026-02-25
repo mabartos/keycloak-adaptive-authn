@@ -19,13 +19,13 @@ package io.github.mabartos.context.ip;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import inet.ipaddr.IncompatibleAddressException;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
 import jakarta.ws.rs.core.HttpHeaders;
-import io.github.mabartos.context.device.DeviceContext;
 import org.keycloak.common.util.CollectionUtil;
+import org.keycloak.models.RealmModel;
 import org.keycloak.representations.account.DeviceRepresentation;
 import org.keycloak.utils.StringUtil;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -37,15 +37,15 @@ public class IpAddressUtils {
     public static final Pattern IP_PATTERN = Pattern.compile("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
     public static final Pattern FORWARDED_FOR_PATTERN = Pattern.compile("for=([^;]+)");
 
-    public static boolean isInRange(DeviceContext context, List<String> list) {
+    public static boolean isInRange(RealmModel realm, DeviceRepresentationContext context, List<String> list) {
         if (CollectionUtil.isEmpty(list)) throw new IllegalArgumentException("Cannot parse IP Address");
 
         return list.stream()
                 .filter(f -> f.contains("-"))
-                .anyMatch(f -> manageRange(context, f));
+                .anyMatch(f -> manageRange(realm, context, f));
     }
 
-    private static boolean manageRange(DeviceContext context, String ipAddress) {
+    private static boolean manageRange(RealmModel realm, DeviceRepresentationContext context, String ipAddress) {
         var items = ipAddress.split("-");
         if (items.length != 2) {
             throw new IllegalArgumentException("Invalid IP Address range format");
@@ -56,7 +56,7 @@ public class IpAddressUtils {
             var end = new IPAddressString(items[1]).getAddress();
             var ipRange = start.spanWithRange(end);
 
-            var deviceIp = context.getData()
+            var deviceIp = context.getData(realm)
                     .map(DeviceRepresentation::getIpAddress)
                     .filter(StringUtil::isNotBlank);
 

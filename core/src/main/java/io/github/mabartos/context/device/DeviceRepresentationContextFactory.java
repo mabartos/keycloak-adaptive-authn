@@ -19,12 +19,12 @@ package io.github.mabartos.context.device;
 import io.github.mabartos.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class DefaultDeviceContextFactory implements UserContextFactory<DeviceContext> {
-    public static final String PROVIDER_ID = "kc-device-context";
+public class DeviceRepresentationContextFactory implements UserContextFactory<DeviceRepresentationContext> {
+    public static final String PROVIDER_ID = "device-representation-user-context";
 
     @Override
-    public DeviceContext create(KeycloakSession session) {
-        return new DefaultDeviceContext(session);
+    public DeviceRepresentationContext create(KeycloakSession session) {
+        return new DeviceRepresentationContext(session);
     }
 
     @Override

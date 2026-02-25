@@ -14,23 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mabartos.context.device;
+package io.github.mabartos.context.ip.client;
 
-import io.github.mabartos.spi.context.AbstractUserContext;
-import org.keycloak.representations.account.DeviceRepresentation;
+import io.github.mabartos.spi.context.UserContextFactory;
+import org.keycloak.models.KeycloakSession;
 
-/**
- * Context for obtaining device properties
- */
-public abstract class DeviceContext extends AbstractUserContext<DeviceRepresentation> {
+public class DefaultIpAddressContextFactory implements UserContextFactory<DefaultIpAddressContext> {
+    public static final String PROVIDER_ID = "default-ip-address-context";
 
     @Override
-    public boolean requiresUser() {
-        return false;
+    public DefaultIpAddressContext create(KeycloakSession session) {
+        return new DefaultIpAddressContext(session);
     }
 
     @Override
-    public boolean alwaysFetch() {
-        return false;
+    public String getId() {
+        return PROVIDER_ID;
     }
 }

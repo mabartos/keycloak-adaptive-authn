@@ -16,7 +16,11 @@
  */
 package io.github.mabartos.spi.context;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
 
@@ -40,9 +44,6 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
         return data != null && data.isPresent();
     }
 
-    @Override
-    public abstract Optional<T> initData();
-
     /**
      * Get the specific user context data.
      * If the data are not properly initialized, it retries the retrieval
@@ -50,7 +51,7 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
      * @return specific data
      */
     @Override
-    public Optional<T> getData() {
+    public Optional<T> getData(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         final var tracingProvider = TracingProviderUtil.getTracingProvider(getSession());
 
         return tracingProvider.trace(this.getClass(), "getData", (span) -> {
@@ -61,15 +62,15 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
             if (!alwaysFetch() && isInitialized()) {
                 return data;
             }
-            this.data = tryInitDataMultipleTimes(tracingProvider);
+            this.data = tryInitDataMultipleTimes(realm, knownUser, tracingProvider);
             return data;
         });
     }
 
-    protected Optional<T> tryInitDataMultipleTimes(TracingProvider tracing) {
+    protected Optional<T> tryInitDataMultipleTimes(RealmModel realm, UserModel knownUser, TracingProvider tracing) {
         for (int i = 0; i < COUNT_OF_INIT_RETRIES; i++) {
             Optional<T> data = tracing.trace(this.getClass(), "initData", (span) -> {
-                return initData();
+                return initData(realm, knownUser);
             });
             if (data.isPresent()) {
                 return data;

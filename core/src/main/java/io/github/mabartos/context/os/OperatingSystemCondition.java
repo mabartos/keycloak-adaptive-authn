@@ -17,14 +17,16 @@
 package io.github.mabartos.context.os;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DeviceContext;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
+import io.github.mabartos.context.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.utils.StringUtil;
 
 import java.util.List;
@@ -34,12 +36,12 @@ import java.util.List;
  */
 public class OperatingSystemCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
-    private final DeviceContext deviceContext;
-    private final List<Operation<DeviceContext>> rules;
+    private final DeviceRepresentationContext deviceContext;
+    private final List<Operation<DeviceRepresentationContext>> rules;
 
-    public OperatingSystemCondition(KeycloakSession session, List<Operation<DeviceContext>> rules) {
+    public OperatingSystemCondition(KeycloakSession session, List<Operation<DeviceRepresentationContext>> rules) {
         this.session = session;
-        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
@@ -48,12 +50,12 @@ public class OperatingSystemCondition implements UserContextCondition, Condition
         return false;
     }
 
-    public boolean isOs(String os) {
-        return OperatingSystemConditionFactory.isOs(deviceContext, os);
+    public boolean isOs(RealmModel realm, String os) {
+        return OperatingSystemConditionFactory.isOs(realm, deviceContext, os);
     }
 
-    public boolean isDefaultKnownOs() {
-        return DefaultOperatingSystems.DEFAULT_OPERATING_SYSTEMS.stream().anyMatch(this::isOs);
+    public boolean isDefaultKnownOs(RealmModel realmModel) {
+        return DefaultOperatingSystems.DEFAULT_OPERATING_SYSTEMS.stream().anyMatch(os -> isOs(realmModel, os));
     }
 
     @Override
@@ -66,7 +68,7 @@ public class OperatingSystemCondition implements UserContextCondition, Condition
             if (StringUtil.isBlank(operation) || StringUtil.isBlank(os)) return false;
             return rules.stream()
                     .filter(f -> f.getText().equals(operation))
-                    .allMatch(f -> f.match(deviceContext, os));
+                    .allMatch(f -> f.match(context.getRealm(), deviceContext, os));
         }
         return false;
     }

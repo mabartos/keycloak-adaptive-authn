@@ -1,8 +1,8 @@
 package io.github.mabartos.evaluator.login;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
+import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.level.Risk;
@@ -24,7 +24,7 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     public LoginEventIpAddressRiskEvaluator(KeycloakSession session) {
         this.session = session;
         this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
     }
 
     @Override

@@ -17,8 +17,9 @@
 package io.github.mabartos.context.os;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DeviceContext;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
+import io.github.mabartos.context.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -33,12 +34,12 @@ import java.util.List;
  */
 public class PhoneCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
-    private final DeviceContext deviceContext;
-    private final List<Operation<DeviceContext>> rules;
+    private final DeviceRepresentationContext deviceContext;
+    private final List<Operation<DeviceRepresentationContext>> rules;
 
-    public PhoneCondition(KeycloakSession session, List<Operation<DeviceContext>> rules) {
+    public PhoneCondition(KeycloakSession session, List<Operation<DeviceRepresentationContext>> rules) {
         this.session = session;
-        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
@@ -47,7 +48,7 @@ public class PhoneCondition implements UserContextCondition, ConditionalAuthenti
         AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
         if (authConfig != null) {
             boolean isMobile = Boolean.parseBoolean(authConfig.getConfig().get(PhoneConditionFactory.IS_MOBILE_CONF));
-            return rules.stream().allMatch(f -> f.match(deviceContext, Boolean.toString(isMobile)));
+            return rules.stream().allMatch(f -> f.match(context.getRealm(), deviceContext, Boolean.toString(isMobile)));
         }
         return false;
     }

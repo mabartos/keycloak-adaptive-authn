@@ -18,8 +18,8 @@ package io.github.mabartos.evaluator.device;
 
 import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
+import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.ai.AiEngine;
@@ -41,7 +41,7 @@ public class AiDeviceRiskEvaluator extends AbstractRiskEvaluator {
 
     public AiDeviceRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiEngine.class);
     }
 

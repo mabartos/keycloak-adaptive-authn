@@ -16,7 +16,7 @@
  */
 package io.github.mabartos.context.ip;
 
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
 import io.github.mabartos.spi.condition.DefaultOperation;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.OperationsBuilder;
@@ -29,7 +29,7 @@ import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
 
-public class IpAddressConditionFactory extends UserContextConditionFactory<DeviceContext> {
+public class IpAddressConditionFactory extends UserContextConditionFactory<DeviceRepresentationContext> {
     public static final String PROVIDER_ID = "conditional-ip-address-authenticator";
     public static final String OPERATION_CONFIG = "operation";
     public static final String IP_ADDRESS_CONFIG = "ip-address-config";
@@ -78,23 +78,23 @@ public class IpAddressConditionFactory extends UserContextConditionFactory<Devic
     }
 
     @Override
-    public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.STRING_TYPE)
+    public List<Operation<DeviceRepresentationContext>> initOperations() {
+        return OperationsBuilder.builder(DeviceRepresentationContext.class, ProviderConfigProperty.STRING_TYPE)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
-                    .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isPresent())
+                    .condition((realm, dev, val) -> dev.getData(realm).map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isPresent())
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NEQ)
-                    .condition((dev, val) -> dev.getData().map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isEmpty())
+                    .condition((realm, dev, val) -> dev.getData(realm).map(DeviceRepresentation::getIpAddress).filter(f->f.startsWith(val)).isEmpty())
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
-                    .multiValuedCondition((dev, list) -> list.contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
+                    .multiValuedCondition((realm, dev, list) -> list.contains(dev.getData(realm).map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .multiValuedCondition((dev, list) -> !list.contains(dev.getData().map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
+                    .multiValuedCondition((realm, dev, list) -> !list.contains(dev.getData(realm).map(DeviceRepresentation::getIpAddress).orElse("<unknown>")))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.IN_RANGE)

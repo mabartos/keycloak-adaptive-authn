@@ -14,21 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mabartos.context.ip.client;
+package io.github.mabartos.context.device;
 
-import inet.ipaddr.IPAddress;
-import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.DeviceContext;
+import jakarta.annotation.Nonnull;
+import org.keycloak.device.DeviceRepresentationProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.Optional;
 
 /**
- * Context for aggregating all IP address contexts and evaluate them based on their priority
+ * Device context obtained from the Keycloak Device representation
  */
-public class DefaultIpAddress extends IpAddressContext {
+public class DeviceRepresentationContext extends DeviceContext<DeviceRepresentation> {
     private final KeycloakSession session;
 
-    public DefaultIpAddress(KeycloakSession session) {
+    public DeviceRepresentationContext(KeycloakSession session) {
         this.session = session;
     }
 
@@ -38,15 +41,8 @@ public class DefaultIpAddress extends IpAddressContext {
     }
 
     @Override
-    public Optional<IPAddress> initData() {
-        final var contexts = UserContexts.getSortedContexts(session, IpAddressContext.class, DefaultIpAddressFactory.PROVIDER_ID);
+    public Optional<DeviceRepresentation> initData(@Nonnull RealmModel realm) {
+        return Optional.ofNullable(session.getProvider(DeviceRepresentationProvider.class).deviceRepresentation());
 
-        for (var context : contexts) {
-            var data = context.initData();
-            if (data.isPresent()) {
-                return data;
-            }
-        }
-        return Optional.empty();
     }
 }

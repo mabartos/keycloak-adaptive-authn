@@ -17,7 +17,9 @@
 package io.github.mabartos.spi.condition;
 
 import io.github.mabartos.spi.context.UserContext;
+import org.infinispan.util.function.TriPredicate;
 import org.keycloak.models.Constants;
+import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.utils.StringUtil;
 
@@ -62,7 +64,7 @@ public class OperationsBuilder<T extends UserContext<?>> {
         private String text = "";
         private boolean isMultiValued;
         private String multiValuedDelimiter;
-        private BiPredicate<T, List<String>> condition = (k, v) -> false;
+        private TriPredicate<RealmModel, T, List<String>> condition = (r, k, v) -> false;
 
         private OperationBuilder() {
             this.multiValuedDelimiter = Optional.ofNullable(inputType)
@@ -86,16 +88,16 @@ public class OperationsBuilder<T extends UserContext<?>> {
             return this;
         }
 
-        public OperationBuilder<U> condition(BiPredicate<T, String> condition) {
-            this.condition = (obj, list) -> condition.test(obj, list.getFirst());
+        public OperationBuilder<U> condition(TriPredicate<RealmModel, T, String> condition) {
+            this.condition = (realm, obj, list) -> condition.test(realm, obj, list.getFirst());
             return this;
         }
 
-        public OperationBuilder<U> multiValuedCondition(BiPredicate<T, List<String>> condition) {
+        public OperationBuilder<U> multiValuedCondition(TriPredicate<RealmModel, T, List<String>> condition) {
             return multiValuedCondition(condition, null);
         }
 
-        public OperationBuilder<U> multiValuedCondition(BiPredicate<T, List<String>> condition, String valuesDelimiter) {
+        public OperationBuilder<U> multiValuedCondition(TriPredicate<RealmModel, T, List<String>> condition, String valuesDelimiter) {
             this.isMultiValued = true;
             this.condition = condition;
             this.multiValuedDelimiter = valuesDelimiter;

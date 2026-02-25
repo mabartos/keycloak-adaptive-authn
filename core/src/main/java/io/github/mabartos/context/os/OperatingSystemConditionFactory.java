@@ -16,20 +16,21 @@
  */
 package io.github.mabartos.context.os;
 
-import io.github.mabartos.context.device.DeviceContext;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
 import io.github.mabartos.spi.condition.DefaultOperation;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.OperationsBuilder;
 import io.github.mabartos.spi.condition.UserContextConditionFactory;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.representations.account.DeviceRepresentation;
 
 import java.util.List;
 
-public class OperatingSystemConditionFactory extends UserContextConditionFactory<DeviceContext> {
+public class OperatingSystemConditionFactory extends UserContextConditionFactory<DeviceRepresentationContext> {
     public static final String PROVIDER_ID = "conditional-os-authenticator";
     public static final String OPERATION_CONFIG = "operation";
     public static final String OS_CONFIG = "os-config";
@@ -78,27 +79,27 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .build();
     }
 
-    public static boolean isOs(DeviceContext context, String os) {
-        return context.getData()
+    public static boolean isOs(RealmModel realm, DeviceRepresentationContext context, String os) {
+        return context.getData(realm)
                 .map(DeviceRepresentation::getOs)
                 .map(f -> f.startsWith(os))
                 .orElse(false);
     }
 
-    protected static boolean isOsSpecified(DeviceContext device, List<String> specifiedSystems) {
-        return specifiedSystems.contains(device.getData().map(DeviceRepresentation::getOs).orElse("<unknown>"));
+    protected static boolean isOsSpecified(RealmModel realm, DeviceRepresentationContext device, List<String> specifiedSystems) {
+        return specifiedSystems.contains(device.getData(realm).map(DeviceRepresentation::getOs).orElse("<unknown>"));
     }
 
     @Override
-    public List<Operation<DeviceContext>> initOperations() {
-        return OperationsBuilder.builder(DeviceContext.class, ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
+    public List<Operation<DeviceRepresentationContext>> initOperations() {
+        return OperationsBuilder.builder(DeviceRepresentationContext.class, ProviderConfigProperty.MULTIVALUED_LIST_TYPE)
                 .operation()
                     .operationKey(DefaultOperation.EQ)
                     .condition(OperatingSystemConditionFactory::isOs)
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NEQ)
-                    .condition((dev, val) -> !isOs(dev, val))
+                    .condition((realm, dev, val) -> !isOs(realm, dev, val))
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.ANY_OF)
@@ -106,7 +107,7 @@ public class OperatingSystemConditionFactory extends UserContextConditionFactory
                 .add()
                 .operation()
                     .operationKey(DefaultOperation.NONE_OF)
-                    .multiValuedCondition((dev, list) -> !isOsSpecified(dev,list))
+                    .multiValuedCondition((realm, dev, list) -> !isOsSpecified(realm, dev, list))
                 .add()
                 .build();
     }

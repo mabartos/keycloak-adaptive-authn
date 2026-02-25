@@ -22,12 +22,12 @@ import org.keycloak.models.KeycloakSession;
 
 import java.util.function.Function;
 
-public class IpApiLocationContextFactory implements UserContextFactory<LocationContext> {
+public class IpApiLocationContextFactory implements UserContextFactory<IpApiLocationContext> {
     public static final String PROVIDER_ID = "ip-api-location-context";
     public static final Function<IPAddress, String> SERVICE_URL = ip -> String.format("https://ipapi.co/%s/json", ip.toString());
 
     @Override
-    public LocationContext create(KeycloakSession session) {
+    public IpApiLocationContext create(KeycloakSession session) {
         return new IpApiLocationContext(session);
     }
 

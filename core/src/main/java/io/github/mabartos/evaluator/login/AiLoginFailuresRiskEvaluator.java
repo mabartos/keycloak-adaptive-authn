@@ -19,7 +19,7 @@ package io.github.mabartos.evaluator.login;
 import inet.ipaddr.IPAddress;
 import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.ip.client.DefaultIpAddressFactory;
+import io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory;
 import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.level.Weight;
@@ -45,7 +45,7 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
     public AiLoginFailuresRiskEvaluator(KeycloakSession session) {
         this.session = session;
-        this.ipAddressContext = UserContexts.getContext(session, DefaultIpAddressFactory.PROVIDER_ID);
+        this.ipAddressContext = UserContexts.getContext(session, DefaultIpAddressContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiEngine.class);
     }
 

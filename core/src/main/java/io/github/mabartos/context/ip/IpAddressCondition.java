@@ -17,8 +17,8 @@
 package io.github.mabartos.context.ip;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.device.DeviceContext;
-import io.github.mabartos.context.device.DefaultDeviceContextFactory;
+import io.github.mabartos.context.device.DeviceRepresentationContext;
+import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.UserContextCondition;
 import org.keycloak.authentication.AuthenticationFlowContext;
@@ -34,12 +34,12 @@ import java.util.List;
  */
 public class IpAddressCondition implements UserContextCondition, ConditionalAuthenticator {
     private final KeycloakSession session;
-    private final DeviceContext deviceContext;
-    private final List<Operation<DeviceContext>> rules;
+    private final DeviceRepresentationContext deviceContext;
+    private final List<Operation<DeviceRepresentationContext>> rules;
 
-    public IpAddressCondition(KeycloakSession session, List<Operation<DeviceContext>> rules) {
+    public IpAddressCondition(KeycloakSession session, List<Operation<DeviceRepresentationContext>> rules) {
         this.session = session;
-        this.deviceContext = UserContexts.getContext(session, DefaultDeviceContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
         this.rules = rules;
     }
 
@@ -58,7 +58,7 @@ public class IpAddressCondition implements UserContextCondition, ConditionalAuth
             if (StringUtil.isBlank(operation) || StringUtil.isBlank(ip)) return false;
             return rules.stream()
                     .filter(f -> f.getText().equals(operation))
-                    .allMatch(f -> f.match(deviceContext, ip));
+                    .allMatch(f -> f.match(context.getRealm(), deviceContext, ip));
         }
         return false;
     }

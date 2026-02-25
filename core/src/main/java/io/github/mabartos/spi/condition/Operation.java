@@ -17,7 +17,9 @@
 package io.github.mabartos.spi.condition;
 
 import io.github.mabartos.spi.context.UserContext;
+import org.infinispan.util.function.TriPredicate;
 import org.keycloak.models.Constants;
+import org.keycloak.models.RealmModel;
 
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -32,11 +34,11 @@ public class Operation<T extends UserContext<?>> {
 
     private final String symbol;
     private final String text;
-    private final BiPredicate<T, List<String>> condition;
+    private final TriPredicate<RealmModel, T, List<String>> condition;
     private final boolean isMultiValued;
     private final String multiValuedDelimiter;
 
-    public Operation(String symbol, String text, BiPredicate<T, List<String>> condition, boolean isMultiValued, String multiValuedDelimiter) {
+    public Operation(String symbol, String text, TriPredicate<RealmModel, T, List<String>> condition, boolean isMultiValued, String multiValuedDelimiter) {
         this.symbol = symbol;
         this.text = text;
         this.condition = condition;
@@ -44,15 +46,15 @@ public class Operation<T extends UserContext<?>> {
         this.multiValuedDelimiter = multiValuedDelimiter != null ? multiValuedDelimiter : DEFAULT_MULTI_VALUES_DELIMITER;
     }
 
-    public Operation(String symbol, String text, BiPredicate<T, List<String>> condition, boolean isMultiValued) {
+    public Operation(String symbol, String text, TriPredicate<RealmModel, T, List<String>> condition, boolean isMultiValued) {
         this(symbol, text, condition, isMultiValued, null);
     }
 
-    public Operation(String symbol, String text, BiPredicate<T, List<String>> condition) {
+    public Operation(String symbol, String text, TriPredicate<RealmModel, T, List<String>> condition) {
         this(symbol, text, condition, false);
     }
 
-    public Operation(DefaultOperation.OperationKey ruleKey, BiPredicate<T, List<String>> condition) {
+    public Operation(DefaultOperation.OperationKey ruleKey, TriPredicate<RealmModel, T, List<String>> condition) {
         this(ruleKey.symbol(), ruleKey.text(), condition, ruleKey.isMultiValued());
     }
 
@@ -72,13 +74,13 @@ public class Operation<T extends UserContext<?>> {
         return multiValuedDelimiter;
     }
 
-    public boolean match(T object, String value) {
+    public boolean match(RealmModel realm, T object, String value) {
         if (isMultiValued()) {
-            return condition.test(object, value != null ?
+            return condition.test(realm, object, value != null ?
                     List.of(value.split(getMultiValuedDelimiter())) :
                     List.of(value));
         } else {
-            return condition.test(object, List.of(value));
+            return condition.test(realm, object, List.of(value));
         }
     }
 }
