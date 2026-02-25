@@ -16,7 +16,6 @@ import org.keycloak.models.UserModel;
 import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
 
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -139,22 +138,17 @@ public abstract class AbstractRiskEngine implements RiskEngine {
     /**
      * Helper class to track individual evaluator execution results
      */
-    protected static class EvaluatorResult {
-        private final String evaluatorName;
-        private final String score;
-        private final String weight;
-        private final long durationMs;
-
-        public EvaluatorResult(String evaluatorName, String score, String weight, long durationMs) {
-            this.evaluatorName = evaluatorName;
-            this.score = score;
-            this.weight = weight;
-            this.durationMs = durationMs;
-        }
+    protected record EvaluatorResult(String evaluatorName, Risk risk, double weight, long durationMs) {
 
         public String format() {
-            return String.format("Evaluator: %s - Risk score: '%s' (weight '%s') - %d ms",
+            var score = risk.getScore().map(s -> String.format("%.2f", s)).orElse("N/A");
+            String base = String.format("Evaluator: %s - Risk score: '%s' (weight '%.6f') - %d ms",
                     evaluatorName, score, weight, durationMs);
+
+            return risk.getReason()
+                    .filter(r -> !r.isEmpty())
+                    .map(reason -> base + " - Reason: " + reason)
+                    .orElse(base);
         }
     }
 
@@ -202,9 +196,12 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         } finally {
             var duration = org.keycloak.common.util.Time.currentTimeMillis() - startTime;
             if (results != null) {
-                var score = evaluator.getRisk().getScore().map(s -> String.format("%.2f", s)).orElse("N/A");
-                var weight = String.format("%.6f", evaluator.getWeight(realm));
-                results.add(new EvaluatorResult(evaluator.getClass().getSimpleName(), score, weight, duration));
+                results.add(new EvaluatorResult(
+                        evaluator.getClass().getSimpleName(),
+                        evaluator.getRisk(),
+                        evaluator.getWeight(realm),
+                        duration
+                ));
             }
         }
     }
