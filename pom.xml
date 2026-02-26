@@ -44,6 +44,21 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <name>Sonatype Snapshots Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <properties>
         <keycloak.version>999.0.0-SNAPSHOT</keycloak.version>
         <quarkus.version>3.27.2</quarkus.version>
