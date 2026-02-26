@@ -57,6 +57,13 @@ public class Risk {
         return StringUtil.isNotBlank(reason) ? Optional.of(reason) : Optional.empty();
     }
 
+    public Risk max(Risk risk) {
+        if (risk == null || risk == INVALID || risk == NOT_ENOUGH_INFO) {
+            return this;
+        }
+        return Math.max(score, risk.score) == score ? this : risk;
+    }
+
     public static Risk of(double risk) {
         return of(risk, "");
     }

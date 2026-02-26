@@ -113,4 +113,36 @@ public class RiskTest {
         assertThat(Risk.VERY_HIGH, is(0.85));
         assertThat(Risk.HIGHEST, is(1.0));
     }
+
+    @Test
+    public void testMaxMethod() {
+        Risk low = Risk.of(Risk.SMALL, "Low risk");
+        Risk high = Risk.of(Risk.VERY_HIGH, "High risk");
+
+        // Test with higher score - should return the higher one
+        Risk result = low.max(high);
+        assertThat(result.getScore().get(), is(Risk.VERY_HIGH));
+        assertThat(result.getReason().get(), is("High risk"));
+
+        // Test reversed order - should still return the higher one
+        result = high.max(low);
+        assertThat(result.getScore().get(), is(Risk.VERY_HIGH));
+
+        // Test with null - should return this
+        result = low.max(null);
+        assertThat(result.getScore().get(), is(Risk.SMALL));
+
+        // Test with invalid - should return this
+        result = low.max(Risk.invalid());
+        assertThat(result.getScore().get(), is(Risk.SMALL));
+
+        // Test with notEnoughInfo - should return this
+        result = low.max(Risk.notEnoughInfo());
+        assertThat(result.getScore().get(), is(Risk.SMALL));
+
+        // Test with equal scores - should return this
+        Risk equal = Risk.of(Risk.SMALL, "Equal risk");
+        result = low.max(equal);
+        assertThat(result.getReason().get(), is("Low risk"));
+    }
 }
