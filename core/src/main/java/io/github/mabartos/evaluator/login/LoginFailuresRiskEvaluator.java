@@ -118,7 +118,7 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.invalid("Cannot obtain login failures");
         }
 
-        var resultRisk = Risk.invalid();
+        var resultRisk = Risk.invalid("No login failures evaluation happened");
 
         // Number of failures
         resultRisk = resultRisk.max(getRiskLoginFailures(loginFailures.getNumFailures()));

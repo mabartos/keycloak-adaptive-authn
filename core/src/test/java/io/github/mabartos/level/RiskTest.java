@@ -36,7 +36,7 @@ public class RiskTest {
 
     @Test
     public void testInvalidRiskScores() {
-        Risk invalid = Risk.invalid();
+        Risk invalid = Risk.invalid("test");
         assertThat(invalid.isValid(), is(false));
         assertThat(invalid.getScore(), is(INVALID));
 
@@ -67,7 +67,7 @@ public class RiskTest {
 
     @Test
     public void testInvalidFactory() {
-        Risk invalid = Risk.invalid();
+        Risk invalid = Risk.invalid("test");
         assertThat(invalid, notNullValue());
         assertThat(invalid.isValid(), is(false));
     }
@@ -100,7 +100,7 @@ public class RiskTest {
         assertThat(result.getScore(), is(SMALL));
 
         // Test with invalid - should return this
-        result = low.max(Risk.invalid());
+        result = low.max(Risk.invalid("test"));
         assertThat(result.getScore(), is(SMALL));
 
         // Test with equal scores - should return this

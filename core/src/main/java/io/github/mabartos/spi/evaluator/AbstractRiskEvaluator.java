@@ -14,14 +14,14 @@ import java.util.Set;
  * Abstraction over the {@link RiskEvaluator} to simplify risk evaluators
  */
 public abstract class AbstractRiskEvaluator implements RiskEvaluator {
-    protected Risk risk = Risk.invalid();
+    protected Risk risk = Risk.invalid("Abstract risk evaluator");
 
     @Override
     public abstract Set<EvaluationPhase> evaluationPhases();
 
     @Override
     public Risk getRisk() {
-        this.risk = risk == null ? Risk.invalid() : risk;
+        this.risk = risk == null ? Risk.invalid("Abstract risk evaluator") : risk;
         return risk;
     }
 
@@ -44,7 +44,7 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
 
     /**
      * Evaluate risk and return the {@link Risk} object.
-     * Never returns null - return {@link Risk#invalid()} instead.
+     * Never returns null - return {@link Risk#invalid(String)} ()} instead.
      *
      * @return risk object
      */
@@ -54,7 +54,7 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
 
     /**
      * Evaluate risk and return the {@link Risk} object.
-     * Never returns null - return {@link Risk#invalid()} instead.
+     * Never returns null - return {@link Risk#invalid(String)} instead.
      *
      * @return risk object
      */

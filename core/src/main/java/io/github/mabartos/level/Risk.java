@@ -24,8 +24,6 @@ import java.util.Optional;
  * Common risk values
  */
 public class Risk {
-    private static final Risk INVALID = new Risk(Score.INVALID, "Invalid");
-
     public enum Score {
         NEGATIVE_HIGH,
         NEGATIVE_LOW,
@@ -57,7 +55,7 @@ public class Risk {
     }
 
     public boolean isValid() {
-        return !this.equals(INVALID) || scoreCategory != Score.INVALID;
+        return scoreCategory != Score.INVALID;
     }
 
     public static Risk of(Score score) {
@@ -68,12 +66,8 @@ public class Risk {
         return new Risk(score, reason);
     }
 
-    public static Risk invalid() {
-        return INVALID;
-    }
-
     public static Risk invalid(String reason) {
-        return new Risk(INVALID.scoreCategory, reason);
+        return new Risk(Score.INVALID, reason);
     }
 
     public Risk max(Risk risk) {

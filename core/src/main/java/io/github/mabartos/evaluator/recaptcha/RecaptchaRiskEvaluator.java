@@ -99,7 +99,7 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
             ServicesLogger.LOGGER.recaptchaFailed(e);
         }
 
-        return Risk.invalid();
+        return Risk.invalid("Cannot evaluate reCAPTCHA");
     }
 
     @Override
