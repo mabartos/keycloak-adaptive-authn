@@ -74,6 +74,6 @@ public class Risk {
         if (risk == null || risk.getScore() == Score.INVALID) {
             return this;
         }
-        return getScore().ordinal() > risk.getScore().ordinal() ? this : risk;
+        return getScore().ordinal() >= risk.getScore().ordinal() ? this : risk;
     }
 }
