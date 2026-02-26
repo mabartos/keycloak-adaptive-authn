@@ -27,6 +27,8 @@ import org.keycloak.utils.StringUtil;
 import java.io.IOException;
 import java.util.Set;
 
+import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.API_KEY_CONSOLE;
+import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.PROJECT_ID_CONSOLE;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 
 public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Authenticator {
@@ -73,7 +75,6 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
 
             var token = session.getContext().getAuthenticationSession().getAuthNote(CAPTCHA_TOKEN_KEY);
             if (StringUtil.isBlank(token)) {
-                log.warn("No stored reCAPTCHA token. Ignoring this evaluator.");
                 return Risk.invalid("Cannot find stored reCAPTCHA token");
             }
 
@@ -81,7 +82,7 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
             HttpResponse response = httpClient.execute(request);
 
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                log.errorf("Could not create reCAPTCHA assessment: %s", response.getStatusLine());
+                log.tracef("Could not create reCAPTCHA assessment: %s", response.getStatusLine());
                 EntityUtils.consumeQuietly(response.getEntity());
                 return Risk.invalid("Cannot create reCAPTCHA assessment");
             }
@@ -150,8 +151,8 @@ public class RecaptchaRiskEvaluator extends AbstractRiskEvaluator implements Aut
 
     protected void setAuthenticatorConfig(AuthenticationFlowContext context) {
         var authenticatorSiteKey = context.getAuthenticatorConfig().getConfig().get(SITE_KEY_CONSOLE);
-        var authenticatorProjectId = context.getAuthenticatorConfig().getConfig().get(SITE_KEY_CONSOLE);
-        var authenticatorProjectApiKey = context.getAuthenticatorConfig().getConfig().get(SITE_KEY_CONSOLE);
+        var authenticatorProjectId = context.getAuthenticatorConfig().getConfig().get(PROJECT_ID_CONSOLE);
+        var authenticatorProjectApiKey = context.getAuthenticatorConfig().getConfig().get(API_KEY_CONSOLE);
 
         if (StringUtil.isNotBlank(authenticatorSiteKey)) {
             recaptchaSiteKey = authenticatorSiteKey;
