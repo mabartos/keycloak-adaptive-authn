@@ -16,7 +16,7 @@ import org.keycloak.models.UserModel;
 
 import java.util.Set;
 
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.NONE;
 import static io.github.mabartos.level.Risk.Score.SMALL;
 import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
@@ -65,7 +65,7 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
                 if (numberOccurrences >= threshold) {
                     return Risk.of(SMALL);
                 } else {
-                    return Risk.of(INTERMEDIATE);
+                    return Risk.of(HIGH);
                 }
             } else {
                 return Risk.of(NONE);

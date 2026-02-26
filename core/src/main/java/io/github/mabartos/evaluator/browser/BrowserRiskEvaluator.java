@@ -26,7 +26,7 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.NONE;
 
 /**
@@ -41,7 +41,7 @@ public class BrowserRiskEvaluator extends DeviceRiskEvaluator {
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
-        return browserCondition.isDefaultKnownBrowser(realm) ? Risk.of(NONE) : Risk.of(INTERMEDIATE);
+        return browserCondition.isDefaultKnownBrowser(realm) ? Risk.of(NONE) : Risk.of(HIGH);
     }
 
     @Override

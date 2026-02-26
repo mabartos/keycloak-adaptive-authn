@@ -3,7 +3,7 @@ package io.github.mabartos.level;
 import org.junit.jupiter.api.Test;
 
 import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.INVALID;
 import static io.github.mabartos.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.level.Risk.Score.NONE;
@@ -47,9 +47,9 @@ public class RiskTest {
 
     @Test
     public void testRiskWithReason() {
-        Risk risk = Risk.of(INTERMEDIATE, "Unusual login location");
+        Risk risk = Risk.of(HIGH, "Unusual login location");
         assertThat(risk.isValid(), is(true));
-        assertThat(risk.getScore(), is(INTERMEDIATE));
+        assertThat(risk.getScore(), is(HIGH));
         assertThat(risk.getReason().isPresent(), is(true));
         assertThat(risk.getReason().get(), is("Unusual login location"));
     }
@@ -76,8 +76,8 @@ public class RiskTest {
     public void testScoreEnumOrdering() {
         assertThat(NONE.ordinal() < SMALL.ordinal(), is(true));
         assertThat(SMALL.ordinal() < MEDIUM.ordinal(), is(true));
-        assertThat(MEDIUM.ordinal() < INTERMEDIATE.ordinal(), is(true));
-        assertThat(INTERMEDIATE.ordinal() < VERY_HIGH.ordinal(), is(true));
+        assertThat(MEDIUM.ordinal() < HIGH.ordinal(), is(true));
+        assertThat(HIGH.ordinal() < VERY_HIGH.ordinal(), is(true));
         assertThat(VERY_HIGH.ordinal() < EXTREME.ordinal(), is(true));
     }
 

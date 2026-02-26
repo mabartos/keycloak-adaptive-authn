@@ -35,7 +35,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.level.Risk.Score.NONE;
 import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
@@ -89,7 +89,7 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
                 risk = risk.max(Risk.of(VERY_HIGH,
                         String.format("%d failures out of %d attempts in 1h", analysis1h.failures, analysis1h.totalAttempts)));
             } else if (failureRate >= 0.6 && analysis1h.failures >= 3) {
-                risk = risk.max(Risk.of(INTERMEDIATE,
+                risk = risk.max(Risk.of(HIGH,
                         String.format("High failure rate in 1h: %.0f%%", failureRate * 100)));
             }
         }
@@ -99,7 +99,7 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
             risk = risk.max(Risk.of(VERY_HIGH,
                     String.format("Distributed attack: %d IPs, %d failures in 1h", analysis1h.uniqueIps, analysis1h.failures)));
         } else if (analysis24h.uniqueIps >= 5 && analysis24h.failures >= 5) {
-            risk = risk.max(Risk.of(INTERMEDIATE,
+            risk = risk.max(Risk.of(HIGH,
                     String.format("Multiple IPs: %d IPs in 24h", analysis24h.uniqueIps)));
         }
 
@@ -107,7 +107,7 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
         if (analysis1h.failures >= 3) {
             var intervals = calculateTimingIntervals(events, currentTime - Duration.ofHours(1).toMillis());
             if (intervals.size() >= 2 && isRegularPattern(intervals)) {
-                risk = risk.max(Risk.of(INTERMEDIATE, "Regular timing pattern detected (bot-like)"));
+                risk = risk.max(Risk.of(HIGH, "Regular timing pattern detected (bot-like)"));
             }
         }
 

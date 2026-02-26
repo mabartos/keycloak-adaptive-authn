@@ -16,7 +16,7 @@ import org.keycloak.models.UserModel;
 import java.util.List;
 import java.util.Set;
 
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.NONE;
 import static io.github.mabartos.level.Risk.Score.SMALL;
 
@@ -79,7 +79,7 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.of(SMALL, "The city has changed, but the country is the same.");
         }
 
-        return Risk.of(INTERMEDIATE, "Completely new country");
+        return Risk.of(HIGH, "Completely new country");
     }
 
     protected List<String> getKnownLocations(UserModel user) {

@@ -34,7 +34,7 @@ import org.keycloak.utils.StringUtil;
 import java.time.Duration;
 import java.util.Set;
 
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.level.Risk.Score.NONE;
 import static io.github.mabartos.level.Risk.Score.SMALL;
@@ -70,7 +70,7 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         } else if (failuresCount < 10) {
             return Risk.of(MEDIUM);
         } else if (failuresCount < 15) {
-            return Risk.of(INTERMEDIATE);
+            return Risk.of(HIGH);
         } else {
             return Risk.of(VERY_HIGH);
         }
@@ -101,7 +101,7 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         }
 
         if (!currentIp.equals(lastIP)) {
-            return Risk.of(INTERMEDIATE, "Request from different IP address");
+            return Risk.of(HIGH, "Request from different IP address");
         }
 
         return Risk.of(NONE);

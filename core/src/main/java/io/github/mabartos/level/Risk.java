@@ -33,7 +33,7 @@ public class Risk {
         VERY_SMALL,
         SMALL,
         MEDIUM,
-        INTERMEDIATE,
+        HIGH,
         VERY_HIGH,
         EXTREME,
         // invalid

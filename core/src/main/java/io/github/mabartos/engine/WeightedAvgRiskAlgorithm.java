@@ -71,7 +71,7 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
                 case VERY_SMALL -> of(0.1);
                 case SMALL -> of(0.3);
                 case MEDIUM -> of(0.5);
-                case INTERMEDIATE -> of(0.7);
+                case HIGH -> of(0.7);
                 case VERY_HIGH -> of(0.85);
                 case EXTREME -> of(1.0);
             };

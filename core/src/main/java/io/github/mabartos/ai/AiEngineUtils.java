@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.INVALID;
 import static io.github.mabartos.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.level.Risk.Score.NONE;
@@ -117,7 +117,7 @@ public class AiEngineUtils {
         if (riskValue < 0.2) return VERY_SMALL;
         if (riskValue < 0.4) return SMALL;
         if (riskValue < 0.6) return MEDIUM;
-        if (riskValue < 0.775) return INTERMEDIATE;
+        if (riskValue < 0.775) return HIGH;
         if (riskValue < 0.925) return VERY_HIGH;
         return EXTREME;
     }

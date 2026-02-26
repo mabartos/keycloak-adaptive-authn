@@ -31,7 +31,7 @@ import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFacto
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.PROJECT_ID_CONSOLE;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
 import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.INVALID;
 import static io.github.mabartos.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.level.Risk.Score.NONE;
@@ -190,7 +190,7 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
         if (riskValue < 0.2) return VERY_SMALL;
         if (riskValue < 0.4) return SMALL;
         if (riskValue < 0.6) return MEDIUM;
-        if (riskValue < 0.775) return INTERMEDIATE;
+        if (riskValue < 0.775) return HIGH;
         if (riskValue < 0.925) return VERY_HIGH;
         return EXTREME;
     }

@@ -16,7 +16,7 @@ import java.time.Duration;
 import java.util.Date;
 
 import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.HIGH;
 import static io.github.mabartos.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.level.Risk.Score.NONE;
 import static io.github.mabartos.level.Risk.Score.SMALL;
@@ -60,7 +60,7 @@ public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
      * 1x   = NONE
      * 2x   = SMALL
      * 3x   = MEDIUM
-     * 5x   = INTERMEDIATE
+     * 5x   = HIGH
      * 10x  = VERY_HIGH
      * >10x = HIGHEST
      * <p>
@@ -72,7 +72,7 @@ public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
      * c*1x  = NONE
      * c*2x  = SMALL
      * c*3x  = MEDIUM
-     * c*5x  = INTERMEDIATE
+     * c*5x  = HIGH
      * c*10x = VERY_HIGH
      * >c*10x= HIGHEST
      */
@@ -108,7 +108,7 @@ public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
         } else if (count <= 3 * coefficient) {
             return Risk.of(MEDIUM);
         } else if (count <= 5 * coefficient) {
-            return Risk.of(INTERMEDIATE);
+            return Risk.of(HIGH);
         } else if (count <= 10 * coefficient) {
             return Risk.of(VERY_HIGH);
         } else {
