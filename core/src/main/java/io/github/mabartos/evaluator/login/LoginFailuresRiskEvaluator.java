@@ -25,21 +25,19 @@ import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.jboss.logging.Logger;
+import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.utils.StringUtil;
 
-import java.util.Optional;
+import java.time.Duration;
 import java.util.Set;
 
 /**
  * Risk evaluator for checking login failures properties to detect brute-force attacks
  */
 public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
-    private static final Logger logger = Logger.getLogger(LoginFailuresRiskEvaluator.class);
-
     private final KeycloakSession session;
     private final IpAddressContext ipAddressContext;
 
@@ -58,32 +56,49 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         return Weight.IMPORTANT;
     }
 
-    protected double getRiskLoginFailures(int failuresCount) {
+    protected Risk getRiskLoginFailures(int failuresCount) {
         if (failuresCount <= 2) {
-            return Risk.NONE;
+            return Risk.of(Risk.NONE);
         } else if (failuresCount <= 5) {
-            return Risk.SMALL;
+            return Risk.of(Risk.SMALL);
         } else if (failuresCount < 10) {
-            return Risk.MEDIUM;
+            return Risk.of(Risk.MEDIUM);
         } else if (failuresCount < 15) {
-            return Risk.INTERMEDIATE;
+            return Risk.of(Risk.INTERMEDIATE);
         } else {
-            return Risk.VERY_HIGH;
+            return Risk.of(Risk.VERY_HIGH);
         }
     }
 
-    protected Optional<Double> getRiskLastIP(RealmModel realmModel, UserModel knownUser, String lastIP) {
+    protected Risk getRiskLastFailureTime(long lastFailureTime) {
+        if (lastFailureTime == 0) {
+            return Risk.of(Risk.NONE);
+        }
+
+        long timeSinceLastFailure = Time.currentTimeMillis() - lastFailureTime;
+
+        // Recent failures are more concerning
+        if (timeSinceLastFailure < Duration.ofMinutes(5).toMillis()) {
+            return Risk.of(Risk.MEDIUM);
+        } else if (timeSinceLastFailure < Duration.ofMinutes(15).toMillis()) {
+            return Risk.of(Risk.SMALL);
+        } else {
+            return Risk.of(Risk.NONE);
+        }
+    }
+
+    protected Risk getRiskLastIP(RealmModel realmModel, UserModel knownUser, String lastIP) {
         var currentIp = ipAddressContext.getData(realmModel, knownUser).map(IPAddress::toString).orElse("");
 
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIP)) {
-            if (!currentIp.equals(lastIP)) {
-                logger.trace("Request from different IP address");
-                return Optional.of(Risk.INTERMEDIATE);
-            } else {
-                logger.trace("Same IP address");
-            }
+            return Risk.notEnoughInfo();
         }
-        return Optional.empty();
+
+        if (!currentIp.equals(lastIP)) {
+            return Risk.of(Risk.INTERMEDIATE, "Request from different IP address");
+        }
+
+        return Risk.none();
     }
 
     @Override
@@ -97,14 +112,17 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.invalid("Cannot obtain login failures");
         }
 
+        var resultRisk = Risk.invalid();
+
         // Number of failures
-        var numFailures = loginFailures.getNumFailures();
+        resultRisk = resultRisk.max(getRiskLoginFailures(loginFailures.getNumFailures()));
 
-        return getRiskLastIP(realm, knownUser, loginFailures.getLastIPFailure())
-                .map(score -> Math.max(score, getRiskLoginFailures(numFailures)))
-                .map(Risk::of)
-                .orElseGet(() -> Risk.of(getRiskLoginFailures(numFailures)));
+        // Time since last failure
+        resultRisk = resultRisk.max(getRiskLastFailureTime(loginFailures.getLastFailure()));
 
-        // TODO compute when was the last login failure
+        // IP address check
+        resultRisk = resultRisk.max(getRiskLastIP(realm, knownUser, loginFailures.getLastIPFailure()));
+
+        return resultRisk;
     }
 }
