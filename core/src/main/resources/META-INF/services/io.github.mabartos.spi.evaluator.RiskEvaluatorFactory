@@ -9,3 +9,7 @@
  io.github.mabartos.evaluator.login.LoginEventIpAddressRiskEvaluatorFactory
  io.github.mabartos.evaluator.login.AiTimeAccessRiskEvaluatorFactory
  io.github.mabartos.evaluator.behavior.UserActionsRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.LoginVelocityRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.ImpossibleTravelRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.FailedLoginPatternRiskEvaluatorFactory
+ io.github.mabartos.evaluator.login.ConcurrentSessionsRiskEvaluatorFactory

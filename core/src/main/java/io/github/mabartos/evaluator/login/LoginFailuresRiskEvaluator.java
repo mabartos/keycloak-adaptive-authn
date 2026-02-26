@@ -26,11 +26,13 @@ import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
+import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.utils.StringUtil;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
@@ -72,17 +74,42 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         }
     }
 
+    protected double getRiskLastFailureTime(long lastFailureTime) {
+        if (lastFailureTime == 0) {
+            return Risk.NONE;
+        }
+
+        long timeSinceLastFailure = Time.currentTimeMillis() - lastFailureTime;
+
+        // Recent failures are more concerning
+        if (timeSinceLastFailure < Duration.ofMinutes(5).toMillis()) {
+            return Risk.VERY_HIGH;
+        } else if (timeSinceLastFailure < Duration.ofMinutes(15).toMillis()) {
+            return Risk.INTERMEDIATE;
+        } else if (timeSinceLastFailure < Duration.ofHours(1).toMillis()) {
+            return Risk.MEDIUM;
+        } else if (timeSinceLastFailure < Duration.ofHours(24).toMillis()) {
+            return Risk.SMALL;
+        } else {
+            return Risk.NONE;
+        }
+    }
+
     protected Optional<Double> getRiskLastIP(RealmModel realmModel, UserModel knownUser, String lastIP) {
         var currentIp = ipAddressContext.getData(realmModel, knownUser).map(IPAddress::toString).orElse("");
 
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIP)) {
-            if (!currentIp.equals(lastIP)) {
-                logger.trace("Request from different IP address");
-                return Optional.of(Risk.INTERMEDIATE);
-            } else {
-                logger.trace("Same IP address");
-            }
+            logger.trace("Missing IP address information");
+            return Optional.empty();
         }
+
+        if (!currentIp.equals(lastIP)) {
+            logger.trace("Request from different IP address");
+            return Optional.of(Risk.INTERMEDIATE);
+        } else {
+            logger.trace("Same IP address");
+        }
+
         return Optional.empty();
     }
 
@@ -99,12 +126,17 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
         // Number of failures
         var numFailures = loginFailures.getNumFailures();
+        double failuresRisk = getRiskLoginFailures(numFailures);
 
-        return getRiskLastIP(realm, knownUser, loginFailures.getLastIPFailure())
-                .map(score -> Math.max(score, getRiskLoginFailures(numFailures)))
-                .map(Risk::of)
-                .orElseGet(() -> Risk.of(getRiskLoginFailures(numFailures)));
+        // Time since last failure
+        double timeRisk = getRiskLastFailureTime(loginFailures.getLastFailure());
 
-        // TODO compute when was the last login failure
+        // IP address check
+        double ipRisk = getRiskLastIP(realm, knownUser, loginFailures.getLastIPFailure()).orElse(Risk.NONE);
+
+        // Take the maximum risk among all factors
+        double maxRisk = Math.max(Math.max(failuresRisk, timeRisk), ipRisk);
+
+        return Risk.of(maxRisk);
     }
 }

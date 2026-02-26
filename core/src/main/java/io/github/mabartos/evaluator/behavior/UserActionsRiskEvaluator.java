@@ -76,8 +76,10 @@ public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
             return Risk.invalid("Cannot find user");
         }
 
-        // TODO have it configurable
-        var lookupTime = Duration.ofMinutes(RiskEngine.DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis();
+        // Get configured lookup time or use default
+        int lookupMinutes = UserActionsRiskEvaluatorFactory.getLookupTimeMinutes()
+                .orElse(RiskEngine.DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
+        var lookupTime = Duration.ofMinutes(lookupMinutes).toMillis();
 
         long coefficient = 1;
         if (lookupTime > COEFFICIENT_BASE) {

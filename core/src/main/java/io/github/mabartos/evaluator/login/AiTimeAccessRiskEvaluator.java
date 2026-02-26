@@ -4,6 +4,8 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.location.IpApiLocationContext;
+import io.github.mabartos.context.location.IpApiLocationContextFactory;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.level.Risk;
@@ -14,6 +16,7 @@ import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.utils.StringUtil;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -24,10 +27,12 @@ import java.util.Set;
 public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
     private final static Logger logger = Logger.getLogger(AiTimeAccessRiskEvaluator.class);
     private final LoginEventsContext loginEvents;
+    private final IpApiLocationContext locationContext;
     private final AiEngine aiEngine;
 
     public AiTimeAccessRiskEvaluator(KeycloakSession session) {
         this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
+        this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
         this.aiEngine = session.getProvider(AiEngine.class);
     }
 
@@ -76,12 +81,15 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.notEnoughInfo("Cannot parse login events");
         }
 
+        // Get user's timezone from location data
+        ZoneId userZoneId = getUserTimeZone(realm, knownUser);
+
         var accessTimes = dataOptional.get().stream()
                 .filter(f -> f.getType() == EventType.LOGIN)
-                .map(time -> getFormattedTime(time.getTime()))
+                .map(time -> getFormattedTime(time.getTime(), userZoneId))
                 .toList();
 
-        var currentTime = getFormattedTime(Time.currentTimeMillis());
+        var currentTime = getFormattedTime(Time.currentTimeMillis(), userZoneId);
 
         if (accessTimes.isEmpty()) {
             return Risk.notEnoughInfo("No access times");
@@ -94,10 +102,23 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
         return aiEngine.getRisk(request(currentTime, accessTimes));
     }
 
-    // TODO we should take into account time zone of the user
-    public String getFormattedTime(long timeInMillis) {
+    protected ZoneId getUserTimeZone(RealmModel realm, UserModel user) {
+        if (locationContext != null) {
+            var location = locationContext.getData(realm, user);
+            if (location.isPresent() && StringUtil.isNotBlank(location.get().getTimezone())) {
+                try {
+                    return ZoneId.of(location.get().getTimezone());
+                } catch (Exception e) {
+                    logger.warnf("Invalid timezone from location: %s. Using system default.", location.get().getTimezone());
+                }
+            }
+        }
+        return ZoneId.systemDefault();
+    }
+
+    public String getFormattedTime(long timeInMillis, ZoneId zoneId) {
         return Optional.of(Instant.ofEpochMilli(timeInMillis)
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(zoneId)
                         .toLocalDateTime())
                 .map(time -> String.format("%s:%s", time, time.getDayOfWeek().toString()))
                 .orElse(null);
