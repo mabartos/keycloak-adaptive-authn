@@ -20,6 +20,7 @@ import io.github.mabartos.ai.DefaultAiDataRequest;
 import io.github.mabartos.level.Risk;
 import org.keycloak.provider.Provider;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,7 +30,7 @@ import java.util.Optional;
 public interface AiEngine extends Provider {
 
     Map<String, DefaultAiDataRequest.SchemaType> DEFAULT_RISK_SCHEMA = Map.of(
-            "risk", new DefaultAiDataRequest.SchemaType("number", "Risk score (double) of the evaluation in range (0,1>."),
+            "risk", new DefaultAiDataRequest.SchemaType("number", "Risk score (Risk.Score enum) of the evaluation. Possible values: %s".formatted(String.join(", ", Arrays.stream(Risk.Score.values()).map(Enum::name).toList()))),
             "reason", new DefaultAiDataRequest.SchemaType("string", "Reason why the score was evaluated like this - as briefly as possible."));
 
 

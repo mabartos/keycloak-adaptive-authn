@@ -16,17 +16,17 @@
  */
 package io.github.mabartos.spi.ai;
 
+import io.github.mabartos.level.Risk;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public final class AiRiskEvaluatorMessages {
 
     // Context for AI engines with some description of the problem
     private static final String CONTEXT_MESSAGE = """
             Evaluate a risk that the user trying to authenticate is fraud.
-            Return the double value in the range (0,1>, as f.e. 0.8,
-            which means an 80%% chance of the authentication attempt being very critical.
-                               
-                - Values close to 0 mean the risk of user fraud is low.
-                - Values close to 1 mean the risk of user fraud is high.
-                               
+            Return the Risk.Score type value (%s).
             Analyze the provided data and return risk values.
             The output 'reason' must have maximum %s characters.
             """;
@@ -34,10 +34,16 @@ public final class AiRiskEvaluatorMessages {
     public static Integer MAX_CHARACTERS = 75;
 
     public static String getContextMessage(int maxChars) {
-        return CONTEXT_MESSAGE.formatted(maxChars);
+        return CONTEXT_MESSAGE.formatted(getRiskScoreStrings(), maxChars);
     }
 
     public static String getContextMessage() {
-        return CONTEXT_MESSAGE.formatted(MAX_CHARACTERS);
+        return CONTEXT_MESSAGE.formatted(getRiskScoreStrings(), MAX_CHARACTERS);
+    }
+
+    private static String getRiskScoreStrings() {
+        return Arrays.stream(Risk.Score.values())
+                .filter(f -> f.equals(Risk.Score.NEGATIVE_HIGH) || !f.equals(Risk.Score.NEGATIVE_LOW))
+                .map(Enum::name).collect(Collectors.joining(", "));
     }
 }

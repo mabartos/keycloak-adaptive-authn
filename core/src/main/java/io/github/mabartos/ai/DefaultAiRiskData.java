@@ -18,11 +18,12 @@
 package io.github.mabartos.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.ai.AiRiskEvaluatorMessages;
 
 /**
  * General data format for risk score and explanation specified in the NLP query {@link AiRiskEvaluatorMessages#getContextMessage()}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record DefaultAiRiskData(Double risk, String reason) {
+public record DefaultAiRiskData(Risk.Score risk, String reason) {
 }
