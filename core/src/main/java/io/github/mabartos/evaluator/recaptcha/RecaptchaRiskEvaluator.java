@@ -30,6 +30,14 @@ import java.io.IOException;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.API_KEY_CONSOLE;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.PROJECT_ID_CONSOLE;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
+import static io.github.mabartos.level.Risk.Score.EXTREME;
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.INVALID;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.SMALL;
+import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.level.Risk.Score.VERY_SMALL;
 
 public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authenticator {
     private static final Logger log = Logger.getLogger(RecaptchaRiskEvaluator.class);
@@ -85,7 +93,7 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
             double score = assessment.getRiskAnalysis().getScore();
 
             if (valid) {
-                return Risk.of(1.0 - score);
+                return Risk.of(mapDoubleToScore(1.0 - score));
             }
         } catch (Exception e) {
             ServicesLogger.LOGGER.recaptchaFailed(e);
@@ -167,5 +175,23 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
 
         log.tracef("Built assessment request: %s", body);
         return request;
+    }
+
+    /**
+     * TODO - find a better way on how to map it
+     * Map a double risk value (0.0-1.0) to the corresponding Risk.Score enum
+     */
+    private static Risk.Score mapDoubleToScore(Double riskValue) {
+        if (riskValue == null || riskValue < 0.0 || riskValue > 1.0) {
+            return INVALID;
+        }
+
+        if (riskValue < 0.05) return NONE;
+        if (riskValue < 0.2) return VERY_SMALL;
+        if (riskValue < 0.4) return SMALL;
+        if (riskValue < 0.6) return MEDIUM;
+        if (riskValue < 0.775) return INTERMEDIATE;
+        if (riskValue < 0.925) return VERY_HIGH;
+        return EXTREME;
     }
 }

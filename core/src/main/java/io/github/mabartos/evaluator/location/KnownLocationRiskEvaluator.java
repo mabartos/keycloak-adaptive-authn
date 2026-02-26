@@ -16,6 +16,10 @@ import org.keycloak.models.UserModel;
 import java.util.List;
 import java.util.Set;
 
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.SMALL;
+
 /**
  * Risk evaluator for location properties
  */
@@ -53,7 +57,7 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
         List<String> knownLocations = getKnownLocations(knownUser);
 
         if (knownLocations.isEmpty()) {
-            return Risk.of(Risk.SMALL, "First tracked location");
+            return Risk.of(SMALL, "First tracked location");
         }
 
         saveSuccessfulLoginLocation(knownUser, knownLocations, currentLocation);
@@ -66,16 +70,16 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
 
         boolean exactMatch = knownLocations.contains(currentLocationKey);
         if (exactMatch) {
-            return Risk.of(Risk.NONE, "This exact location (city + country) has been seen before");
+            return Risk.of(NONE, "This exact location (city + country) has been seen before");
         }
 
         boolean sameCountry = knownLocations.stream()
                 .anyMatch(loc -> loc.endsWith(":" + currentLocation.getCountry()));
         if (sameCountry) {
-            return Risk.of(Risk.SMALL, "The city has changed, but the country is the same.");
+            return Risk.of(SMALL, "The city has changed, but the country is the same.");
         }
 
-        return Risk.of(Risk.INTERMEDIATE, "Completely new country");
+        return Risk.of(INTERMEDIATE, "Completely new country");
     }
 
     protected List<String> getKnownLocations(UserModel user) {

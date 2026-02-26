@@ -1,5 +1,6 @@
 package io.github.mabartos.engine;
 
+import io.github.mabartos.level.ResultRisk;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.context.UserContext;
 import io.github.mabartos.spi.engine.RiskEngine;
@@ -39,7 +40,7 @@ public abstract class AbstractRiskEngine implements RiskEngine {
     protected final Set<UserContext> userContexts;
     protected final StoredRiskProvider storedRiskProvider;
 
-    protected Risk risk = Risk.invalid();
+    protected ResultRisk risk = ResultRisk.invalid();
 
     public AbstractRiskEngine(KeycloakSession session) {
         this.session = session;
@@ -50,20 +51,20 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         this.riskEvaluators = initializeRiskEvaluators(session);
     }
 
-    protected abstract Risk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
+    protected abstract ResultRisk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
 
-    protected abstract Risk evaluateRiskBeforeAuthn(@Nonnull RealmModel realm);
+    protected abstract ResultRisk evaluateRiskBeforeAuthn(@Nonnull RealmModel realm);
 
-    protected abstract Risk evaluateRiskUserKnown(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
+    protected abstract ResultRisk evaluateRiskUserKnown(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
 
     @Override
-    public Risk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+    public ResultRisk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         if (!isRiskBasedAuthnEnabled()) {
-            return Risk.invalid("Risk-based authentication is disabled. Skipping risk evaluation.");
+            return ResultRisk.invalid("Risk-based authentication is disabled. Skipping risk evaluation.");
         }
 
         if (phase.requiresKnownUser && knownUser == null) {
-            return Risk.invalid("Cannot execute risk score evaluation, because the user needs to be known");
+            return ResultRisk.invalid("Cannot execute risk score evaluation, because the user needs to be known");
         }
 
         final var storedRisk = storedRiskProvider.getStoredRisk(phase);
@@ -95,14 +96,14 @@ public abstract class AbstractRiskEngine implements RiskEngine {
     }
 
     @Override
-    public Risk getOverallRisk() {
+    public ResultRisk getOverallRisk() {
         return risk;
     }
 
     @Override
-    public Risk getRisk(RiskEvaluator.EvaluationPhase phase) {
+    public ResultRisk getRisk(RiskEvaluator.EvaluationPhase phase) {
         if (phase == null) {
-            return Risk.invalid("Invalid evaluation phase");
+            return ResultRisk.invalid("Invalid evaluation phase");
         }
         return storedRiskProvider.getStoredRisk(phase);
     }
@@ -141,7 +142,7 @@ public abstract class AbstractRiskEngine implements RiskEngine {
     protected record EvaluatorResult(String evaluatorName, Risk risk, double weight, long durationMs) {
 
         public String format() {
-            var score = risk.getScore().map(s -> String.format("%.2f", s)).orElse("N/A");
+            var score = risk.getScore() != null ? risk.getScore().name() : "N/A";
             String base = String.format("Evaluator: %s - Risk score: '%s' (weight '%.6f') - %d ms",
                     evaluatorName, score, weight, durationMs);
 

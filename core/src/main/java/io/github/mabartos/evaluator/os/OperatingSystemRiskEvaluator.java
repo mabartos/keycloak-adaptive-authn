@@ -26,6 +26,9 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.NONE;
+
 /**
  * Risk evaluator for OS properties
  */
@@ -43,6 +46,6 @@ public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
-        return condition.isDefaultKnownOs(realm) ? Risk.none() : Risk.of(Risk.INTERMEDIATE);
+        return condition.isDefaultKnownOs(realm) ? Risk.of(NONE) : Risk.of(INTERMEDIATE);
     }
 }

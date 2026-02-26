@@ -15,6 +15,12 @@ import org.keycloak.models.UserModel;
 import java.time.Duration;
 import java.util.Date;
 
+import static io.github.mabartos.level.Risk.Score.EXTREME;
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.SMALL;
+import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
 import static org.keycloak.events.EventType.DELETE_ACCOUNT;
 import static org.keycloak.events.EventType.DELETE_ACCOUNT_ERROR;
 import static org.keycloak.events.EventType.REMOVE_CREDENTIAL;
@@ -96,17 +102,17 @@ public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
                 .size();
 
         if (count == 0) {
-            return Risk.none();
+            return Risk.of(NONE);
         } else if (count <= 2 * coefficient) {
-            return Risk.of(Risk.SMALL);
+            return Risk.of(SMALL);
         } else if (count <= 3 * coefficient) {
-            return Risk.of(Risk.MEDIUM);
+            return Risk.of(MEDIUM);
         } else if (count <= 5 * coefficient) {
-            return Risk.of(Risk.INTERMEDIATE);
+            return Risk.of(INTERMEDIATE);
         } else if (count <= 10 * coefficient) {
-            return Risk.of(Risk.VERY_HIGH);
+            return Risk.of(VERY_HIGH);
         } else {
-            return Risk.of(Risk.HIGHEST);
+            return Risk.of(EXTREME);
         }
     }
 }

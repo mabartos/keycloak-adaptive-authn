@@ -16,6 +16,7 @@
  */
 package io.github.mabartos.spi.engine;
 
+import io.github.mabartos.level.ResultRisk;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import jakarta.annotation.Nonnull;
@@ -42,7 +43,7 @@ public interface RiskEngine extends Provider {
      *
      * @return risk score in range (0,1> with additional parameters
      */
-    Risk getOverallRisk();
+    ResultRisk getOverallRisk();
 
     /**
      * Get the risk score for the specific {@link RiskEvaluator.EvaluationPhase} evaluation phase
@@ -50,7 +51,7 @@ public interface RiskEngine extends Provider {
      *
      * @return risk score in range (0,1> with additional parameters
      */
-    Risk getRisk(RiskEvaluator.EvaluationPhase phase);
+    ResultRisk getRisk(RiskEvaluator.EvaluationPhase phase);
 
     /**
      * Risk evaluators that contributes to the overall risk score calculations based on the requirement of knowing the user
@@ -65,7 +66,7 @@ public interface RiskEngine extends Provider {
      * @param evaluationPhase {@link RiskEvaluator.EvaluationPhase}
      * @param knownUser       information about the user - if the {@code #evaluationPhase} is {@link RiskEvaluator.EvaluationPhase#BEFORE_AUTHN}, the {@code #knownUser} is null
      */
-    Risk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase,
+    ResultRisk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase,
                       @Nonnull RealmModel realm,
                       @Nullable UserModel knownUser);
 

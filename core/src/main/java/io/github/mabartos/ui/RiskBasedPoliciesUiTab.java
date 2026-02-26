@@ -19,7 +19,6 @@ package io.github.mabartos.ui;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import io.github.mabartos.evaluator.EvaluatorUtils;
-import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.component.ComponentModel;
@@ -156,7 +155,8 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 if (StringUtil.isBlank(value)) return; // default value is an empty string
 
                 var weight = Double.parseDouble(value);
-                if (!Risk.isValid(weight)) {
+                // TODO have some util class
+                if (weight < 0.0 || weight > 1.0) {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {

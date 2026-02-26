@@ -32,6 +32,9 @@ import org.keycloak.models.UserModel;
 import java.util.Collection;
 import java.util.Set;
 
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+
 /**
  * Risk evaluator for user role properties
  */
@@ -59,6 +62,6 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
                 .map(RoleModel::getName)
                 .anyMatch(roleName -> roleName.equals(AdminRoles.ADMIN) || roleName.equals(AdminRoles.REALM_ADMIN));
 
-        return isAdmin ? Risk.of(Risk.MEDIUM) : Risk.none();
+        return isAdmin ? Risk.of(MEDIUM) : Risk.of(NONE);
     }
 }

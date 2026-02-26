@@ -34,6 +34,12 @@ import org.keycloak.utils.StringUtil;
 import java.time.Duration;
 import java.util.Set;
 
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.SMALL;
+import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+
 /**
  * Risk evaluator for checking login failures properties to detect brute-force attacks
  */
@@ -58,32 +64,32 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
     protected Risk getRiskLoginFailures(int failuresCount) {
         if (failuresCount <= 2) {
-            return Risk.of(Risk.NONE);
+            return Risk.of(NONE);
         } else if (failuresCount <= 5) {
-            return Risk.of(Risk.SMALL);
+            return Risk.of(SMALL);
         } else if (failuresCount < 10) {
-            return Risk.of(Risk.MEDIUM);
+            return Risk.of(MEDIUM);
         } else if (failuresCount < 15) {
-            return Risk.of(Risk.INTERMEDIATE);
+            return Risk.of(INTERMEDIATE);
         } else {
-            return Risk.of(Risk.VERY_HIGH);
+            return Risk.of(VERY_HIGH);
         }
     }
 
     protected Risk getRiskLastFailureTime(long lastFailureTime) {
         if (lastFailureTime == 0) {
-            return Risk.of(Risk.NONE);
+            return Risk.of(NONE);
         }
 
         long timeSinceLastFailure = Time.currentTimeMillis() - lastFailureTime;
 
         // Recent failures are more concerning
         if (timeSinceLastFailure < Duration.ofMinutes(5).toMillis()) {
-            return Risk.of(Risk.MEDIUM);
+            return Risk.of(MEDIUM);
         } else if (timeSinceLastFailure < Duration.ofMinutes(15).toMillis()) {
-            return Risk.of(Risk.SMALL);
+            return Risk.of(SMALL);
         } else {
-            return Risk.of(Risk.NONE);
+            return Risk.of(NONE);
         }
     }
 
@@ -91,14 +97,14 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         var currentIp = ipAddressContext.getData(realmModel, knownUser).map(IPAddress::toString).orElse("");
 
         if (StringUtil.isBlank(currentIp) || StringUtil.isBlank(lastIP)) {
-            return Risk.notEnoughInfo();
+            return Risk.invalid("Not enough information about IP addresses");
         }
 
         if (!currentIp.equals(lastIP)) {
-            return Risk.of(Risk.INTERMEDIATE, "Request from different IP address");
+            return Risk.of(INTERMEDIATE, "Request from different IP address");
         }
 
-        return Risk.none();
+        return Risk.of(NONE);
     }
 
     @Override

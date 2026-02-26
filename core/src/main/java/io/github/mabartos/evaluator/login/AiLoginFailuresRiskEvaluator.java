@@ -102,7 +102,7 @@ public class AiLoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
 
         var loginFailures = session.loginFailures().getUserLoginFailure(realm, knownUser.getId());
         if (loginFailures == null) {
-            return Risk.notEnoughInfo("Cannot obtain login failures");
+            return Risk.invalid("Cannot obtain login failures");
         }
 
         return aiEngine.getRisk(request(realm, knownUser, loginFailures));

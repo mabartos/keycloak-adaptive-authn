@@ -24,52 +24,48 @@ import java.util.Optional;
  * Common risk values
  */
 public class Risk {
-    public static double NONE = 0.0;
-    public static double SMALL = 0.3;
-    public static double MEDIUM = 0.5;
-    public static double INTERMEDIATE = 0.7;
-    public static double VERY_HIGH = 0.85;
-    public static double HIGHEST = 1.0;
+    private static final Risk INVALID = new Risk(Score.INVALID, "Invalid");
 
-    private static final Risk INVALID = of(-1, "Invalid risk evaluation");
-    private static final Risk NOT_ENOUGH_INFO = of(-2, "Not enough information for the evaluation");
-    private static final Risk NO_RISK = of(0);
+    public enum Score {
+        NEGATIVE_HIGH,
+        NEGATIVE_LOW,
+        NONE,
+        VERY_SMALL,
+        SMALL,
+        MEDIUM,
+        INTERMEDIATE,
+        VERY_HIGH,
+        EXTREME,
+        // invalid
+        INVALID
+    }
 
-    private final boolean valid;
-    private final double score;
+    private final Score scoreCategory;
     private final String reason;
 
-    private Risk(double score, String reason) {
-        this.valid = isValid(score);
-        this.score = score;
+    private Risk(Score scoreCategory, String reason) {
+        this.scoreCategory = scoreCategory;
         this.reason = reason;
     }
 
-    public boolean isValid() {
-        return valid;
-    }
-
-    public Optional<Double> getScore() {
-        return isValid() ? Optional.of(score) : Optional.empty();
+    public Score getScore() {
+        return scoreCategory;
     }
 
     public Optional<String> getReason() {
         return StringUtil.isNotBlank(reason) ? Optional.of(reason) : Optional.empty();
     }
 
-    public Risk max(Risk risk) {
-        if (risk == null || risk == INVALID || risk == NOT_ENOUGH_INFO) {
-            return this;
-        }
-        return Math.max(score, risk.score) == score ? this : risk;
+    public boolean isValid() {
+        return !this.equals(INVALID) || scoreCategory != Score.INVALID;
     }
 
-    public static Risk of(double risk) {
-        return of(risk, "");
+    public static Risk of(Score score) {
+        return of(score, "");
     }
 
-    public static Risk of(double risk, String reason) {
-        return new Risk(risk, reason);
+    public static Risk of(Score score, String reason) {
+        return new Risk(score, reason);
     }
 
     public static Risk invalid() {
@@ -77,22 +73,13 @@ public class Risk {
     }
 
     public static Risk invalid(String reason) {
-        return of(INVALID.score, reason);
+        return new Risk(INVALID.scoreCategory, reason);
     }
 
-    public static Risk none() {
-        return NO_RISK;
-    }
-
-    public static Risk notEnoughInfo() {
-        return NOT_ENOUGH_INFO;
-    }
-
-    public static Risk notEnoughInfo(String reason) {
-        return of(NOT_ENOUGH_INFO.score, reason);
-    }
-
-    public static boolean isValid(double score) {
-        return score >= 0.0d && score <= 1.0d;
+    public Risk max(Risk risk) {
+        if (risk == null || risk.getScore() == Score.INVALID) {
+            return this;
+        }
+        return getScore().ordinal() > risk.getScore().ordinal() ? this : risk;
     }
 }

@@ -34,6 +34,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static io.github.mabartos.level.Risk.Score.EXTREME;
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.INVALID;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.SMALL;
+import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.level.Risk.Score.VERY_SMALL;
+
 public class AiEngineUtils {
     private static final Logger log = Logger.getLogger(AiEngineUtils.class);
 
@@ -91,6 +100,25 @@ public class AiEngineUtils {
                 });
 
         data.ifPresent(additionalOps);
-        return data.map(f -> Risk.of(f.risk(), f.reason())).orElse(Risk.invalid("Cannot obtain data from AI engine"));
+        return data.map(f -> Risk.of(mapDoubleToScore(f.risk()), f.reason()))
+                   .orElse(Risk.invalid("Cannot obtain data from AI engine"));
+    }
+
+    /**
+     * TODO - change it to return the category
+     * Map a double risk value (0.0-1.0) to the corresponding Risk.Score enum
+     */
+    private static Risk.Score mapDoubleToScore(Double riskValue) {
+        if (riskValue == null || riskValue < 0.0 || riskValue > 1.0) {
+            return INVALID;
+        }
+
+        if (riskValue < 0.05) return NONE;
+        if (riskValue < 0.2) return VERY_SMALL;
+        if (riskValue < 0.4) return SMALL;
+        if (riskValue < 0.6) return MEDIUM;
+        if (riskValue < 0.775) return INTERMEDIATE;
+        if (riskValue < 0.925) return VERY_HIGH;
+        return EXTREME;
     }
 }

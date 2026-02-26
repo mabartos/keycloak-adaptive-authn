@@ -16,6 +16,7 @@
  */
 package io.github.mabartos.spi.engine;
 
+import io.github.mabartos.level.ResultRisk;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import org.keycloak.provider.Provider;
@@ -33,22 +34,22 @@ public interface StoredRiskProvider extends Provider {
      *
      * @return overall risk score in range (0,1>
      */
-    Risk getStoredOverallRisk();
+    ResultRisk getStoredOverallRisk();
 
     /**
      * Get evaluated stored risk score for the specific phase
      *
-     * @param riskPhase phase of the evaluation
+     * @param phase phase of the evaluation
      * @return overall risk score in range (0,1>
      */
-    Risk getStoredRisk(RiskEvaluator.EvaluationPhase phase);
+    ResultRisk getStoredRisk(RiskEvaluator.EvaluationPhase phase);
 
     /**
      * Store the overall risk score
      *
      * @param risk overall risk score in range (0,1> and other attributes
      */
-    void storeOverallRisk(Risk risk);
+    void storeOverallRisk(ResultRisk risk);
 
     /**
      * Store the overall risk score for the specific phase
@@ -56,19 +57,19 @@ public interface StoredRiskProvider extends Provider {
      * @param risk      risk score in range (0,1> and other attributes
      * @param phase     phase of the risk score evaluation
      */
-    void storeRisk(Risk risk, RiskEvaluator.EvaluationPhase phase);
+    void storeRisk(ResultRisk risk, RiskEvaluator.EvaluationPhase phase);
 
     /**
      * Get stored overall risk score in a printable version
      */
     default Optional<String> printStoredRisk() {
-        return Optional.of(getStoredOverallRisk()).filter(Risk::isValid).map(risk -> String.format("%.2f", risk.getScore().get()));
+        return Optional.of(getStoredOverallRisk()).filter(ResultRisk::isValid).map(risk -> String.format("%.2f", risk.getScore()));
     }
 
     /**
      * Get stored risk score in a printable version for specific risk phase
      */
     default Optional<String> printStoredRisk(RiskEvaluator.EvaluationPhase phase) {
-        return Optional.of(getStoredRisk(phase)).filter(Risk::isValid).map(risk -> String.format("%.2f", risk.getScore().get()));
+        return Optional.of(getStoredRisk(phase)).filter(ResultRisk::isValid).map(risk -> String.format("%.2f", risk.getScore()));
     }
 }

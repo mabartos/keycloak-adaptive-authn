@@ -2,6 +2,13 @@ package io.github.mabartos.level;
 
 import org.junit.jupiter.api.Test;
 
+import static io.github.mabartos.level.Risk.Score.EXTREME;
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.INVALID;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.SMALL;
+import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,65 +17,52 @@ public class RiskTest {
 
     @Test
     public void testValidRiskScores() {
-        Risk none = Risk.of(Risk.NONE);
+        Risk none = Risk.of(NONE);
         assertThat(none.isValid(), is(true));
-        assertThat(none.getScore().isPresent(), is(true));
-        assertThat(none.getScore().get(), is(0.0));
+        assertThat(none.getScore(), is(NONE));
 
-        Risk small = Risk.of(Risk.SMALL);
+        Risk small = Risk.of(SMALL);
         assertThat(small.isValid(), is(true));
-        assertThat(small.getScore().get(), is(0.3));
+        assertThat(small.getScore(), is(SMALL));
 
-        Risk medium = Risk.of(Risk.MEDIUM);
+        Risk medium = Risk.of(MEDIUM);
         assertThat(medium.isValid(), is(true));
-        assertThat(medium.getScore().get(), is(0.5));
+        assertThat(medium.getScore(), is(MEDIUM));
 
-        Risk highest = Risk.of(Risk.HIGHEST);
-        assertThat(highest.isValid(), is(true));
-        assertThat(highest.getScore().get(), is(1.0));
+        Risk extreme = Risk.of(EXTREME);
+        assertThat(extreme.isValid(), is(true));
+        assertThat(extreme.getScore(), is(EXTREME));
     }
 
     @Test
     public void testInvalidRiskScores() {
-        Risk negative = Risk.of(-0.5);
-        assertThat(negative.isValid(), is(false));
-        assertThat(negative.getScore().isPresent(), is(false));
-
-        Risk tooHigh = Risk.of(1.5);
-        assertThat(tooHigh.isValid(), is(false));
-        assertThat(tooHigh.getScore().isPresent(), is(false));
-
         Risk invalid = Risk.invalid();
         assertThat(invalid.isValid(), is(false));
-        assertThat(invalid.getScore().isPresent(), is(false));
+        assertThat(invalid.getScore(), is(INVALID));
+
+        Risk invalidWithReason = Risk.invalid("Test reason");
+        assertThat(invalidWithReason.isValid(), is(false));
+        assertThat(invalidWithReason.getScore(), is(INVALID));
     }
 
     @Test
     public void testRiskWithReason() {
-        Risk risk = Risk.of(0.7, "Unusual login location");
+        Risk risk = Risk.of(INTERMEDIATE, "Unusual login location");
         assertThat(risk.isValid(), is(true));
-        assertThat(risk.getScore().get(), is(0.7));
+        assertThat(risk.getScore(), is(INTERMEDIATE));
         assertThat(risk.getReason().isPresent(), is(true));
         assertThat(risk.getReason().get(), is("Unusual login location"));
     }
 
     @Test
     public void testRiskWithoutReason() {
-        Risk risk = Risk.of(0.5);
+        Risk risk = Risk.of(MEDIUM);
         assertThat(risk.isValid(), is(true));
         assertThat(risk.getReason().isPresent(), is(false));
 
-        Risk riskEmptyReason = Risk.of(0.5, "");
+        Risk riskEmptyReason = Risk.of(MEDIUM, "");
         assertThat(riskEmptyReason.isValid(), is(true));
         assertThat(riskEmptyReason.getReason().isPresent(), is(false));
-    }
-
-    @Test
-    public void testNoneFactory() {
-        Risk none = Risk.none();
-        assertThat(none, notNullValue());
-        assertThat(none.isValid(), is(true));
-        assertThat(none.getScore().get(), is(0.0));
     }
 
     @Test
@@ -79,69 +73,38 @@ public class RiskTest {
     }
 
     @Test
-    public void testIsValidMethod() {
-        assertThat(Risk.isValid(0.0), is(true));
-        assertThat(Risk.isValid(0.5), is(true));
-        assertThat(Risk.isValid(1.0), is(true));
-        assertThat(Risk.isValid(-0.1), is(false));
-        assertThat(Risk.isValid(1.1), is(false));
-    }
-
-    @Test
-    public void testBoundaryValues() {
-        Risk zero = Risk.of(0.0);
-        assertThat(zero.isValid(), is(true));
-        assertThat(zero.getScore().get(), is(0.0));
-
-        Risk one = Risk.of(1.0);
-        assertThat(one.isValid(), is(true));
-        assertThat(one.getScore().get(), is(1.0));
-
-        Risk justBelowZero = Risk.of(-0.0001);
-        assertThat(justBelowZero.isValid(), is(false));
-
-        Risk justAboveOne = Risk.of(1.0001);
-        assertThat(justAboveOne.isValid(), is(false));
-    }
-
-    @Test
-    public void testPredefinedConstants() {
-        assertThat(Risk.NONE, is(0.0));
-        assertThat(Risk.SMALL, is(0.3));
-        assertThat(Risk.MEDIUM, is(0.5));
-        assertThat(Risk.INTERMEDIATE, is(0.7));
-        assertThat(Risk.VERY_HIGH, is(0.85));
-        assertThat(Risk.HIGHEST, is(1.0));
+    public void testScoreEnumOrdering() {
+        assertThat(NONE.ordinal() < SMALL.ordinal(), is(true));
+        assertThat(SMALL.ordinal() < MEDIUM.ordinal(), is(true));
+        assertThat(MEDIUM.ordinal() < INTERMEDIATE.ordinal(), is(true));
+        assertThat(INTERMEDIATE.ordinal() < VERY_HIGH.ordinal(), is(true));
+        assertThat(VERY_HIGH.ordinal() < EXTREME.ordinal(), is(true));
     }
 
     @Test
     public void testMaxMethod() {
-        Risk low = Risk.of(Risk.SMALL, "Low risk");
-        Risk high = Risk.of(Risk.VERY_HIGH, "High risk");
+        Risk low = Risk.of(SMALL, "Low risk");
+        Risk high = Risk.of(VERY_HIGH, "High risk");
 
         // Test with higher score - should return the higher one
         Risk result = low.max(high);
-        assertThat(result.getScore().get(), is(Risk.VERY_HIGH));
+        assertThat(result.getScore(), is(VERY_HIGH));
         assertThat(result.getReason().get(), is("High risk"));
 
         // Test reversed order - should still return the higher one
         result = high.max(low);
-        assertThat(result.getScore().get(), is(Risk.VERY_HIGH));
+        assertThat(result.getScore(), is(VERY_HIGH));
 
         // Test with null - should return this
         result = low.max(null);
-        assertThat(result.getScore().get(), is(Risk.SMALL));
+        assertThat(result.getScore(), is(SMALL));
 
         // Test with invalid - should return this
         result = low.max(Risk.invalid());
-        assertThat(result.getScore().get(), is(Risk.SMALL));
-
-        // Test with notEnoughInfo - should return this
-        result = low.max(Risk.notEnoughInfo());
-        assertThat(result.getScore().get(), is(Risk.SMALL));
+        assertThat(result.getScore(), is(SMALL));
 
         // Test with equal scores - should return this
-        Risk equal = Risk.of(Risk.SMALL, "Equal risk");
+        Risk equal = Risk.of(SMALL, "Equal risk");
         result = low.max(equal);
         assertThat(result.getReason().get(), is("Low risk"));
     }

@@ -61,7 +61,7 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
 
             var storedRiskProvider = context.getSession().getProvider(StoredRiskProvider.class);
             var risk = Optional.of(storedRiskProvider.getStoredOverallRisk())
-                    .filter(Risk::isValid)
+                    .filter(ResultRisk::isValid)
                     .orElseThrow(() -> new IllegalStateException("No risk has been evaluated or invalid risk score. Did you forget to add Risk Engine authenticator to the flow?"));
 
 
@@ -70,13 +70,13 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
                     .flatMap(f -> riskLevelsProvider.getRiskLevels().stream().filter(g -> g.getName().equals(f)).findAny())
                     .orElseThrow(() -> new IllegalStateException("Cannot find specified level for provider: " + riskLevelsProvider));
 
-            var matches = level.matchesRisk(risk.getScore().get());
+            var matches = level.matchesRisk(risk.getScore());
 
             if (matches) {
-                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.getName(), level.getLowestRiskValue(), risk.getScore().get(), level.getHighestRiskValue());
+                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.getName(), level.getLowestRiskValue(), risk.getScore(), level.getHighestRiskValue());
                 return true;
             } else {
-                logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.getName(), risk.getScore().get());
+                logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.getName(), risk.getScore());
                 return false;
             }
         }

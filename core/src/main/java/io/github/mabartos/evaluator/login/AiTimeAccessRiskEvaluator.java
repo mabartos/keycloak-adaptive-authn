@@ -73,7 +73,7 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
 
         var dataOptional = loginEvents.getData(realm, knownUser);
         if (dataOptional.isEmpty()) {
-            return Risk.notEnoughInfo("Cannot parse login events");
+            return Risk.invalid("Cannot parse login events");
         }
 
         var accessTimes = dataOptional.get().stream()
@@ -84,11 +84,11 @@ public class AiTimeAccessRiskEvaluator extends AbstractRiskEvaluator {
         var currentTime = getFormattedTime(Time.currentTimeMillis());
 
         if (accessTimes.isEmpty()) {
-            return Risk.notEnoughInfo("No access times");
+            return Risk.invalid("No access times");
         }
 
         if (accessTimes.size() < 5) {
-            return Risk.notEnoughInfo("Only a few access times records");
+            return Risk.invalid("Only a few access times records");
         }
 
         return aiEngine.getRisk(request(currentTime, accessTimes));

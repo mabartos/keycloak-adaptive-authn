@@ -16,11 +16,11 @@
  */
 package io.github.mabartos.engine;
 
-import jakarta.annotation.Nullable;
-import org.jboss.logging.Logger;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.level.ResultRisk;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import jakarta.annotation.Nullable;
+import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.utils.StringUtil;
 
@@ -43,36 +43,36 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
     }
 
     @Override
-    public Risk getStoredOverallRisk() {
+    public ResultRisk getStoredOverallRisk() {
         return getStoredRisk(null);
     }
 
     @Override
-    public Risk getStoredRisk(@Nullable RiskEvaluator.EvaluationPhase phase) {
+    public ResultRisk getStoredRisk(@Nullable RiskEvaluator.EvaluationPhase phase) {
         try {
             return Optional.ofNullable(session.getContext().getAuthenticationSession())
                     .map(f -> {
                         var score = f.getAuthNote(getScoreProperty(phase));
                         if (StringUtil.isBlank(score) || score.equals("-1")) {
-                            return Risk.invalid();
+                            return ResultRisk.invalid();
                         }
                         var reason = f.getAuthNote(getReasonProperty(phase));
-                        return Risk.of(Double.parseDouble(score), reason);
+                        return ResultRisk.of(Double.parseDouble(score), reason);
                     })
-                    .filter(Risk::isValid)
-                    .orElse(Risk.invalid());
+                    .filter(ResultRisk::isValid)
+                    .orElse(ResultRisk.invalid());
         } catch (NumberFormatException e) {
-            return Risk.invalid();
+            return ResultRisk.invalid();
         }
     }
 
     @Override
-    public void storeOverallRisk(Risk risk) {
+    public void storeOverallRisk(ResultRisk risk) {
         storeRisk(risk, null);
     }
 
     @Override
-    public void storeRisk(Risk risk, @Nullable RiskEvaluator.EvaluationPhase phase) {
+    public void storeRisk(ResultRisk risk, @Nullable RiskEvaluator.EvaluationPhase phase) {
         if (!risk.isValid()) {
             logger.warnf("Cannot store the invalid risk score '%f'", risk);
             return;
@@ -80,8 +80,8 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
 
         Optional.ofNullable(session.getContext().getAuthenticationSession())
                 .ifPresentOrElse(f -> {
-                            f.setAuthNote(getScoreProperty(phase), Double.toString(risk.getScore().get()));
-                            f.setAuthNote(getReasonProperty(phase), risk.getReason().orElse(""));
+                            f.setAuthNote(getScoreProperty(phase), Double.toString(risk.getScore()));
+                            f.setAuthNote(getReasonProperty(phase), risk.getSummary().orElse(""));
                         },
                         () -> {
                             throw new IllegalStateException("Authentication session is null");
@@ -96,10 +96,10 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
             var overallRisk = risk;
 
             if (oppositeRisk.isValid()) {
-                overallRisk = risk.getScore().get() > oppositeRisk.getScore().get() ? risk : oppositeRisk;
-                logger.debugf("Stored overall risk: max(%f ('%s'), %f ('%s')) = %f", risk.getScore().get(), phase.name(), oppositeRisk.getScore().get(), oppositePhase.name(), overallRisk.getScore().get());
+                overallRisk = risk.getScore() > oppositeRisk.getScore() ? risk : oppositeRisk;
+                logger.debugf("Stored overall risk: max(%f ('%s'), %f ('%s')) = %f", risk.getScore(), phase.name(), oppositeRisk.getScore(), oppositePhase.name(), overallRisk.getScore());
             } else {
-                logger.tracef("Stored overall risk: %f ('%s')", risk.getScore().get(), phase.name());
+                logger.tracef("Stored overall risk: %f ('%s')", risk.getScore(), phase.name());
             }
 
             storeOverallRisk(overallRisk);

@@ -16,7 +16,7 @@
  */
 package io.github.mabartos.engine;
 
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.level.ResultRisk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -49,7 +49,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
     }
 
     @Override
-    protected Risk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
+    protected ResultRisk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
         var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm);
 
         return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), _ ->
@@ -60,16 +60,16 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
 
                     if (risk.isValid()) {
                         if (span.isRecording()) {
-                            span.setAttribute("keycloak.risk.engine.overall", risk.getScore().get());
+                            span.setAttribute("keycloak.risk.engine.overall", risk.getScore());
                             span.setAttribute("keycloak.risk.engine.phase", RiskEvaluator.EvaluationPhase.CONTINUOUS.name());
                         }
 
-                        if (risk.getScore().get() >= RISK_THRESHOLD_LOG_OUT_USER) {
+                        if (risk.getScore() >= RISK_THRESHOLD_LOG_OUT_USER) {
                             session.sessions().removeUserSessions(realm, knownUser);
                             logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
                                     knownUser.getId(),
-                                    risk.getScore().get(),
-                                    risk.getReason().orElse(""));
+                                    risk.getScore(),
+                                    risk.getSummary().orElse(""));
                         }
                     }
                     results.logAll();
@@ -78,17 +78,17 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
     }
 
     @Override
-    protected Risk evaluateRiskBeforeAuthn(@Nonnull RealmModel realm) {
+    protected ResultRisk evaluateRiskBeforeAuthn(@Nonnull RealmModel realm) {
         return evaluateRiskAuthentication(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN, realm, null);
     }
 
     @Override
-    protected Risk evaluateRiskUserKnown(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
+    protected ResultRisk evaluateRiskUserKnown(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
         return evaluateRiskAuthentication(RiskEvaluator.EvaluationPhase.USER_KNOWN, realm, knownUser);
     }
 
     // propagate UserModel user
-    protected Risk evaluateRiskAuthentication(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+    protected ResultRisk evaluateRiskAuthentication(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         var timeout = getNumberRealmAttribute(realm, EVALUATOR_TIMEOUT_CONFIG, Long::parseLong)
                 .map(Duration::ofMillis)
                 .orElse(DEFAULT_EVALUATOR_TIMEOUT);
@@ -108,10 +108,10 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                     this.risk = riskScoreAlgorithm.evaluateRisk(evaluatedRisks, phase, realm, knownUser);
 
                     if (risk.isValid()) {
-                        logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore().get(), phase);
+                        logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore(), phase);
 
                         if (span.isRecording()) {
-                            span.setAttribute("keycloak.risk.engine.overall", risk.getScore().get());
+                            span.setAttribute("keycloak.risk.engine.overall", risk.getScore());
                             span.setAttribute("keycloak.risk.engine.phase", phase.name());
                         }
 
@@ -172,7 +172,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
             executeEvaluator(evaluator, realm, knownUser, retries, results);
 
             if (span.isRecording()) {
-                span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().orElse(-1.0));
+                span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
                 evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
                 span.setAttribute("keycloak.risk.engine.evaluator.weight", evaluator.getWeight(realm));
             }

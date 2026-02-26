@@ -24,7 +24,6 @@ import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
@@ -35,6 +34,11 @@ import org.keycloak.models.UserModel;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static io.github.mabartos.level.Risk.Score.INTERMEDIATE;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
 
 /**
  * Risk evaluator for analyzing the distribution and pattern of failed logins over time
@@ -66,7 +70,7 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
 
         var events = loginEventsContext.getData(realm, knownUser).orElse(null);
         if (events == null || events.size() < 3) {
-            return Risk.notEnoughInfo("Not enough login events");
+            return Risk.invalid("Not enough login events");
         }
 
         long currentTime = Time.currentTimeMillis();
@@ -76,47 +80,43 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
         var analysis1h = analyzePattern(events, currentTime, Duration.ofHours(1).toMillis());
 
         // Check for suspicious patterns
-        double risk = Risk.NONE;
-        String reason = "";
+        Risk risk = Risk.of(NONE);
 
         // Pattern 1: High failure rate
         if (analysis1h.totalAttempts >= 5) {
             double failureRate = (double) analysis1h.failures / analysis1h.totalAttempts;
             if (failureRate >= 0.8 && analysis1h.failures >= 4) {
-                risk = Math.max(risk, Risk.VERY_HIGH);
-                reason = String.format("%d failures out of %d attempts in 1h", analysis1h.failures, analysis1h.totalAttempts);
+                risk = risk.max(Risk.of(VERY_HIGH,
+                        String.format("%d failures out of %d attempts in 1h", analysis1h.failures, analysis1h.totalAttempts)));
             } else if (failureRate >= 0.6 && analysis1h.failures >= 3) {
-                risk = Math.max(risk, Risk.INTERMEDIATE);
-                reason = String.format("High failure rate in 1h: %.0f%%", failureRate * 100);
+                risk = risk.max(Risk.of(INTERMEDIATE,
+                        String.format("High failure rate in 1h: %.0f%%", failureRate * 100)));
             }
         }
 
         // Pattern 2: Systematic attempts from multiple IPs
         if (analysis1h.uniqueIps >= 3 && analysis1h.failures >= 3) {
-            risk = Math.max(risk, Risk.VERY_HIGH);
-            reason = String.format("Distributed attack: %d IPs, %d failures in 1h",
-                    analysis1h.uniqueIps, analysis1h.failures);
+            risk = risk.max(Risk.of(VERY_HIGH,
+                    String.format("Distributed attack: %d IPs, %d failures in 1h", analysis1h.uniqueIps, analysis1h.failures)));
         } else if (analysis24h.uniqueIps >= 5 && analysis24h.failures >= 5) {
-            risk = Math.max(risk, Risk.INTERMEDIATE);
-            reason = String.format("Multiple IPs: %d IPs in 24h", analysis24h.uniqueIps);
+            risk = risk.max(Risk.of(INTERMEDIATE,
+                    String.format("Multiple IPs: %d IPs in 24h", analysis24h.uniqueIps)));
         }
 
         // Pattern 3: Regular intervals (bot-like behavior)
         if (analysis1h.failures >= 3) {
             var intervals = calculateTimingIntervals(events, currentTime - Duration.ofHours(1).toMillis());
             if (intervals.size() >= 2 && isRegularPattern(intervals)) {
-                risk = Math.max(risk, Risk.INTERMEDIATE);
-                reason = "Regular timing pattern detected (bot-like)";
+                risk = risk.max(Risk.of(INTERMEDIATE, "Regular timing pattern detected (bot-like)"));
             }
         }
 
         // Pattern 4: Burst of failures after period of inactivity
         if (analysis1h.failures >= 3 && analysis24h.totalAttempts == analysis1h.totalAttempts) {
-            risk = Math.max(risk, Risk.MEDIUM);
-            reason = "Sudden burst of activity";
+            risk = risk.max(Risk.of(MEDIUM, "Sudden burst of activity"));
         }
 
-        return Risk.of(risk, reason);
+        return risk;
     }
 
     private PatternAnalysis analyzePattern(List<Event> events, long currentTime, long timeWindowMs) {
