@@ -20,11 +20,10 @@ import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class LocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
-    public static final String PROVIDER_ID = "location-risk-evaluator";
+public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
+    public static final String PROVIDER_ID = "known-location-risk-evaluator";
 
     public static final String NAME = "Location IP API";
-    public static final long CACHE_LIFESPAN_SECONDS = 90;
 
     @Override
     public String getName() {
@@ -33,12 +32,12 @@ public class LocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
-        return LocationRiskEvaluator.class;
+        return KnownLocationRiskEvaluator.class;
     }
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
-        return new LocationRiskEvaluator(session);
+        return new KnownLocationRiskEvaluator(session);
     }
 
     @Override

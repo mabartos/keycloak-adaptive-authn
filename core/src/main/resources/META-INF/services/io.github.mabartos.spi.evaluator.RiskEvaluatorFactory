@@ -2,7 +2,7 @@
  io.github.mabartos.evaluator.role.DefaultUserRoleEvaluatorFactory
  io.github.mabartos.evaluator.login.LoginFailuresRiskEvaluatorFactory
  io.github.mabartos.evaluator.os.OperatingSystemRiskEvaluatorFactory
- io.github.mabartos.evaluator.location.LocationRiskEvaluatorFactory
+ io.github.mabartos.evaluator.location.KnownLocationRiskEvaluatorFactory
  io.github.mabartos.evaluator.device.AiDeviceRiskEvaluatorFactory
  io.github.mabartos.evaluator.login.AiLoginFailuresRiskEvaluatorFactory
  io.github.mabartos.evaluator.recaptcha.RecaptchaRiskEvaluatorFactory
