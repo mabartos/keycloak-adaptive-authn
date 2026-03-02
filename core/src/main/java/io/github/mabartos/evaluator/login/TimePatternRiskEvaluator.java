@@ -1,16 +1,15 @@
 package io.github.mabartos.evaluator.login;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.user.KcLoginEventsContextFactory;
-import io.github.mabartos.context.user.LoginEventsContext;
+import io.github.mabartos.context.user.TypicalAccessTimeContext;
+import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
+import io.github.mabartos.context.user.TypicalAccessTimeData;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
-import org.keycloak.events.Event;
-import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -18,7 +17,6 @@ import org.keycloak.models.UserModel;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 import static io.github.mabartos.level.Risk.Score.*;
@@ -38,10 +36,10 @@ import static io.github.mabartos.level.Risk.Score.*;
  * actually close to 01:00, not 22 hours away. Applies Exponentially Weighted Moving Average
  * to give more weight to recent patterns while retaining history.</li>
  *
- * <li><strong>Pattern Learning:</strong> Reads historical login data from {@link LoginEventsContext}
- * and stores the pattern state in user attributes ({@code timePattern.meanSin}, {@code timePattern.meanCos}).
- * Bootstraps the profile from historical events if no saved profile exists. Requires 5+ logins
- * before evaluating risk.</li>
+ * <li><strong>Pattern Learning:</strong> Uses {@link TypicalAccessTimeContext} to retrieve the
+ * time pattern profile, which is built from historical login data and stored in user attributes
+ * ({@code timePattern.meanSin}, {@code timePattern.meanCos}). The context bootstraps the profile
+ * from historical events if no saved profile exists. Requires 5+ logins before evaluating risk.</li>
  *
  * <li><strong>Risk Scoring:</strong> Calculates how many hours the current login deviates from
  * the user's typical pattern:
@@ -66,30 +64,23 @@ import static io.github.mabartos.level.Risk.Score.*;
  * </pre>
  * <p>
  * <strong>User Attributes:</strong><br>
- * Stores {@code timePattern.meanSin} and {@code timePattern.meanCos} per user.
- * Login count is dynamically retrieved from {@link LoginEventsContext} for consistency.
+ * Time pattern data is managed by {@link TypicalAccessTimeContext} and shared with other evaluators.
  *
  * @see CircularEwmaProfile
- * @see LoginEventsContext
+ * @see TypicalAccessTimeContext
+ * @see TypicalAccessTimeData
  */
 public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(TimePatternRiskEvaluator.class);
 
-    private final LoginEventsContext loginEvents;
-
-    // User attribute keys for storing profile state
-    private static final String ATTR_MEAN_SIN = "timePattern.meanSin";
-    private static final String ATTR_MEAN_COS = "timePattern.meanCos";
-
-    // EWMA smoothing factor - lower values give more weight to history
-    private static final double ALPHA = 0.15;
-
-    public TimePatternRiskEvaluator(KeycloakSession session) {
-        this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-    }
+    private final TypicalAccessTimeContext typicalTimeContext;
 
     // Minimum logins required before we start evaluating risk
     private static final int MIN_LOGINS = 5;
+
+    public TimePatternRiskEvaluator(KeycloakSession session) {
+        this.typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContextFactory.PROVIDER_ID);
+    }
 
     // Thresholds for risk scoring (in hours of deviation)
     private static final double THRESHOLD_SMALL = 2.0;
@@ -116,26 +107,22 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.invalid("User is null");
         }
 
-        if (loginEvents == null) {
-            return Risk.invalid("Cannot access login events");
+        if (typicalTimeContext == null) {
+            return Risk.invalid("Cannot access typical time context");
         }
 
-        // Get historical login events
-        var dataOptional = loginEvents.getData(realm, user);
-        if (dataOptional.isEmpty()) {
-            return Risk.invalid("Cannot parse login events");
+        // Get typical time data from context
+        var timeDataOptional = typicalTimeContext.getData(realm, user);
+        if (timeDataOptional.isEmpty()) {
+            return Risk.invalid("Cannot retrieve typical time data");
         }
 
-        List<Event> events = dataOptional.get();
-        List<Event> loginOnlyEvents = events.stream()
-                .filter(f -> f.getType() == EventType.LOGIN)
-                .toList();
-
-        int loginCount = loginOnlyEvents.size();
+        TypicalAccessTimeData timeData = timeDataOptional.get();
 
         // Not enough data yet - can't evaluate risk
-        if (loginCount < MIN_LOGINS) {
-            return Risk.invalid(String.format("Building time pattern (login %d/%d)", loginCount, MIN_LOGINS));
+        if (!timeData.hasSufficientData()) {
+            return Risk.invalid(String.format("Building time pattern (login %d/%d)",
+                    timeData.getLoginCount(), MIN_LOGINS));
         }
 
         LocalDateTime currentTime = Instant.ofEpochMilli(Time.currentTimeMillis())
@@ -144,33 +131,24 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
 
         int currentHour = currentTime.getHour();
 
-        // Load existing profile from user attributes or bootstrap from history
-        CircularEwmaProfile profile = loadOrBootstrapProfile(user, loginOnlyEvents);
+        CircularEwmaProfile profile = timeData.getProfile();
+        double concentration = timeData.getConcentration();
 
         // Check if we have a reliable pattern
-        double concentration = profile.getConcentration();
         if (concentration < MIN_CONCENTRATION) {
             // User logs in at very different times - pattern is too dispersed to be useful
-            profile.update(currentHour);
-            saveProfile(user, profile);
             return Risk.of(VERY_SMALL, String.format("User has irregular login times (concentration: %.2f)", concentration));
         }
 
         // Calculate deviation from normal pattern
         double deviation = profile.getDeviation(currentHour);
-        double meanHour = profile.getMeanHour();
+        double meanHour = timeData.getExactMeanHour();
 
         logger.debugf("User %s - Current: %02d:00, Mean: %02.1f, Deviation: %.2f hours, Concentration: %.2f",
                 user.getUsername(), currentHour, meanHour, deviation, concentration);
 
         // Determine risk based on deviation
-        Risk risk = calculateRisk(currentHour, deviation, meanHour, concentration);
-
-        // Update profile with current time
-        profile.update(currentHour);
-        saveProfile(user, profile);
-
-        return risk;
+        return calculateRisk(currentHour, deviation, meanHour, concentration);
     }
 
     private Risk calculateRisk(int currentHour, double deviation, double meanHour, double concentration) {
@@ -207,54 +185,4 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
         }
     }
 
-    /**
-     * Loads existing profile from user attributes, or bootstraps a new one from historical login data.
-     */
-    private CircularEwmaProfile loadOrBootstrapProfile(UserModel user, List<Event> loginEvents) {
-        List<String> meanSinValues = user.getAttributeStream(ATTR_MEAN_SIN).toList();
-        List<String> meanCosValues = user.getAttributeStream(ATTR_MEAN_COS).toList();
-
-        // Try to load existing profile
-        if (!meanSinValues.isEmpty() && !meanCosValues.isEmpty()) {
-            try {
-                double meanSin = Double.parseDouble(meanSinValues.get(0));
-                double meanCos = Double.parseDouble(meanCosValues.get(0));
-                return new CircularEwmaProfile(ALPHA, meanSin, meanCos);
-            } catch (NumberFormatException e) {
-                logger.warnf("Failed to parse time pattern for user %s, bootstrapping from history", user.getUsername());
-            }
-        }
-
-        // No valid profile exists - bootstrap from historical login events
-        logger.debugf("Bootstrapping time pattern for user %s from %d historical logins",
-                user.getUsername(), loginEvents.size());
-
-        CircularEwmaProfile profile = new CircularEwmaProfile(ALPHA);
-
-        // Train profile on historical data (oldest to newest)
-        for (Event event : loginEvents) {
-            int hour = getHourFromEvent(event);
-            profile.update(hour);
-        }
-
-        return profile;
-    }
-
-    /**
-     * Extracts the hour (0-23) from an event timestamp.
-     */
-    private int getHourFromEvent(Event event) {
-        return Instant.ofEpochMilli(event.getTime())
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-                .getHour();
-    }
-
-    private void saveProfile(UserModel user, CircularEwmaProfile profile) {
-        user.setAttribute(ATTR_MEAN_SIN, List.of(String.valueOf(profile.getMeanSin())));
-        user.setAttribute(ATTR_MEAN_COS, List.of(String.valueOf(profile.getMeanCos())));
-
-        logger.tracef("Saved time pattern for user %s: meanSin=%.4f, meanCos=%.4f",
-                user.getUsername(), profile.getMeanSin(), profile.getMeanCos());
-    }
 }
