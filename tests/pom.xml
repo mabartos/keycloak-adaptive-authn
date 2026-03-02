@@ -19,6 +19,14 @@
     </properties>
 
     <dependencies>
+        <!-- Extension to test -->
+        <dependency>
+            <groupId>io.github.mabartos</groupId>
+            <artifactId>keycloak-adaptive-authn</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- TESTING -->
         <dependency>
             <groupId>org.keycloak.testframework</groupId>
@@ -28,6 +36,16 @@
         <dependency>
             <groupId>org.keycloak.testframework</groupId>
             <artifactId>keycloak-test-framework-junit5-config</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak.testframework</groupId>
+            <artifactId>keycloak-test-framework-oauth</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak.testframework</groupId>
+            <artifactId>keycloak-test-framework-ui</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
     </dependencies>
@@ -43,6 +61,7 @@
                             io.quarkus.bootstrap.forkjoin.QuarkusForkJoinWorkerThreadFactory
                         </java.util.concurrent.ForkJoinPool.common.threadFactory>
                     </systemPropertyVariables>
+                    <argLine>--enable-preview</argLine>
                 </configuration>
             </plugin>
         </plugins>
