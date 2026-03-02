@@ -29,10 +29,14 @@ import java.util.Optional;
 public abstract class AbstractUserContext<T> implements UserContext<T> {
     protected static int COUNT_OF_INIT_RETRIES = 2;
 
+    protected final KeycloakSession session;
+
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<T> data;
 
-    public abstract KeycloakSession getSession();
+    public AbstractUserContext(KeycloakSession session) {
+        this.session = session;
+    }
 
     @Override
     public int getPriority() {
@@ -52,7 +56,7 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
      */
     @Override
     public Optional<T> getData(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
-        final var tracingProvider = TracingProviderUtil.getTracingProvider(getSession());
+        final var tracingProvider = TracingProviderUtil.getTracingProvider(session);
 
         return tracingProvider.trace(this.getClass(), "getData", (span) -> {
             if (span.isRecording()) {

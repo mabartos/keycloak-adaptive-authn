@@ -32,15 +32,9 @@ import java.util.stream.Collectors;
  * Obtain user role from the authentication session
  */
 public class KcUserRoleContext extends UserRoleContext {
-    private final KeycloakSession session;
 
     public KcUserRoleContext(KeycloakSession session) {
-        this.session = session;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        super(session);
     }
 
     @Override

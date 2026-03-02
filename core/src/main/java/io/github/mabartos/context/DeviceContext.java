@@ -19,6 +19,7 @@ package io.github.mabartos.context;
 import io.github.mabartos.spi.context.AbstractUserContext;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
@@ -28,6 +29,10 @@ import java.util.Optional;
  * Context related to device itself not requiring known user - representation, IP, user agent,...
  */
 public abstract class DeviceContext<T> extends AbstractUserContext<T> {
+
+    public DeviceContext(KeycloakSession session) {
+        super(session);
+    }
 
     public abstract Optional<T> initData(@Nonnull RealmModel realm);
 

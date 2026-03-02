@@ -14,17 +14,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class KcLoginEventsContext extends LoginEventsContext {
-    private final KeycloakSession session;
     private final EventStoreProvider eventStore;
 
     public KcLoginEventsContext(KeycloakSession session) {
-        this.session = session;
+        super(session);
         this.eventStore = session.getProvider(EventStoreProvider.class);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override

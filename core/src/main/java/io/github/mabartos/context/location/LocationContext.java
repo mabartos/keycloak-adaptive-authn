@@ -17,9 +17,14 @@
 package io.github.mabartos.context.location;
 
 import io.github.mabartos.context.DeviceContext;
+import org.keycloak.models.KeycloakSession;
 
 /**
  * Context for obtaining location data
  */
 public abstract class LocationContext extends DeviceContext<LocationData> {
+
+    public LocationContext(KeycloakSession session) {
+        super(session);
+    }
 }

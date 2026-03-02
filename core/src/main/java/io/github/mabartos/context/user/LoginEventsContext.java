@@ -3,6 +3,7 @@ package io.github.mabartos.context.user;
 import io.github.mabartos.spi.context.AbstractUserContext;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
+import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
 
@@ -10,6 +11,10 @@ public abstract class LoginEventsContext extends AbstractUserContext<List<Event>
     public static final String LOGIN_EVENTS = "login-events-user-context";
     public static final String LOGIN_FAILURES_EVENTS = "login-events-user-context";
     public static final int MAX_EVENTS_COUNT = 60;
+
+    public LoginEventsContext(KeycloakSession session) {
+        super(session);
+    }
 
     public abstract EventType[] eventTypes();
 

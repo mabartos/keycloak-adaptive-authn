@@ -10,16 +10,10 @@ import org.keycloak.models.RealmModel;
 import java.util.Optional;
 
 public class TestIpAddressContext extends DeviceContext<IPAddress> {
-    private final KeycloakSession session;
     private static final String TESTING_IP = "77.75.72.3"; // seznam.cz
 
     public TestIpAddressContext(KeycloakSession session) {
-        this.session = session;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        super(session);
     }
 
     @Override

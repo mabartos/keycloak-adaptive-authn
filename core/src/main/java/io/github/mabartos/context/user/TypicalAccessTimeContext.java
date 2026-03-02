@@ -38,17 +38,11 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
     // EWMA smoothing factor - lower values give more weight to history
     private static final double ALPHA = 0.15;
 
-    private final KeycloakSession session;
     private final LoginEventsContext loginEvents;
 
     public TypicalAccessTimeContext(KeycloakSession session) {
-        this.session = session;
+        super(session);
         this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override

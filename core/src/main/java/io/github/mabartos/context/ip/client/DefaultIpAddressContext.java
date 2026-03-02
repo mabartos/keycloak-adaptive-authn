@@ -29,15 +29,9 @@ import java.util.Optional;
  * Context for aggregating all IP address contexts and evaluate them based on their priority
  */
 public class DefaultIpAddressContext extends IpAddressContext {
-    private final KeycloakSession session;
 
     public DefaultIpAddressContext(KeycloakSession session) {
-        this.session = session;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        super(session);
     }
 
     @Override

@@ -44,17 +44,11 @@ import static io.github.mabartos.context.ip.client.TestIpAddressContextFactory.U
  */
 public class IpApiLocationContext extends DeviceContext<LocationData> {
     private static final Logger log = Logger.getLogger(IpApiLocationContext.class);
-    private final KeycloakSession session;
     private final HttpClientProvider httpClientProvider;
 
     public IpApiLocationContext(KeycloakSession session) {
-        this.session = session;
+        super(session);
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
     }
 
     @Override

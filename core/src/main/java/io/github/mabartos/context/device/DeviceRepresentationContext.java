@@ -29,15 +29,9 @@ import java.util.Optional;
  * Device context obtained from the Keycloak Device representation
  */
 public class DeviceRepresentationContext extends DeviceContext<DeviceRepresentation> {
-    private final KeycloakSession session;
 
     public DeviceRepresentationContext(KeycloakSession session) {
-        this.session = session;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        super(session);
     }
 
     @Override

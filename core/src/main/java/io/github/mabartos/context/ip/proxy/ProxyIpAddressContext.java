@@ -37,15 +37,9 @@ import java.util.stream.Stream;
 import static io.github.mabartos.context.ip.IpAddressUtils.IP_PATTERN;
 
 public class ProxyIpAddressContext extends IpProxyContext {
-    private final KeycloakSession session;
 
     public ProxyIpAddressContext(KeycloakSession session) {
-        this.session = session;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        super(session);
     }
 
     @Override

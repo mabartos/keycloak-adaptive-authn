@@ -33,15 +33,9 @@ import java.util.Optional;
  * IP address obtained from the {@link DeviceContext}
  */
 public class DeviceIpAddressContext extends DeviceContext<IPAddress> {
-    private final KeycloakSession session;
 
     public DeviceIpAddressContext(KeycloakSession session) {
-        this.session = session;
-    }
-
-    @Override
-    public KeycloakSession getSession() {
-        return session;
+        super(session);
     }
 
     @Override

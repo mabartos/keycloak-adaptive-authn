@@ -17,6 +17,7 @@
 package io.github.mabartos.context.user;
 
 import io.github.mabartos.spi.context.AbstractUserContext;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RoleModel;
 
 import java.util.Set;
@@ -25,6 +26,10 @@ import java.util.Set;
  * Context for obtaining all roles of the authentication user
  */
 public abstract class UserRoleContext extends AbstractUserContext<Set<RoleModel>> {
+
+    public UserRoleContext(KeycloakSession session) {
+        super(session);
+    }
 
     @Override
     public boolean requiresUser() {
