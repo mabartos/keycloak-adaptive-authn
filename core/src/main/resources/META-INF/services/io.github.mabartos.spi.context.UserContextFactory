@@ -7,4 +7,5 @@ io.github.mabartos.context.ip.client.HeaderIpAddressContextFactory
 io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory
 io.github.mabartos.context.user.KcLoginEventsContextFactory
 io.github.mabartos.context.user.KcLoginFailuresEventsContextFactory
+io.github.mabartos.context.user.TypicalAccessTimeContextFactory
 io.github.mabartos.context.ip.client.TestIpAddressContextFactory

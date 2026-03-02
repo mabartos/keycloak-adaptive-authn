@@ -1,5 +1,8 @@
 package io.github.mabartos.engine;
 
+import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.user.TypicalAccessTimeContext;
+import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
@@ -67,6 +70,12 @@ public class LoginEventsEventListener implements EventListenerProvider {
             if (user == null) {
                 log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", userId);
                 return;
+            }
+
+            // Update time pattern profile after successful login
+            TypicalAccessTimeContext typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContextFactory.PROVIDER_ID);
+            if (typicalTimeContext != null) {
+                typicalTimeContext.updateProfileAfterLogin(user);
             }
 
             var timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
