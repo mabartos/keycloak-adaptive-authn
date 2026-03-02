@@ -55,6 +55,6 @@ public class TypicalAccessTimeData {
      * Checks if there's sufficient data to make meaningful predictions.
      */
     public boolean hasSufficientData() {
-        return loginCount >= 5;
+        return loginCount >= TypicalAccessTimeContext.MIN_LOGINS;
     }
 }

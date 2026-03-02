@@ -38,6 +38,10 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
     // EWMA smoothing factor - lower values give more weight to history
     private static final double ALPHA = 0.15;
 
+    // Minimum number of historical logins required before evaluating risk
+    // 4 historical logins + 1 current login = 5 total login attempts
+    public static final int MIN_LOGINS = 4;
+
     private final LoginEventsContext loginEvents;
 
     public TypicalAccessTimeContext(KeycloakSession session) {

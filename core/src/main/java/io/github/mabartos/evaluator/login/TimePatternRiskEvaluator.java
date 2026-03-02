@@ -75,9 +75,6 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
 
     private final TypicalAccessTimeContext typicalTimeContext;
 
-    // Minimum logins required before we start evaluating risk
-    private static final int MIN_LOGINS = 5;
-
     public TimePatternRiskEvaluator(KeycloakSession session) {
         this.typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContextFactory.PROVIDER_ID);
     }
@@ -122,7 +119,7 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
         // Not enough data yet - can't evaluate risk
         if (!timeData.hasSufficientData()) {
             return Risk.invalid(String.format("Building time pattern (login %d/%d)",
-                    timeData.getLoginCount(), MIN_LOGINS));
+                    timeData.getLoginCount(), TypicalAccessTimeContext.MIN_LOGINS));
         }
 
         LocalDateTime currentTime = Instant.ofEpochMilli(Time.currentTimeMillis())
