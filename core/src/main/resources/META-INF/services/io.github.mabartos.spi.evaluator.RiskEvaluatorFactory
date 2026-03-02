@@ -7,4 +7,5 @@
  io.github.mabartos.evaluator.login.LoginEventIpAddressRiskEvaluatorFactory
  io.github.mabartos.evaluator.login.TimePatternRiskEvaluatorFactory
  io.github.mabartos.evaluator.behavior.UserActionsRiskEvaluatorFactory
+ io.github.mabartos.evaluator.behavior.AiAccountTakeoverEvaluatorFactory
  io.github.mabartos.evaluator.login.FailedLoginPatternRiskEvaluatorFactory
