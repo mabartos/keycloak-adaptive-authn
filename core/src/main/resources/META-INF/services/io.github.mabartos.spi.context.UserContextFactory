@@ -9,3 +9,4 @@ io.github.mabartos.context.user.KcLoginEventsContextFactory
 io.github.mabartos.context.user.KcLoginFailuresEventsContextFactory
 io.github.mabartos.context.user.TypicalAccessTimeContextFactory
 io.github.mabartos.context.ip.client.TestIpAddressContextFactory
+io.github.mabartos.context.location.KnownLocationContextFactory

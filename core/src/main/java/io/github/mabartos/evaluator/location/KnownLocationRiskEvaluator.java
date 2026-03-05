@@ -3,6 +3,8 @@ package io.github.mabartos.evaluator.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.location.IpApiLocationContext;
 import io.github.mabartos.context.location.IpApiLocationContextFactory;
+import io.github.mabartos.context.location.KnownLocationContext;
+import io.github.mabartos.context.location.KnownLocationContextFactory;
 import io.github.mabartos.context.location.LocationData;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
@@ -13,7 +15,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import java.util.List;
 import java.util.Set;
 
 import static io.github.mabartos.level.Risk.Score.HIGH;
@@ -25,14 +26,13 @@ import static io.github.mabartos.level.Risk.Score.SMALL;
  */
 public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(KnownLocationRiskEvaluator.class);
-    private static final String KNOWN_LOCATIONS_ATTR = "adaptive_authn.known_locations";
-    // TODO later, it might be configurable
-    private static final int MAX_STORED_LOCATIONS = 10;
 
     private final IpApiLocationContext locationContext;
+    private final KnownLocationContext knownLocationContext;
 
     public KnownLocationRiskEvaluator(KeycloakSession session) {
         this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
+        this.knownLocationContext = UserContexts.getContext(session, KnownLocationContextFactory.PROVIDER_ID);
     }
 
     @Override
@@ -53,63 +53,35 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
 
         logger.tracef("Current location: %s", currentLocation.toString());
 
-        // Get known locations for this user
-        List<String> knownLocations = getKnownLocations(knownUser);
+        // Get known locations for this user from KnownLocationContext
+        var knownLocations = knownLocationContext.getData(realm, knownUser).orElse(Set.of());
 
         if (knownLocations.isEmpty()) {
             return Risk.of(SMALL, "First tracked location");
         }
 
-        saveSuccessfulLoginLocation(knownUser, knownLocations, currentLocation);
-
         return calculateLocationRisk(currentLocation, knownLocations);
     }
 
-    protected Risk calculateLocationRisk(LocationData currentLocation, List<String> knownLocations) {
-        String currentLocationKey = getLocationKey(currentLocation);
+    protected Risk calculateLocationRisk(LocationData currentLocation, Set<KnownLocationContext.KnownLocationData> knownLocations) {
+        var currentKnownLocation = new KnownLocationContext.KnownLocationData(
+                currentLocation.getCountry(),
+                currentLocation.getCity()
+        );
 
-        boolean exactMatch = knownLocations.contains(currentLocationKey);
+        // Check for exact match (same city and country)
+        boolean exactMatch = knownLocations.contains(currentKnownLocation);
         if (exactMatch) {
             return Risk.of(NONE, "This exact location (city + country) has been seen before");
         }
 
+        // Check if the country has been seen before (even if city is different)
         boolean sameCountry = knownLocations.stream()
-                .anyMatch(loc -> loc.endsWith(":" + currentLocation.getCountry()));
+                .anyMatch(loc -> loc.country().equals(currentLocation.getCountry()));
         if (sameCountry) {
             return Risk.of(SMALL, "The city has changed, but the country is the same.");
         }
 
         return Risk.of(HIGH, "Completely new country");
-    }
-
-    protected List<String> getKnownLocations(UserModel user) {
-        return user.getAttributeStream(KNOWN_LOCATIONS_ATTR).toList();
-    }
-
-    public void saveSuccessfulLoginLocation(UserModel user, List<String> knownLocations, LocationData currentLocation) {
-        if (currentLocation == null) {
-            return;
-        }
-
-        String locationKey = getLocationKey(currentLocation);
-
-        // Add new location if not already present
-        if (!knownLocations.contains(locationKey)) {
-            knownLocations.add(locationKey);
-
-            // Keep only the last N locations
-            if (knownLocations.size() > MAX_STORED_LOCATIONS) {
-                knownLocations = knownLocations.subList(
-                        knownLocations.size() - MAX_STORED_LOCATIONS,
-                        knownLocations.size()
-                );
-            }
-            user.setAttribute(KNOWN_LOCATIONS_ATTR, knownLocations);
-            logger.tracef("Saved location for user %s: %s", user.getUsername(), locationKey);
-        }
-    }
-
-    protected String getLocationKey(LocationData location) {
-        return location.getCity() + ":" + location.getCountry();
     }
 }
