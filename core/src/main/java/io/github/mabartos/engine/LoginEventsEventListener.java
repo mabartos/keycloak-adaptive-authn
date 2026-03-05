@@ -1,8 +1,7 @@
 package io.github.mabartos.engine;
 
-import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.user.TypicalAccessTimeContext;
-import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
+import io.github.mabartos.spi.context.UserContext;
+import io.github.mabartos.spi.engine.OnSuccessfulLoginCallback;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
@@ -72,11 +71,10 @@ public class LoginEventsEventListener implements EventListenerProvider {
                 return;
             }
 
-            // Update time pattern profile after successful login
-            TypicalAccessTimeContext typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContextFactory.PROVIDER_ID);
-            if (typicalTimeContext != null) {
-                typicalTimeContext.updateProfileAfterLogin(user);
-            }
+            session.getAllProviders(UserContext.class)
+                    .stream()
+                    .filter(context -> context instanceof OnSuccessfulLoginCallback)
+                    .forEach(context -> ((OnSuccessfulLoginCallback) context).onSuccessfulLogin(realm, user));
 
             var timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
             if (!Boolean.parseBoolean(timerScheduled)) {

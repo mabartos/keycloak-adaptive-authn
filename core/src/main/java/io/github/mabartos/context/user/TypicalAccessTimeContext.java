@@ -3,6 +3,7 @@ package io.github.mabartos.context.user;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.evaluator.login.CircularEwmaProfile;
 import io.github.mabartos.spi.context.AbstractUserContext;
+import io.github.mabartos.spi.engine.OnSuccessfulLoginCallback;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -26,7 +27,7 @@ import java.util.Optional;
  * <p>
  * Values are updated in the {@link io.github.mabartos.engine.LoginEventsEventListener}
  */
-public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessTimeData> {
+public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessTimeData> implements OnSuccessfulLoginCallback {
     private static final Logger logger = Logger.getLogger(TypicalAccessTimeContext.class);
 
     public static final String PROVIDER_ID = "typical-access-time-context";
@@ -57,6 +58,7 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
     @Override
     public Optional<TypicalAccessTimeData> initData(@Nonnull RealmModel realm, @Nullable UserModel user) {
         if (user == null) {
+            logger.warn("User is null");
             return Optional.empty();
         }
 
@@ -84,6 +86,21 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
         return Optional.of(new TypicalAccessTimeData(profile, loginCount));
     }
 
+    /**
+     * Updates the profile with current login hour and saves to user attributes after successful login
+     */
+    @Override
+    public void onSuccessfulLogin(@Nonnull RealmModel realm, @Nonnull UserModel user) {
+        int currentHour = Instant.ofEpochMilli(Time.currentTimeMillis())
+                .atZone(ZoneId.systemDefault())
+                .getHour();
+
+        CircularEwmaProfile profile = loadProfileFromAttributes(user)
+                .orElseGet(() -> new CircularEwmaProfile(ALPHA));
+
+        profile.update(currentHour);
+        saveProfile(user, profile);
+    }
 
     /**
      * Loads profile from user attributes or bootstraps from historical events if not found.
@@ -104,22 +121,6 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
             saveProfile(user, profile);
             return profile;
         });
-    }
-
-    /**
-     * Updates the profile with current login hour and saves to user attributes.
-     * Called from LoginEventsEventListener after successful login.
-     */
-    public void updateProfileAfterLogin(UserModel user) {
-        int currentHour = Instant.ofEpochMilli(Time.currentTimeMillis())
-                .atZone(ZoneId.systemDefault())
-                .getHour();
-
-        CircularEwmaProfile profile = loadProfileFromAttributes(user)
-                .orElseGet(() -> new CircularEwmaProfile(ALPHA));
-
-        profile.update(currentHour);
-        saveProfile(user, profile);
     }
 
     /**
