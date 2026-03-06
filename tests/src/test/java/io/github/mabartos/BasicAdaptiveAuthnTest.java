@@ -43,7 +43,7 @@ public class BasicAdaptiveAuthnTest {
 
     @Test
     public void executeServerInEmbeddedMode() throws InterruptedException {
-        Thread.sleep(99999999);
+        //Thread.sleep(99999999);
     }
 
     public static class Config implements KeycloakServerConfig {
