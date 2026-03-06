@@ -23,26 +23,47 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Comparator;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 public class UserContexts {
 
     /**
-     * Retrieve user context with the subtype {@param type} with the highest priority
+     * Retrieve chained user context with the subtype {@param type}.
+     * Returns a context that register its delegates.
+     * If the context cannot obtain data, it calls its delegates and tries to obtain it in different way
      *
-     * @param session            Keycloak session
-     * @param type               UserContext type
-     * @return user context with the highest priority for its {@link UserContextFactory#getUserContextClass()}
+     * @param session Keycloak session
+     * @param type    UserContext type
      * @throws IllegalStateException if no provider is found
      */
     @Nonnull
     public static <T extends UserContext<?>> T getContext(@Nonnull KeycloakSession session, @Nonnull Class<T> type) {
-        return session.getKeycloakSessionFactory().getProviderFactoriesStream(UserContext.class)
+        LinkedList<T> contexts = session.getKeycloakSessionFactory().getProviderFactoriesStream(UserContext.class)
                 .map(f -> (UserContextFactory<?>) f)
                 .filter(f -> f.getUserContextClass().equals(type))
-                .max(Comparator.comparingInt(UserContextFactory::getPriority))
-                .map(f -> (T) f.create(session))
-                .orElseThrow(() -> new IllegalStateException("Cannot find any provider with the type '%s'".formatted(type.getSimpleName())));
+                .sorted(Comparator.comparingInt(f -> ((UserContextFactory<?>) f).getPriority()).reversed())
+                .map(f -> (T) session.getProvider(UserContext.class, f.getId()))
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        if (contexts.isEmpty()) {
+            throw new IllegalStateException("Cannot find any provider with the type '%s'".formatted(type.getSimpleName()));
+        }
+
+        // If there's only one context, return it directly without chaining
+        if (contexts.size() == 1) {
+            return contexts.getFirst();
+        }
+
+        // Chain contexts together using delegation
+        // First context delegates to second, second to third, etc.
+        for (int i = 0; i < contexts.size() - 1; i++) {
+            T current = contexts.get(i);
+            T next = contexts.get(i + 1);
+            current.setDelegate(next);
+        }
+
+        return contexts.getFirst();
     }
 
     /**
@@ -66,6 +87,5 @@ public class UserContexts {
     public static <T extends UserContextCondition> T getContextCondition(KeycloakSession session, String providerId) {
         return (T) session.getProvider(UserContextCondition.class, providerId);
     }
-
 
 }

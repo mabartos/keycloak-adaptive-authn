@@ -33,6 +33,7 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<T> data;
+    private UserContext<T> delegate;
 
     public AbstractUserContext(KeycloakSession session) {
         this.session = session;
@@ -62,8 +63,24 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
                 return data;
             }
             this.data = tryInitDataMultipleTimes(realm, knownUser, tracingProvider);
+
+            // try to call chained delegates
+            if (data.isEmpty() && getDelegate().isPresent()) {
+                this.data = getDelegate().get().getData(realm, knownUser);
+            }
+
             return data;
         });
+    }
+
+    @Override
+    public Optional<UserContext<T>> getDelegate() {
+        return Optional.ofNullable(delegate);
+    }
+
+    @Override
+    public void setDelegate(UserContext<?> delegate) {
+        this.delegate = (UserContext<T>) delegate;
     }
 
     protected Optional<T> tryInitDataMultipleTimes(RealmModel realm, UserModel knownUser, TracingProvider tracing) {

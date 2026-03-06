@@ -35,7 +35,7 @@ import java.util.Optional;
  *
  * @param <T> specific data to retrieve
  */
-public interface UserContext<T> extends Provider {
+public interface UserContext<T> extends Provider, ChainedUserContext<T> {
 
     /**
      * Flag to determine whether we need a basic information about the authentication user
