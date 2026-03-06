@@ -50,7 +50,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<KnownLocationC
 
     @Override
     public void onSuccessfulLogin(@Nonnull RealmModel realm, @Nonnull UserModel user) {
-        IpApiLocationContext locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
+        LocationContext locationContext = UserContexts.getContext(session, LocationContext.class);
         LocationData location = locationContext.getData(realm, user).orElse(null);
         if (location == null) {
             logger.tracef("No current location");

@@ -35,7 +35,7 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
 
     public LocationCondition(KeycloakSession session, List<Operation<LocationContext>> rules) {
         this.session = session;
-        this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
+        this.locationContext = UserContexts.getContext(session, LocationContext.class);
         this.rules = rules;
     }
 

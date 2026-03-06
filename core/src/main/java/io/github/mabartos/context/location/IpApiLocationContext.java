@@ -16,11 +16,8 @@
  */
 package io.github.mabartos.context.location;
 
-import inet.ipaddr.IPAddress;
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.DeviceContext;
-import io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory;
-import io.github.mabartos.context.ip.client.TestIpAddressContextFactory;
+import io.github.mabartos.context.ip.client.IpAddressContext;
 import jakarta.annotation.Nonnull;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -42,13 +39,15 @@ import static io.github.mabartos.context.ip.client.TestIpAddressContextFactory.U
 /**
  * Obtain location data based on the IP address from 'ipapi.co' server
  */
-public class IpApiLocationContext extends DeviceContext<LocationData> {
+public class IpApiLocationContext extends LocationContext {
     private static final Logger log = Logger.getLogger(IpApiLocationContext.class);
     private final HttpClientProvider httpClientProvider;
+    private final IpAddressContext ipAddressContext;
 
     public IpApiLocationContext(KeycloakSession session) {
         super(session);
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
+        this.ipAddressContext = UserContexts.getContext(session, IpAddressContext.class);
     }
 
     @Override
@@ -63,9 +62,6 @@ public class IpApiLocationContext extends DeviceContext<LocationData> {
     @Override
     public Optional<LocationData> initData(@Nonnull RealmModel realm) {
         try {
-            final var contextProvider = useTestingIpAddress() ? TestIpAddressContextFactory.PROVIDER_ID : DefaultIpAddressContextFactory.PROVIDER_ID;
-            final DeviceContext<IPAddress> ipAddressContext = UserContexts.getContext(session, contextProvider);
-
             var client = httpClientProvider.getHttpClient();
 
             var uriString = Optional.ofNullable(ipAddressContext)

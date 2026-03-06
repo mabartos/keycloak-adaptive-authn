@@ -39,11 +39,6 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
     }
 
     @Override
-    public int getPriority() {
-        return 0;
-    }
-
-    @Override
     public boolean isInitialized() {
         return data != null && data.isPresent();
     }

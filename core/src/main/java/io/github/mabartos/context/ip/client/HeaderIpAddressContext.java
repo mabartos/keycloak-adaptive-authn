@@ -32,7 +32,7 @@ import static io.github.mabartos.context.ip.IpAddressUtils.getIpAddressFromHeade
 /**
  * IP address obtained from the 'Forwarded' or 'X-Forwarded-For' headers
  */
-public class HeaderIpAddressContext extends DeviceContext<IPAddress> {
+public class HeaderIpAddressContext extends IpAddressContext {
 
     public HeaderIpAddressContext(KeycloakSession session) {
         super(session);

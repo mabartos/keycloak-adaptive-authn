@@ -31,4 +31,9 @@ public class KcUserRoleContextFactory implements UserContextFactory<UserRoleCont
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public Class<UserRoleContext> getUserContextClass() {
+        return UserRoleContext.class;
+    }
 }

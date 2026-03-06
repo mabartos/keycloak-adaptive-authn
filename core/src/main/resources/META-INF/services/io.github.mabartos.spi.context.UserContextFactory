@@ -4,7 +4,6 @@ io.github.mabartos.context.ip.proxy.ProxyIpAddressContextFactory
 io.github.mabartos.context.location.IpApiLocationContextFactory
 io.github.mabartos.context.ip.client.DeviceIpAddressContextFactory
 io.github.mabartos.context.ip.client.HeaderIpAddressContextFactory
-io.github.mabartos.context.ip.client.DefaultIpAddressContextFactory
 io.github.mabartos.context.user.KcLoginEventsContextFactory
 io.github.mabartos.context.user.KcLoginFailuresEventsContextFactory
 io.github.mabartos.context.user.TypicalAccessTimeContextFactory

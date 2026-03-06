@@ -27,7 +27,7 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
 
     public LoginEventIpAddressRiskEvaluator(KeycloakSession session) {
         this.loginEventsContext = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
     }
 
     @Override

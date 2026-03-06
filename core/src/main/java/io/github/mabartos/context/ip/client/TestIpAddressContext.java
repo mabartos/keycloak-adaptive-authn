@@ -9,7 +9,7 @@ import org.keycloak.models.RealmModel;
 
 import java.util.Optional;
 
-public class TestIpAddressContext extends DeviceContext<IPAddress> {
+public class TestIpAddressContext extends IpAddressContext {
     private static final String TESTING_IP = "77.75.72.3"; // seznam.cz
 
     public TestIpAddressContext(KeycloakSession session) {

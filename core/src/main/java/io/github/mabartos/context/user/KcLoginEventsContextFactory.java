@@ -15,4 +15,9 @@ public class KcLoginEventsContextFactory implements UserContextFactory<LoginEven
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public Class<LoginEventsContext> getUserContextClass() {
+        return LoginEventsContext.class;
+    }
 }

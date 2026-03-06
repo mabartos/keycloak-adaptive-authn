@@ -40,7 +40,7 @@ public class BrowserCondition implements UserContextCondition, ConditionalAuthen
     private final List<Operation<DeviceRepresentationContext>> rules;
 
     public BrowserCondition(KeycloakSession session, List<Operation<DeviceRepresentationContext>> rules) {
-        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
         this.rules = rules;
     }
 

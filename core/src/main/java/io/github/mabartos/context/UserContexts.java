@@ -18,6 +18,8 @@ package io.github.mabartos.context;
 
 import io.github.mabartos.spi.condition.UserContextCondition;
 import io.github.mabartos.spi.context.UserContext;
+import io.github.mabartos.spi.context.UserContextFactory;
+import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.Comparator;
@@ -26,22 +28,21 @@ import java.util.List;
 public class UserContexts {
 
     /**
-     * Retrieve user contexts sorted by their specified priority
+     * Retrieve user context with the subtype {@param type} with the highest priority
      *
      * @param session            Keycloak session
-     * @param context            required user context type
-     * @param excludedProviderId excluded providerId from the retrieval
-     * @param <T>                user context type
-     * @return list of user contexts
+     * @param type               UserContext type
+     * @return user context with the highest priority for its {@link UserContextFactory#getUserContextClass()}
+     * @throws IllegalStateException if no provider is found
      */
-    public static <T extends UserContext<?>> List<T> getSortedContexts(KeycloakSession session, Class<T> context, String excludedProviderId) {
+    @Nonnull
+    public static <T extends UserContext<?>> T getContext(@Nonnull KeycloakSession session, @Nonnull Class<T> type) {
         return session.getKeycloakSessionFactory().getProviderFactoriesStream(UserContext.class)
-                .filter(f -> !f.getId().equals(excludedProviderId))
-                .map(f -> f.create(session))
-                .filter(f -> context.isAssignableFrom(f.getClass()))
-                .map(f -> (T) f)
-                .sorted(Comparator.comparingInt(f -> ((UserContext<?>) f).getPriority()).reversed())
-                .toList();
+                .map(f -> (UserContextFactory<?>) f)
+                .filter(f -> f.getUserContextClass().equals(type))
+                .max(Comparator.comparingInt(UserContextFactory::getPriority))
+                .map(f -> (T) f.create(session))
+                .orElseThrow(() -> new IllegalStateException("Cannot find any provider with the type '%s'".formatted(type.getSimpleName())));
     }
 
     /**

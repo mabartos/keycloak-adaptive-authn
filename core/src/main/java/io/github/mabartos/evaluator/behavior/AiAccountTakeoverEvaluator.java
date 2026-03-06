@@ -98,8 +98,8 @@ public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
 
     public AiAccountTakeoverEvaluator(KeycloakSession session) {
         this.loginEvents = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
-        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
-        this.typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
+        this.typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContext.class);
         this.eventStore = session.getProvider(EventStoreProvider.class);
         this.aiEngine = session.getProvider(AiEngine.class);
     }

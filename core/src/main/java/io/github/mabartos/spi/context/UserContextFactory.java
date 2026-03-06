@@ -27,6 +27,18 @@ import org.keycloak.provider.ProviderFactory;
  */
 public interface UserContextFactory<T extends UserContext<?>> extends ProviderFactory<T> {
 
+    Class<T> getUserContextClass();
+
+    /**
+     * Priority of the user context used for ordering when multiple implementation of the same user context is present
+     * The higher the priority is, the sooner the user context is retrieved in sorted ops.
+     *
+     * @return priority
+     */
+    default int getPriority() {
+        return 0;
+    }
+
     @Override
     default void init(Config.Scope config) {
     }

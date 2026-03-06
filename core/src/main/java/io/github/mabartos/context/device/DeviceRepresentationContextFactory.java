@@ -31,4 +31,9 @@ public class DeviceRepresentationContextFactory implements UserContextFactory<De
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public Class<DeviceRepresentationContext> getUserContextClass() {
+        return DeviceRepresentationContext.class;
+    }
 }

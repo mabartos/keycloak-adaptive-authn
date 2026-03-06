@@ -45,14 +45,6 @@ public interface UserContext<T> extends Provider {
     boolean requiresUser();
 
     /**
-     * Priority of the user context used for ordering when multiple implementation of the same user context is present
-     * The higher the priority is, the sooner the user context is retrieved in sorted ops.
-     *
-     * @return priority
-     */
-    int getPriority();
-
-    /**
      * Flag to determine if the data should be always re-fetched per request
      * <p>
      * User contexts from remote locations should be fetched only once per request

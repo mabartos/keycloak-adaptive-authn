@@ -19,7 +19,7 @@ package io.github.mabartos.context.ip.client;
 import io.github.mabartos.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class HeaderIpAddressContextFactory implements UserContextFactory<HeaderIpAddressContext> {
+public class HeaderIpAddressContextFactory implements UserContextFactory<IpAddressContext> {
     public static final String PROVIDER_ID = "header-ip-address-context";
 
     @Override
@@ -30,5 +30,15 @@ public class HeaderIpAddressContextFactory implements UserContextFactory<HeaderI
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+    @Override
+    public Class<IpAddressContext> getUserContextClass() {
+        return IpAddressContext.class;
+    }
+
+    @Override
+    public int getPriority() {
+        return DeviceIpAddressContextFactory.PRIORITY - 1;
     }
 }

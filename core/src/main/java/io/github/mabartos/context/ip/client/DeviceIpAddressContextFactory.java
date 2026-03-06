@@ -19,8 +19,9 @@ package io.github.mabartos.context.ip.client;
 import io.github.mabartos.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class DeviceIpAddressContextFactory implements UserContextFactory<DeviceIpAddressContext> {
+public class DeviceIpAddressContextFactory implements UserContextFactory<IpAddressContext> {
     public static final String PROVIDER_ID = "device-ip-address-context";
+    public static final int PRIORITY = 10;
 
     @Override
     public DeviceIpAddressContext create(KeycloakSession session) {
@@ -30,5 +31,15 @@ public class DeviceIpAddressContextFactory implements UserContextFactory<DeviceI
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+    @Override
+    public Class<IpAddressContext> getUserContextClass() {
+        return IpAddressContext.class;
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY;
     }
 }

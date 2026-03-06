@@ -18,4 +18,9 @@ public class TypicalAccessTimeContextFactory implements UserContextFactory<Typic
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public Class<TypicalAccessTimeContext> getUserContextClass() {
+        return TypicalAccessTimeContext.class;
+    }
 }

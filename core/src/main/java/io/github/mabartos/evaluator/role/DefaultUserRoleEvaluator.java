@@ -42,7 +42,7 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     private final UserRoleContext context;
 
     public DefaultUserRoleEvaluator(KeycloakSession session) {
-        this.context = UserContexts.getContext(session, KcUserRoleContextFactory.PROVIDER_ID);
+        this.context = UserContexts.getContext(session, UserRoleContext.class);
     }
 
     @Override

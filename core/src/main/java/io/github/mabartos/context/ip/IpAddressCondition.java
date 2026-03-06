@@ -39,7 +39,7 @@ public class IpAddressCondition implements UserContextCondition, ConditionalAuth
 
     public IpAddressCondition(KeycloakSession session, List<Operation<DeviceRepresentationContext>> rules) {
         this.session = session;
-        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
         this.rules = rules;
     }
 

@@ -15,4 +15,9 @@ public class KnownLocationContextFactory implements UserContextFactory<KnownLoca
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public Class<KnownLocationContext> getUserContextClass() {
+        return KnownLocationContext.class;
+    }
 }

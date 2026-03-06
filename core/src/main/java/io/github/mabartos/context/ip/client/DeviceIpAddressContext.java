@@ -32,21 +32,16 @@ import java.util.Optional;
 /**
  * IP address obtained from the {@link DeviceContext}
  */
-public class DeviceIpAddressContext extends DeviceContext<IPAddress> {
+public class DeviceIpAddressContext extends IpAddressContext {
+    private final DeviceRepresentationContext deviceContext;
 
     public DeviceIpAddressContext(KeycloakSession session) {
         super(session);
-    }
-
-    @Override
-    public int getPriority() {
-        return 10;
+        this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
     }
 
     @Override
     public Optional<IPAddress> initData(@Nonnull RealmModel realm) {
-        final DeviceRepresentationContext deviceContext = UserContexts.getContext(session, DeviceRepresentationContextFactory.PROVIDER_ID);
-
         return deviceContext.getData(realm)
                 .map(DeviceRepresentation::getIpAddress)
                 .flatMap(IpAddressUtils::getIpAddress);

@@ -19,7 +19,7 @@ package io.github.mabartos.context.ip.proxy;
 import io.github.mabartos.spi.context.UserContextFactory;
 import org.keycloak.models.KeycloakSession;
 
-public class ProxyIpAddressContextFactory implements UserContextFactory<ProxyIpAddressContext> {
+public class ProxyIpAddressContextFactory implements UserContextFactory<IpProxyContext> {
     public static final String PROVIDER_ID = "default-ip-proxy-context";
 
     @Override
@@ -30,5 +30,10 @@ public class ProxyIpAddressContextFactory implements UserContextFactory<ProxyIpA
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+    @Override
+    public Class<IpProxyContext> getUserContextClass() {
+        return IpProxyContext.class;
     }
 }

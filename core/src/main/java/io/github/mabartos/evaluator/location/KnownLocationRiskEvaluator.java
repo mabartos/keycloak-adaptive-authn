@@ -5,6 +5,7 @@ import io.github.mabartos.context.location.IpApiLocationContext;
 import io.github.mabartos.context.location.IpApiLocationContextFactory;
 import io.github.mabartos.context.location.KnownLocationContext;
 import io.github.mabartos.context.location.KnownLocationContextFactory;
+import io.github.mabartos.context.location.LocationContext;
 import io.github.mabartos.context.location.LocationData;
 import io.github.mabartos.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
@@ -27,12 +28,12 @@ import static io.github.mabartos.level.Risk.Score.SMALL;
 public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(KnownLocationRiskEvaluator.class);
 
-    private final IpApiLocationContext locationContext;
+    private final LocationContext locationContext;
     private final KnownLocationContext knownLocationContext;
 
     public KnownLocationRiskEvaluator(KeycloakSession session) {
-        this.locationContext = UserContexts.getContext(session, IpApiLocationContextFactory.PROVIDER_ID);
-        this.knownLocationContext = UserContexts.getContext(session, KnownLocationContextFactory.PROVIDER_ID);
+        this.locationContext = UserContexts.getContext(session, LocationContext.class);
+        this.knownLocationContext = UserContexts.getContext(session, KnownLocationContext.class);
     }
 
     @Override

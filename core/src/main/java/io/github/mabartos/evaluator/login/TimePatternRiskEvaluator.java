@@ -76,7 +76,7 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
     private final TypicalAccessTimeContext typicalTimeContext;
 
     public TimePatternRiskEvaluator(KeycloakSession session) {
-        this.typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContextFactory.PROVIDER_ID);
+        this.typicalTimeContext = UserContexts.getContext(session, TypicalAccessTimeContext.class);
     }
 
     // Thresholds for risk scoring (in hours of deviation)
