@@ -26,15 +26,12 @@ import org.jboss.logging.Logger;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.quarkus.runtime.configuration.Configuration;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
-
-import static io.github.mabartos.context.ip.client.TestIpAddressContextFactory.USE_TESTING_IP_PROP;
 
 /**
  * Obtain location data based on the IP address from 'ipapi.co' server
@@ -53,10 +50,6 @@ public class IpApiLocationContext extends LocationContext {
     @Override
     public boolean isRemote() {
         return true;
-    }
-
-    private boolean useTestingIpAddress() {
-        return Configuration.isTrue(USE_TESTING_IP_PROP);
     }
 
     @Override

@@ -10,14 +10,27 @@ import org.keycloak.models.RealmModel;
 import java.util.Optional;
 
 public class TestIpAddressContext extends IpAddressContext {
-    private static final String TESTING_IP = "77.75.72.3"; // seznam.cz
+    public static final String TESTING_IP = "77.75.72.3"; // seznam.cz
+    public static final String USE_TESTING_IP_PROP = "ip.address.use.testing";
 
     public TestIpAddressContext(KeycloakSession session) {
         super(session);
     }
 
+    public static boolean isTestIpAddressUsed() {
+        return Boolean.parseBoolean(System.getProperty(USE_TESTING_IP_PROP, "false"));
+    }
+
+    @Override
+    public boolean alwaysFetch() {
+        return true;
+    }
+
     @Override
     public Optional<IPAddress> initData(@Nonnull RealmModel realm) {
-        return IpAddressUtils.getIpAddress(TESTING_IP);
+        if (isTestIpAddressUsed()) {
+            return IpAddressUtils.getIpAddress(TESTING_IP);
+        }
+        return Optional.empty();
     }
 }
