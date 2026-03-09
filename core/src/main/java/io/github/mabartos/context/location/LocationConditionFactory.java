@@ -28,23 +28,17 @@ import java.util.stream.Stream;
 public class LocationConditionFactory extends UserContextConditionFactory<LocationContext> {
     public static final String PROVIDER_ID = "location-conditional-authenticator";
 
-    public static final String CONTINENT_LIST_CONFIG = "continentListConfig";
-    public static final String CONTINENT_VALUE_CONFIG = "continentValueConfig";
-
     public static final String COUNTRY_LIST_CONFIG = "countryListConfig";
     public static final String COUNTRY_VALUE_CONFIG = "countryValueConfig";
 
     public static final String CITY_LIST_CONFIG = "cityListConfig";
     public static final String CITY_VALUE_CONFIG = "cityValueConfig";
 
-    public static final Operation<LocationContext> CONTINENT_IS = new Operation<>("CONT_EQ", "continent is", (realm, location, val) -> location.getData(realm).map(LocationData::getContinent).filter(f -> f.equals(val)).isPresent());
-    public static final Operation<LocationContext> CONTINENT_IS_NOT = new Operation<>("CONT_NEQ", "continent is not", (realm, location, val) -> location.getData(realm).map(LocationData::getContinent).filter(f -> f.equals(val)).isEmpty());
-
     public static final Operation<LocationContext> COUNTRY_IS = new Operation<>("COUNTRY_EQ", "country is", (realm, location, val) -> location.getData(realm).map(LocationData::getCountry).filter(f -> f.equals(val)).isPresent());
-    public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not", (realm, location, val) -> location.getData(realm).map(LocationData::getContinent).filter(f -> f.equals(val)).isEmpty());
+    public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not", (realm, location, val) -> location.getData(realm).map(LocationData::getCountry).filter(f -> f.equals(val)).isEmpty());
 
     public static final Operation<LocationContext> CITY_IS = new Operation<>("CITY_EQ", "city is", (realm, location, val) -> location.getData(realm).map(LocationData::getCity).filter(f -> f.equals(val)).isPresent());
-    public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (realm, location, val) -> location.getData(realm).map(LocationData::getContinent).filter(f -> f.equals(val)).isEmpty());
+    public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (realm, location, val) -> location.getData(realm).map(LocationData::getCity).filter(f -> f.equals(val)).isEmpty());
 
     public LocationConditionFactory() {
     }
@@ -56,7 +50,7 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
 
     @Override
     public List<Operation<LocationContext>> initOperations() {
-        return List.of(CONTINENT_IS, CONTINENT_IS_NOT, COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
+        return List.of(COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
     }
 
     @Override
@@ -72,21 +66,6 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return ProviderConfigurationBuilder.create()
-                // Continent
-                .property()
-                .name(CONTINENT_LIST_CONFIG)
-                .options(Stream.of(CONTINENT_IS, CONTINENT_IS_NOT).map(Operation::getText).toList())
-                .label(CONTINENT_LIST_CONFIG)
-                .helpText(CONTINENT_LIST_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.LIST_TYPE)
-                .add()
-                .property()
-                .name(CONTINENT_VALUE_CONFIG)
-                .label(CONTINENT_VALUE_CONFIG)
-                .helpText(CONTINENT_VALUE_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("")
-                .add()
                 // Country
                 .property()
                 .name(COUNTRY_LIST_CONFIG)
