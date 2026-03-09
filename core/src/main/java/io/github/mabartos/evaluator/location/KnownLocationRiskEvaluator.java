@@ -64,21 +64,20 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
         return calculateLocationRisk(currentLocation, knownLocations);
     }
 
-    protected Risk calculateLocationRisk(LocationData currentLocation, Set<KnownLocationContext.KnownLocationData> knownLocations) {
-        var currentKnownLocation = new KnownLocationContext.KnownLocationData(
-                currentLocation.getCountry(),
-                currentLocation.getCity()
-        );
-
+    protected Risk calculateLocationRisk(LocationData currentLocation, Set<LocationData> knownLocations) {
         // Check for exact match (same city and country)
-        boolean exactMatch = knownLocations.contains(currentKnownLocation);
+        boolean exactMatch = knownLocations.stream()
+                .anyMatch(loc ->
+                        java.util.Objects.equals(loc.getCountry(), currentLocation.getCountry()) &&
+                        java.util.Objects.equals(loc.getCity(), currentLocation.getCity())
+                );
         if (exactMatch) {
             return Risk.of(NONE, "This exact location (city + country) has been seen before");
         }
 
         // Check if the country has been seen before (even if city is different)
         boolean sameCountry = knownLocations.stream()
-                .anyMatch(loc -> loc.country().equals(currentLocation.getCountry()));
+                .anyMatch(loc -> java.util.Objects.equals(loc.getCountry(), currentLocation.getCountry()));
         if (sameCountry) {
             return Risk.of(SMALL, "The city has changed, but the country is the same.");
         }

@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class KnownLocationContext extends AbstractUserContext<Set<KnownLocationContext.KnownLocationData>> implements OnSuccessfulLoginCallback {
+public class KnownLocationContext extends AbstractUserContext<Set<LocationData>> implements OnSuccessfulLoginCallback {
     private static final Logger logger = Logger.getLogger(KnownLocationContext.class);
     private static final String KNOWN_LOCATIONS_ATTR = "adaptive_authn.known_locations";
     // TODO later, it might be configurable
@@ -32,7 +32,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<KnownLocationC
     }
 
     @Override
-    public Optional<Set<KnownLocationData>> initData(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+    public Optional<Set<LocationData>> initData(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         if (knownUser == null) {
             logger.warn("User is null");
             return Optional.empty();
@@ -57,11 +57,11 @@ public class KnownLocationContext extends AbstractUserContext<Set<KnownLocationC
             return;
         }
 
-        var currentKnownLocation = getKnownLocationData(location.getCountry(), location.getCity());
+        var currentKnownLocation = LocationDataUtils.create(location.getCountry(), location.getCity());
         var knownLocations = getKnownLocationData(user);
 
         // Remove if already present to update position (move to end)
-        knownLocations.remove(currentKnownLocation);
+        removeMatchingLocation(knownLocations, currentKnownLocation);
         knownLocations.add(currentKnownLocation);
 
         // Keep only the last N locations
@@ -75,38 +75,24 @@ public class KnownLocationContext extends AbstractUserContext<Set<KnownLocationC
         saveKnownLocationData(user, knownLocations);
     }
 
-    public record KnownLocationData(String country, String city) {
-    }
-
-    private LinkedHashSet<KnownLocationData> getKnownLocationData(UserModel knownUser) {
+    private LinkedHashSet<LocationData> getKnownLocationData(UserModel knownUser) {
         return knownUser.getAttributeStream(KNOWN_LOCATIONS_ATTR)
-                .map(this::parseAttribute)
+                .map(LocationDataUtils::parseFromAttribute)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void saveKnownLocationData(UserModel user, Set<KnownLocationData> knownLocations) {
+    private void saveKnownLocationData(UserModel user, Set<LocationData> knownLocations) {
         var locationKeys = knownLocations.stream()
-                .map(this::getKnownLocationKey)
+                .map(LocationDataUtils::formatToAttribute)
                 .toList();
         user.setAttribute(KNOWN_LOCATIONS_ATTR, locationKeys);
     }
 
-    private KnownLocationData parseAttribute(String attribute) {
-        return Optional.ofNullable(attribute)
-                .map(attr -> {
-                    var parts = attr.split(":");
-                    return getKnownLocationData(parts[0], parts[1]);
-                }).orElse(null);
+    private void removeMatchingLocation(Set<LocationData> locations, LocationData toRemove) {
+        locations.removeIf(loc ->
+                Objects.equals(loc.getCountry(), toRemove.getCountry()) &&
+                Objects.equals(loc.getCity(), toRemove.getCity())
+        );
     }
-
-    private String getKnownLocationKey(KnownLocationData location) {
-        return location.country + ":" + location.city;
-    }
-
-    private KnownLocationData getKnownLocationData(String country, String city) {
-        return new KnownLocationData(country, city);
-    }
-
-
 }
