@@ -25,6 +25,7 @@ import java.util.Optional;
  */
 public class Risk {
     public enum Score {
+        INVALID,
         NEGATIVE_HIGH,
         NEGATIVE_LOW,
         NONE,
@@ -34,8 +35,6 @@ public class Risk {
         HIGH,
         VERY_HIGH,
         EXTREME,
-        // invalid
-        INVALID
     }
 
     private final Score scoreCategory;

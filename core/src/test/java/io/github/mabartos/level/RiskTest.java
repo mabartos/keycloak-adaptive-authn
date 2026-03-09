@@ -99,9 +99,21 @@ public class RiskTest {
         result = low.max(null);
         assertThat(result.getScore(), is(SMALL));
 
-        // Test with invalid - should return this
+        // Test with invalid parameter - should return this
         result = low.max(Risk.invalid("test"));
         assertThat(result.getScore(), is(SMALL));
+
+        // Test when this is invalid - should return the valid parameter
+        Risk invalid = Risk.invalid("Invalid risk");
+        result = invalid.max(high);
+        assertThat(result.getScore(), is(VERY_HIGH));
+        assertThat(result.getReason().get(), is("High risk"));
+
+        // Test when both are invalid - should return this
+        Risk invalid2 = Risk.invalid("Another invalid");
+        result = invalid.max(invalid2);
+        assertThat(result.getScore(), is(INVALID));
+        assertThat(result.getReason().get(), is("Invalid risk"));
 
         // Test with equal scores - should return this
         Risk equal = Risk.of(SMALL, "Equal risk");
