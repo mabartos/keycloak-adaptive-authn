@@ -55,11 +55,17 @@ public class IpApiLocationContext extends LocationContext {
     @Override
     public Optional<LocationData> initData(@Nonnull RealmModel realm) {
         try {
-            var client = httpClientProvider.getHttpClient();
-
-            var uriString = Optional.ofNullable(ipAddressContext)
+            var ipAddress = Optional.ofNullable(ipAddressContext)
                     .map(f -> f.getData(realm))
-                    .flatMap(f->f.stream().findAny())
+                    .flatMap(f -> f.stream().findAny())
+                    .orElse(null);
+            if (ipAddress == null) {
+                log.tracef("Cannot obtain IP address");
+                return Optional.empty();
+            }
+
+            var client = httpClientProvider.getHttpClient();
+            var uriString = Optional.of(ipAddress)
                     .map(IpApiLocationContextFactory.SERVICE_URL)
                     .filter(StringUtil::isNotBlank);
 
@@ -77,7 +83,11 @@ public class IpApiLocationContext extends LocationContext {
                     return Optional.empty();
                 }
                 Optional<LocationData> data = Optional.ofNullable(JsonSerialization.readValue(response.getEntity().getContent(), IpApiLocationData.class));
-                data.ifPresent(location -> log.tracef("Location obtained: %s", data));
+                data.ifPresent(location -> {
+                    log.tracef("Location obtained: %s", data);
+                    // update the location cache for authnSession
+                    AuthnSessionLocationContext.updateCache(session.getContext().getAuthenticationSession(), ipAddress, location);
+                });
                 return data;
             }
         } catch (URISyntaxException | IOException | RuntimeException e) {
