@@ -26,11 +26,12 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NEGATIVE_LOW;
 
 /**
  * Risk evaluator for OS properties
+ * Known OS = trust signal, unknown OS = moderate risk
  */
 public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
     private final OperatingSystemCondition condition;
@@ -46,6 +47,8 @@ public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
-        return condition.isDefaultKnownOs(realm) ? Risk.of(NONE) : Risk.of(HIGH);
+        return condition.isDefaultKnownOs(realm)
+            ? Risk.of(NEGATIVE_LOW, "Known OS - trust signal")
+            : Risk.of(MEDIUM, "Unknown OS");
     }
 }

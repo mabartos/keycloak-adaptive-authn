@@ -17,10 +17,13 @@ import org.keycloak.models.UserModel;
 import java.util.Set;
 
 import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.SMALL;
-import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.level.Risk.Score.NEGATIVE_LOW;
+import static io.github.mabartos.level.Risk.Score.VERY_SMALL;
 
+/**
+ * Evaluates risk based on IP address history.
+ * Known IPs = trust signal, unknown IPs = risk signal
+ */
 public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     private final LoginEventsContext loginEventsContext;
     private final DeviceRepresentationContext deviceContext;
@@ -57,18 +60,21 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
                 .count();
 
         if (numberOccurrences == 0) {
-            return Risk.of(VERY_HIGH);
+            return Risk.of(HIGH, "IP address never seen before");
         } else {
             var eventsSize = events.size();
             if (eventsSize > 3) {
                 long threshold = eventsSize / 3;
                 if (numberOccurrences >= threshold) {
-                    return Risk.of(SMALL);
+                    // Seen frequently - trust signal
+                    return Risk.of(NEGATIVE_LOW, "Frequently used IP address - trust signal");
                 } else {
-                    return Risk.of(HIGH);
+                    // Seen sometimes but not frequently
+                    return Risk.of(VERY_SMALL, "IP address seen occasionally");
                 }
             } else {
-                return Risk.of(NONE);
+                // Not enough data
+                return Risk.invalid("Not enough login history");
             }
         }
 

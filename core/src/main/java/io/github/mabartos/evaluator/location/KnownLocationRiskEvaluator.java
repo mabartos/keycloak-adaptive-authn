@@ -19,8 +19,8 @@ import org.keycloak.models.UserModel;
 import java.util.Set;
 
 import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.SMALL;
+import static io.github.mabartos.level.Risk.Score.NEGATIVE_LOW;
+import static io.github.mabartos.level.Risk.Score.VERY_SMALL;
 
 /**
  * Risk evaluator for location properties
@@ -58,7 +58,7 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
         var knownLocations = knownLocationContext.getData(realm, knownUser).orElse(Set.of());
 
         if (knownLocations.isEmpty()) {
-            return Risk.of(SMALL, "First tracked location");
+            return Risk.of(VERY_SMALL, "First tracked location");
         }
 
         return calculateLocationRisk(currentLocation, knownLocations);
@@ -72,14 +72,14 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
                         java.util.Objects.equals(loc.getCity(), currentLocation.getCity())
                 );
         if (exactMatch) {
-            return Risk.of(NONE, "This exact location (city + country) has been seen before");
+            return Risk.of(NEGATIVE_LOW, "Known location (city + country) - trust signal");
         }
 
         // Check if the country has been seen before (even if city is different)
         boolean sameCountry = knownLocations.stream()
                 .anyMatch(loc -> java.util.Objects.equals(loc.getCountry(), currentLocation.getCountry()));
         if (sameCountry) {
-            return Risk.of(SMALL, "The city has changed, but the country is the same.");
+            return Risk.of(VERY_SMALL, "Same country, different city - minor anomaly");
         }
 
         return Risk.of(HIGH, "Completely new country");

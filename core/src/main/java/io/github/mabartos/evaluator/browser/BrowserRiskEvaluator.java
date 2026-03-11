@@ -26,11 +26,12 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.level.Risk.Score.NEGATIVE_LOW;
 
 /**
  * Risk evaluator for browser properties
+ * Known browser = trust signal, unknown browser = moderate risk
  */
 public class BrowserRiskEvaluator extends DeviceRiskEvaluator {
     private final BrowserCondition browserCondition;
@@ -41,7 +42,9 @@ public class BrowserRiskEvaluator extends DeviceRiskEvaluator {
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
-        return browserCondition.isDefaultKnownBrowser(realm) ? Risk.of(NONE) : Risk.of(HIGH);
+        return browserCondition.isDefaultKnownBrowser(realm)
+            ? Risk.of(NEGATIVE_LOW, "Known browser - trust signal")
+            : Risk.of(MEDIUM, "Unknown browser");
     }
 
     @Override

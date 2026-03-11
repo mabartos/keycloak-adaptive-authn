@@ -82,7 +82,7 @@ public abstract class AbstractRiskEngine implements RiskEngine {
             case USER_KNOWN -> evaluateRiskUserKnown(realm, Objects.requireNonNull(knownUser));
         };
 
-        logger.debugf("Risk Engine (Virtual Threads) - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", phase.name(), Time.currentTimeMillis() - start);
+        logger.debugf("Risk Engine ('%s') - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", getClass().getSimpleName(), phase.name(), Time.currentTimeMillis() - start);
         logger.debug("--------------------------------------------------");
         return risk;
     }
