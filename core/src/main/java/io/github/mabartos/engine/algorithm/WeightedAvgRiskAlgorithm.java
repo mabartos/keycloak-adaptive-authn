@@ -1,4 +1,4 @@
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.algorithm;
 
 import io.github.mabartos.level.ResultRisk;
 import io.github.mabartos.level.Risk;

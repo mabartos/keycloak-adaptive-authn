@@ -1,4 +1,4 @@
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.algorithm;
 
 import org.keycloak.Config;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
