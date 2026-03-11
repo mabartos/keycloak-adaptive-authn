@@ -1,22 +1,20 @@
 package io.github.mabartos.engine.algorithm;
 
-import io.github.mabartos.spi.level.ResultRisk;
-import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import io.github.mabartos.spi.level.AdvancedRiskLevels;
+import io.github.mabartos.spi.level.ResultRisk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.level.RiskLevel;
+import io.github.mabartos.spi.level.SimpleRiskLevels;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import io.github.mabartos.spi.level.SimpleRiskLevels;
-import io.github.mabartos.spi.level.AdvancedRiskLevels;
 
 import static java.util.Optional.of;
 
@@ -46,7 +44,7 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
      * Default bias for the algorithm.
      * Negative bias makes the algorithm less aggressive, requiring more evidence to reach high risk levels.
      */
-    private static final double DEFAULT_BIAS = -1.0;
+    private static final double DEFAULT_BIAS = -0.5;
 
     private final ValuesMapper valuesMapper;
 
