@@ -18,16 +18,6 @@ import java.util.Set;
 public interface RiskScoreAlgorithm extends Provider {
 
     /**
-     * Get name of the algorithm
-     */
-    String getName();
-
-    /**
-     * Get description of the algorithm representing details about risk score calculation
-     */
-    String getDescription();
-
-    /**
      * Evaluate complex risk score for certain evaluators
      *
      * @param evaluators risk evaluators

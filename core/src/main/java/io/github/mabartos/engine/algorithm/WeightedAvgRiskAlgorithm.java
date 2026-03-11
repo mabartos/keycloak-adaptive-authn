@@ -23,16 +23,6 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     }
 
     @Override
-    public String getName() {
-        return "Weighted average";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Compute the overall risk score by leveraging weighted average algorithm";
-    }
-
-    @Override
     public ResultRisk evaluateRisk(@Nonnull Set<RiskEvaluator> evaluators,
                                    @Nonnull RiskEvaluator.EvaluationPhase phase,
                                    @Nonnull RealmModel realm,
