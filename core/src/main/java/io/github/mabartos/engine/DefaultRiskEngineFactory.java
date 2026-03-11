@@ -23,7 +23,7 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 public class DefaultRiskEngineFactory implements RiskEngineFactory {
-    public static final String PROVIDER_ID = "default";
+    public static final String PROVIDER_ID = "default-mutiny";
 
     @Override
     public RiskEngine create(KeycloakSession session) {

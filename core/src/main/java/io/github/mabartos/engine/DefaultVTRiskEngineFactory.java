@@ -39,6 +39,11 @@ public class DefaultVTRiskEngineFactory implements RiskEngineFactory {
     }
 
     @Override
+    public int order() {
+        return 10;
+    }
+
+    @Override
     public void init(Config.Scope config) {
     }
 
