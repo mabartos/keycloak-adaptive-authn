@@ -19,15 +19,15 @@ package io.github.mabartos.evaluator.os;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.os.OperatingSystemCondition;
 import io.github.mabartos.context.os.OperatingSystemConditionFactory;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NEGATIVE_LOW;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
 
 /**
  * Risk evaluator for OS properties

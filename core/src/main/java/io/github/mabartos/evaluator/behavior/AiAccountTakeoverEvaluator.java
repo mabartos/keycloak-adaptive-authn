@@ -7,7 +7,7 @@ import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.context.user.TypicalAccessTimeContext;
 import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.ai.AiEngine;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;

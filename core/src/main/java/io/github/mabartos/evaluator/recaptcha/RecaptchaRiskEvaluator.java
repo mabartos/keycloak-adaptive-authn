@@ -1,6 +1,6 @@
 package io.github.mabartos.evaluator.recaptcha;
 
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
 import jakarta.annotation.Nonnull;
@@ -30,14 +30,14 @@ import java.io.IOException;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.API_KEY_CONSOLE;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.PROJECT_ID_CONSOLE;
 import static io.github.mabartos.evaluator.recaptcha.RecaptchaAuthenticatorFactory.SITE_KEY_CONSOLE;
-import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.INVALID;
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.SMALL;
-import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
-import static io.github.mabartos.level.Risk.Score.VERY_SMALL;
+import static io.github.mabartos.spi.level.Risk.Score.EXTREME;
+import static io.github.mabartos.spi.level.Risk.Score.HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.INVALID;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NONE;
+import static io.github.mabartos.spi.level.Risk.Score.SMALL;
+import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.VERY_SMALL;
 
 public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authenticator {
     private static final Logger log = Logger.getLogger(RecaptchaRiskEvaluator.class);

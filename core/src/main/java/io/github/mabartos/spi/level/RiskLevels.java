@@ -16,33 +16,32 @@
  */
 package io.github.mabartos.spi.level;
 
-import org.keycloak.provider.Provider;
-import org.keycloak.provider.ProviderFactory;
-import org.keycloak.provider.Spi;
+import java.util.List;
 
 /**
- * SPI for the Risk levels scale functionality
+ * Wrapper for a collection of risk levels.
+ * Encapsulates the levels, their names, and validation logic.
  */
-public class RiskLevelsSpi implements Spi {
-    public static final String SPI_NAME = "risk-levels";
+public interface RiskLevels {
 
-    @Override
-    public boolean isInternal() {
-        return false;
-    }
+    /**
+     * Get the list of risk levels in order
+     *
+     * @return list of risk levels
+     */
+    List<RiskLevel> getLevels();
 
-    @Override
-    public String getName() {
-        return SPI_NAME;
-    }
+    /**
+     * Get the names of risk levels in order
+     *
+     * @return list of level names
+     */
+    List<String> getLevelNames();
 
-    @Override
-    public Class<? extends Provider> getProviderClass() {
-        return RiskLevelsProvider.class;
-    }
-
-    @Override
-    public Class<? extends ProviderFactory> getProviderFactoryClass() {
-        return RiskLevelsFactory.class;
-    }
+    /**
+     * Validates that risk levels cover the entire 0-1 spectrum with no gaps or overlaps.
+     *
+     * @throws IllegalStateException if validation fails
+     */
+    void validate();
 }

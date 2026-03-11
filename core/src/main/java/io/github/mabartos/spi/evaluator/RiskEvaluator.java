@@ -18,7 +18,7 @@ package io.github.mabartos.spi.evaluator;
 
 import io.github.mabartos.spi.context.UserContext;
 import io.github.mabartos.spi.engine.RiskEngine;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;

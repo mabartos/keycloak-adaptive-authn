@@ -18,7 +18,7 @@
 package io.github.mabartos.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.ai.AiRiskEvaluatorMessages;
 
 /**

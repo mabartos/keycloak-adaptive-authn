@@ -20,7 +20,7 @@ import org.jboss.logging.Logger;
 import io.github.mabartos.ai.AiEngineUtils;
 import io.github.mabartos.ai.DefaultAiDataRequest;
 import io.github.mabartos.ai.DefaultAiDataResponse;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.ai.AiEngine;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;

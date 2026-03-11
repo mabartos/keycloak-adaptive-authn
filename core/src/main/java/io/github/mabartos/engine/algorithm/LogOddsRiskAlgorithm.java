@@ -1,17 +1,22 @@
 package io.github.mabartos.engine.algorithm;
 
-import io.github.mabartos.level.ResultRisk;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.ResultRisk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import io.github.mabartos.spi.level.RiskLevel;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import io.github.mabartos.spi.level.SimpleRiskLevels;
+import io.github.mabartos.spi.level.AdvancedRiskLevels;
 
 import static java.util.Optional.of;
 
@@ -21,6 +26,28 @@ import static java.util.Optional.of;
  * Evidence scores are aggregated and transformed using logistic function to produce final risk probability.
  */
 public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
+    // Simple 3-level thresholds calibrated for log-odds
+    private static final RiskLevel SIMPLE_LEVEL_LOW = new RiskLevel(SimpleRiskLevels.LOW, 0.0, 0.50);
+    private static final RiskLevel SIMPLE_LEVEL_MEDIUM = new RiskLevel(SimpleRiskLevels.MEDIUM, 0.50, 0.85);
+    private static final RiskLevel SIMPLE_LEVEL_HIGH = new RiskLevel(SimpleRiskLevels.HIGH, 0.85, 1.0);
+
+    // Advanced 5-level thresholds calibrated for log-odds
+    private static final RiskLevel ADV_LEVEL_LOW = new RiskLevel(AdvancedRiskLevels.LOW, 0.0, 0.35);
+    private static final RiskLevel ADV_LEVEL_MILD = new RiskLevel(AdvancedRiskLevels.MILD, 0.35, 0.55);
+    private static final RiskLevel ADV_LEVEL_MEDIUM = new RiskLevel(AdvancedRiskLevels.MEDIUM, 0.55, 0.75);
+    private static final RiskLevel ADV_LEVEL_MODERATE = new RiskLevel(AdvancedRiskLevels.MODERATE, 0.75, 0.90);
+    private static final RiskLevel ADV_LEVEL_HIGH = new RiskLevel(AdvancedRiskLevels.HIGH, 0.90, 1.0);
+
+    // Cached instances - validated once on creation
+    private static final SimpleRiskLevels SIMPLE_RISK_LEVELS = new SimpleRiskLevels(SIMPLE_LEVEL_LOW, SIMPLE_LEVEL_MEDIUM, SIMPLE_LEVEL_HIGH);
+    private static final AdvancedRiskLevels ADVANCED_RISK_LEVELS = new AdvancedRiskLevels(ADV_LEVEL_LOW, ADV_LEVEL_MILD, ADV_LEVEL_MEDIUM, ADV_LEVEL_MODERATE, ADV_LEVEL_HIGH);
+
+    /**
+     * Default bias for the algorithm.
+     * Negative bias makes the algorithm less aggressive, requiring more evidence to reach high risk levels.
+     */
+    private static final double DEFAULT_BIAS = -1.0;
+
     private final ValuesMapper valuesMapper;
 
     /**
@@ -43,7 +70,7 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
     private final double biasScore;
 
     public LogOddsRiskAlgorithm() {
-        this(0.0);
+        this(DEFAULT_BIAS);
     }
 
     public LogOddsRiskAlgorithm(double biasScore) {
@@ -53,6 +80,18 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
     public LogOddsRiskAlgorithm(ValuesMapper valuesMapper, double biasScore) {
         this.valuesMapper = valuesMapper;
         this.biasScore = biasScore;
+    }
+
+    @Override
+    @Nonnull
+    public SimpleRiskLevels getSimpleRiskLevels() {
+        return SIMPLE_RISK_LEVELS;
+    }
+
+    @Override
+    @Nonnull
+    public AdvancedRiskLevels getAdvancedRiskLevels() {
+        return ADVANCED_RISK_LEVELS;
     }
 
     @Override

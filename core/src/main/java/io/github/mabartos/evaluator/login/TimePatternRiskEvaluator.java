@@ -4,7 +4,7 @@ import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.TypicalAccessTimeContext;
 import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
 import io.github.mabartos.context.user.TypicalAccessTimeData;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -19,7 +19,7 @@ import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import static io.github.mabartos.level.Risk.Score.*;
+import static io.github.mabartos.spi.level.Risk.Score.*;
 
 /**
  * Evaluates risk based on unusual login times using circular statistics.

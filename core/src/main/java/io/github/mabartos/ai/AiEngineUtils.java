@@ -17,7 +17,7 @@
 
 package io.github.mabartos.ai;
 
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;

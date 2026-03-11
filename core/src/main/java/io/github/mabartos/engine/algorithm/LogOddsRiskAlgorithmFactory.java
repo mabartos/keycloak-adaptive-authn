@@ -6,7 +6,9 @@ import org.keycloak.models.KeycloakSession;
 
 public class LogOddsRiskAlgorithmFactory implements RiskScoreAlgorithmFactory {
     public static final String PROVIDER_ID = "log-odds";
-    private static LogOddsRiskAlgorithm SINGLETON;
+
+    // Eager initialization - validation happens at class load time
+    private static final LogOddsRiskAlgorithm SINGLETON = new LogOddsRiskAlgorithm();
 
     @Override
     public String getId() {
@@ -27,9 +29,11 @@ public class LogOddsRiskAlgorithmFactory implements RiskScoreAlgorithmFactory {
 
     @Override
     public RiskScoreAlgorithm create(KeycloakSession keycloakSession) {
-        if (SINGLETON == null) {
-            SINGLETON = new LogOddsRiskAlgorithm();
-        }
         return SINGLETON;
+    }
+
+    @Override
+    public int order() {
+        return 100;
     }
 }

@@ -1,46 +1,13 @@
-/*
- * Copyright 2024 Red Hat, Inc. and/or its affiliates
- * and other contributors as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package io.github.mabartos.spi.level;
 
 /**
  * Specific category representing a risk score in a specified range, in order to react on the risk scores
+ *
+ * @param name              name of the risk level category
+ * @param lowestRiskValue   lowest risk score value for the category in range (0,1>
+ * @param highestRiskValue  highest risk score value for the category in range (0,1>
  */
-public interface RiskLevel {
-
-    /**
-     * Get name of the risk level category
-     *
-     * @return name
-     */
-    String getName();
-
-    /**
-     * Get the lowest risk score value for the category
-     *
-     * @return risk score in range (0,1>
-     */
-    double getLowestRiskValue();
-
-    /**
-     * Get the highest risk score value for the category
-     *
-     * @return risk score in range (0,1>
-     */
-    double getHighestRiskValue();
+public record RiskLevel(String name, double lowestRiskValue, double highestRiskValue) {
 
     /**
      * Check whether the provided `riskValue` matches the risk level category
@@ -48,5 +15,8 @@ public interface RiskLevel {
      * @param riskValue risk score to be checked
      * @return true if the `riskValue` complies with the risk level score range
      */
-    boolean matchesRisk(double riskValue);
+    public boolean matchesRisk(double riskValue) {
+        if (lowestRiskValue() == 0.0f && riskValue == lowestRiskValue()) return true;
+        return riskValue > lowestRiskValue() && riskValue <= highestRiskValue();
+    }
 }

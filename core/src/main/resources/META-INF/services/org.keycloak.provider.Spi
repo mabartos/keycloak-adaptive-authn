@@ -1,6 +1,5 @@
 io.github.mabartos.spi.context.UserContextSpi
 io.github.mabartos.spi.evaluator.RiskEvaluatorSpi
-io.github.mabartos.spi.level.RiskLevelsSpi
 io.github.mabartos.spi.engine.RiskEngineSpi
 io.github.mabartos.spi.condition.UserContextConditionSpi
 io.github.mabartos.spi.ai.AiEngineSpi

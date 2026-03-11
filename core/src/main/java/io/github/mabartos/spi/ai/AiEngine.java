@@ -17,7 +17,7 @@
 package io.github.mabartos.spi.ai;
 
 import io.github.mabartos.ai.DefaultAiDataRequest;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import org.keycloak.provider.Provider;
 
 import java.util.Arrays;

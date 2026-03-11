@@ -1,6 +1,6 @@
 package io.github.mabartos.evaluator.behavior;
 
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
 import jakarta.annotation.Nonnull;
@@ -15,12 +15,12 @@ import org.keycloak.models.UserModel;
 import java.time.Duration;
 import java.util.Date;
 
-import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.SMALL;
-import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.EXTREME;
+import static io.github.mabartos.spi.level.Risk.Score.HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NONE;
+import static io.github.mabartos.spi.level.Risk.Score.SMALL;
+import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
 import static org.keycloak.events.EventType.DELETE_ACCOUNT;
 import static org.keycloak.events.EventType.DELETE_ACCOUNT_ERROR;
 import static org.keycloak.events.EventType.REMOVE_CREDENTIAL;

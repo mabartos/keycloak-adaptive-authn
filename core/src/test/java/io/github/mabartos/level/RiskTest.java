@@ -1,14 +1,15 @@
 package io.github.mabartos.level;
 
+import io.github.mabartos.spi.level.Risk;
 import org.junit.jupiter.api.Test;
 
-import static io.github.mabartos.level.Risk.Score.EXTREME;
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.INVALID;
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.SMALL;
-import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.EXTREME;
+import static io.github.mabartos.spi.level.Risk.Score.HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.INVALID;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NONE;
+import static io.github.mabartos.spi.level.Risk.Score.SMALL;
+import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;

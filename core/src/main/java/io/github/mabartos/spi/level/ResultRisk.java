@@ -1,4 +1,4 @@
-package io.github.mabartos.level;
+package io.github.mabartos.spi.level;
 
 import org.keycloak.utils.StringUtil;
 

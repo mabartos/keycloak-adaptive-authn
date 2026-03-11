@@ -16,8 +16,8 @@
  */
 package io.github.mabartos.spi.engine;
 
-import io.github.mabartos.level.ResultRisk;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.ResultRisk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import org.keycloak.provider.Provider;
 

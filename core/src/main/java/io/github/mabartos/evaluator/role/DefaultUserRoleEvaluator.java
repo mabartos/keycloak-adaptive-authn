@@ -19,7 +19,7 @@ package io.github.mabartos.evaluator.role;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcUserRoleContextFactory;
 import io.github.mabartos.context.user.UserRoleContext;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -32,8 +32,8 @@ import org.keycloak.models.UserModel;
 import java.util.Collection;
 import java.util.Set;
 
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NONE;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NONE;
 
 /**
  * Risk evaluator for user role properties

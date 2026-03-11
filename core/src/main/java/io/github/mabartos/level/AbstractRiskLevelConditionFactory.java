@@ -16,10 +16,9 @@
  */
 package io.github.mabartos.level;
 
+import io.github.mabartos.spi.level.SimpleRiskLevels;
+import io.github.mabartos.spi.level.AdvancedRiskLevels;
 import org.keycloak.Config;
-import io.github.mabartos.spi.level.RiskLevel;
-import io.github.mabartos.spi.level.RiskLevelsFactory;
-import io.github.mabartos.spi.level.RiskLevelsProvider;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
@@ -28,30 +27,33 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Abstract factory for the risk level conditions to simplify their creation
+ * Abstract factory for the risk level conditions to simplify their creation.
+ * Risk levels are obtained directly from the RiskScoreAlgorithm at runtime.
  */
 public abstract class AbstractRiskLevelConditionFactory implements ConditionalAuthenticatorFactory {
     public static final String LEVEL_CONFIG = "level-config";
     private static ConditionalAuthenticator RISK_LEVELS_CONDITION;
 
-    private RiskLevelsFactory riskLevelsfactory;
-
-    public abstract String getRiskLevelProviderId();
+    /**
+     * Determines whether to use simple (3-level) or advanced (5-level) risk levels.
+     * @return true for advanced (5-level), false for simple (3-level)
+     */
+    public abstract boolean isAdvanced();
 
     @Override
     public ConditionalAuthenticator getSingleton() {
         if (RISK_LEVELS_CONDITION == null) {
-            RISK_LEVELS_CONDITION = new RiskLevelCondition(riskLevelsfactory.getSingleton());
+            RISK_LEVELS_CONDITION = new RiskLevelCondition(isAdvanced());
         }
         return RISK_LEVELS_CONDITION;
     }
 
     @Override
     public String getDisplayType() {
-        return String.format("Condition - Risk Level (%s)", riskLevelsfactory.getName());
+        return String.format("Condition - Risk Level (%s)",
+            isAdvanced() ? AdvancedRiskLevels.getDescription() : SimpleRiskLevels.getDescription());
     }
 
     @Override
@@ -76,15 +78,26 @@ public abstract class AbstractRiskLevelConditionFactory implements ConditionalAu
 
     @Override
     public String getHelpText() {
-        return riskLevelsfactory.getHelpText();
+        var levelNames = isAdvanced()
+            ? AdvancedRiskLevels.getAdvancedLevelNames()
+            : SimpleRiskLevels.getSimpleLevelNames();
+
+        return String.format("%s risk condition (%s). Thresholds automatically calibrated based on the algorithm.",
+            isAdvanced() ? AdvancedRiskLevels.getDescription() : SimpleRiskLevels.getDescription(),
+            String.join(", ", levelNames));
     }
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
+        // Provide static level names - actual thresholds come from algorithm at runtime
+        var levelNames = isAdvanced()
+            ? AdvancedRiskLevels.getAdvancedLevelNames()
+            : SimpleRiskLevels.getSimpleLevelNames();
+
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(LEVEL_CONFIG)
-                .options(riskLevelsfactory.getSingleton().getRiskLevels().stream().map(RiskLevel::getName).toList())
+                .options(levelNames)
                 .label(LEVEL_CONFIG)
                 .helpText(LEVEL_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.LIST_TYPE)
@@ -98,10 +111,7 @@ public abstract class AbstractRiskLevelConditionFactory implements ConditionalAu
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-        this.riskLevelsfactory = Optional.ofNullable(factory.getProviderFactory(RiskLevelsProvider.class, getRiskLevelProviderId()))
-                .filter(f -> f instanceof RiskLevelsFactory)
-                .map(f -> (RiskLevelsFactory) f)
-                .orElseThrow(() -> new IllegalStateException(String.format("Cannot find Risk Level Factory '%s'", getRiskLevelProviderId())));
+        // No initialization needed - risk levels come from algorithm at runtime
     }
 
     @Override

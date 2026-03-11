@@ -16,7 +16,7 @@
  */
 package io.github.mabartos.engine;
 
-import io.github.mabartos.level.ResultRisk;
+import io.github.mabartos.spi.level.ResultRisk;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import jakarta.annotation.Nullable;

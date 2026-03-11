@@ -1,7 +1,7 @@
 package io.github.mabartos.engine;
 
-import io.github.mabartos.level.ResultRisk;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.ResultRisk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.context.UserContext;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
@@ -85,6 +85,11 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         logger.debugf("Risk Engine ('%s') - STOPPED EVALUATING (phase: %s) - consumed time: '%d ms'", getClass().getSimpleName(), phase.name(), Time.currentTimeMillis() - start);
         logger.debug("--------------------------------------------------");
         return risk;
+    }
+
+    @Override
+    public RiskScoreAlgorithm getRiskScoreAlgorithm() {
+        return riskScoreAlgorithm;
     }
 
     @Override

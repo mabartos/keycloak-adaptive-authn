@@ -20,8 +20,8 @@ public class AdvancedRiskLevelsConditionFactory extends AbstractRiskLevelConditi
     public static final String PROVIDER_ID = "advanced-risk-levels-condition";
 
     @Override
-    public String getRiskLevelProviderId() {
-        return AdvancedRiskLevelsFactory.PROVIDER_ID;
+    public boolean isAdvanced() {
+        return true; // Use advanced (5-level) risk levels
     }
 
     @Override

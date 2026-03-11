@@ -17,8 +17,12 @@
 package io.github.mabartos.level;
 
 import io.github.mabartos.spi.engine.RiskEngine;
+import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
-import io.github.mabartos.spi.level.RiskLevelsProvider;
+import io.github.mabartos.spi.level.AdvancedRiskLevels;
+import io.github.mabartos.spi.level.ResultRisk;
+import io.github.mabartos.spi.level.RiskLevel;
+import io.github.mabartos.spi.level.SimpleRiskLevels;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
@@ -28,18 +32,20 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.utils.StringUtil;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Condition for checking the evaluated overall risk score
+ * Condition for checking the evaluated overall risk score.
+ * Gets risk levels directly from the RiskScoreAlgorithm being used.
  */
 public class RiskLevelCondition implements ConditionalAuthenticator {
     private static final Logger logger = Logger.getLogger(RiskLevelCondition.class);
 
-    private final RiskLevelsProvider riskLevelsProvider;
+    private final boolean isAdvanced;
 
-    public RiskLevelCondition(RiskLevelsProvider riskLevelsProvider) {
-        this.riskLevelsProvider = riskLevelsProvider;
+    public RiskLevelCondition(boolean isAdvanced) {
+        this.isAdvanced = isAdvanced;
     }
 
     @Override
@@ -54,10 +60,24 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
                 return false;
             }
 
-            if (riskLevelsProvider == null) {
-                logger.errorf("Cannot find risk level provider");
-                throw new IllegalStateException("Risk Level Provider is not found");
+            if (riskEngine == null) {
+                logger.errorf("RiskEngine not available");
+                throw new IllegalStateException("RiskEngine not found");
             }
+
+            RiskScoreAlgorithm algorithm = riskEngine.getRiskScoreAlgorithm();
+            if (algorithm == null) {
+                logger.errorf("RiskScoreAlgorithm not available");
+                throw new IllegalStateException("RiskScoreAlgorithm not found");
+            }
+
+            // Get the appropriate risk levels (simple or advanced) from the algorithm
+            List<RiskLevel> riskLevels = isAdvanced
+                ? algorithm.getAdvancedRiskLevels().getLevels()
+                : algorithm.getSimpleRiskLevels().getLevels();
+
+            String description = isAdvanced ? AdvancedRiskLevels.getDescription() : SimpleRiskLevels.getDescription();
+            logger.debugf("Using %s risk levels from algorithm: %s", description, algorithm.getClass().getSimpleName());
 
             var storedRiskProvider = context.getSession().getProvider(StoredRiskProvider.class);
             var risk = Optional.of(storedRiskProvider.getStoredOverallRisk())
@@ -67,16 +87,16 @@ public class RiskLevelCondition implements ConditionalAuthenticator {
 
             var level = Optional.ofNullable(authConfig.getConfig().get(AbstractRiskLevelConditionFactory.LEVEL_CONFIG))
                     .filter(StringUtil::isNotBlank)
-                    .flatMap(f -> riskLevelsProvider.getRiskLevels().stream().filter(g -> g.getName().equals(f)).findAny())
-                    .orElseThrow(() -> new IllegalStateException("Cannot find specified level for provider: " + riskLevelsProvider));
+                    .flatMap(f -> riskLevels.stream().filter(g -> g.name().equals(f)).findAny())
+                    .orElseThrow(() -> new IllegalStateException("Cannot find specified level: " + authConfig.getConfig().get(AbstractRiskLevelConditionFactory.LEVEL_CONFIG)));
 
             var matches = level.matchesRisk(risk.getScore());
 
             if (matches) {
-                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.getName(), level.getLowestRiskValue(), risk.getScore(), level.getHighestRiskValue());
+                logger.debugf("Risk Level Condition (%s) matches the evaluated level: %f < %f <= %f", level.name(), level.lowestRiskValue(), risk.getScore(), level.highestRiskValue());
                 return true;
             } else {
-                logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.getName(), risk.getScore());
+                logger.tracef("Risk Level Condition (%s) DOES NOT MATCH the evaluated level: %f", level.name(), risk.getScore());
                 return false;
             }
         }

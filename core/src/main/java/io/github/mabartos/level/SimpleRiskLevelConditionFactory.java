@@ -20,8 +20,8 @@ public class SimpleRiskLevelConditionFactory extends AbstractRiskLevelConditionF
     public static final String PROVIDER_ID = "simple-risk-levels-condition";
 
     @Override
-    public String getRiskLevelProviderId() {
-        return SimpleRiskLevelsFactory.PROVIDER_ID;
+    public boolean isAdvanced() {
+        return false; // Use simple (3-level) risk levels
     }
 
     @Override

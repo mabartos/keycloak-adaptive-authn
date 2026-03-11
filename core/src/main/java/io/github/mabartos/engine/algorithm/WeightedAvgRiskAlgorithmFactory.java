@@ -6,7 +6,9 @@ import org.keycloak.models.KeycloakSession;
 
 public class WeightedAvgRiskAlgorithmFactory implements RiskScoreAlgorithmFactory {
     public static final String PROVIDER_ID = "weighted-average";
-    private static RiskScoreAlgorithm SINGLETON;
+
+    // Eager initialization - validation happens at class load time
+    private static final RiskScoreAlgorithm SINGLETON = new WeightedAvgRiskAlgorithm();
 
     @Override
     public String getId() {
@@ -25,9 +27,11 @@ public class WeightedAvgRiskAlgorithmFactory implements RiskScoreAlgorithmFactor
 
     @Override
     public RiskScoreAlgorithm create(KeycloakSession session) {
-        if (SINGLETON == null) {
-            SINGLETON = new WeightedAvgRiskAlgorithm();
-        }
         return SINGLETON;
+    }
+
+    @Override
+    public int order() {
+        return 0;
     }
 }

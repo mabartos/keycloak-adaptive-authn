@@ -19,7 +19,7 @@ package io.github.mabartos.evaluator.login;
 import inet.ipaddr.IPAddress;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.IpAddressContext;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
@@ -33,11 +33,11 @@ import org.keycloak.utils.StringUtil;
 import java.time.Duration;
 import java.util.Set;
 
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.SMALL;
-import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NONE;
+import static io.github.mabartos.spi.level.Risk.Score.SMALL;
+import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
 
 /**
  * Risk evaluator for checking login failures properties to detect brute-force attacks
@@ -62,13 +62,13 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     protected Risk getRiskLoginFailures(int failuresCount) {
-        if (failuresCount <= 2) {
+        if (failuresCount <= 3) {
             return Risk.of(NONE);
-        } else if (failuresCount <= 5) {
+        } else if (failuresCount <= 7) {
             return Risk.of(SMALL);
-        } else if (failuresCount < 10) {
-            return Risk.of(MEDIUM);
         } else if (failuresCount < 15) {
+            return Risk.of(MEDIUM);
+        } else if (failuresCount < 25) {
             return Risk.of(HIGH);
         } else {
             return Risk.of(VERY_HIGH);

@@ -1,7 +1,7 @@
 package io.github.mabartos.spi.evaluator;
 
 import io.github.mabartos.evaluator.EvaluatorUtils;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Weight;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;

@@ -16,8 +16,8 @@
  */
 package io.github.mabartos.spi.engine;
 
-import io.github.mabartos.level.ResultRisk;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.ResultRisk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -69,6 +69,13 @@ public interface RiskEngine extends Provider {
     ResultRisk evaluateRisk(@Nonnull RiskEvaluator.EvaluationPhase evaluationPhase,
                       @Nonnull RealmModel realm,
                       @Nullable UserModel knownUser);
+
+    /**
+     * Get the risk score algorithm currently being used by this engine
+     *
+     * @return the risk score algorithm
+     */
+    RiskScoreAlgorithm getRiskScoreAlgorithm();
 
     /**
      * Check if risk-based authentication is enabled for the current realm

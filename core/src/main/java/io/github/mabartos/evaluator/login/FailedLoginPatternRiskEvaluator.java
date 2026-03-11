@@ -19,7 +19,7 @@ package io.github.mabartos.evaluator.login;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
-import io.github.mabartos.level.Risk;
+import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Weight;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
@@ -35,10 +35,10 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.github.mabartos.level.Risk.Score.HIGH;
-import static io.github.mabartos.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.level.Risk.Score.NONE;
-import static io.github.mabartos.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
+import static io.github.mabartos.spi.level.Risk.Score.NONE;
+import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
 
 /**
  * Risk evaluator for analyzing the distribution and pattern of failed logins over time
