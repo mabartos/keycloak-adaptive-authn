@@ -20,7 +20,7 @@ import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.browser.BrowserCondition;
 import io.github.mabartos.context.browser.BrowserConditionFactory;
 import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
@@ -48,7 +48,7 @@ public class BrowserRiskEvaluator extends DeviceRiskEvaluator {
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.LOW;
+    public double getDefaultTrust() {
+        return Trust.LOW;
     }
 }

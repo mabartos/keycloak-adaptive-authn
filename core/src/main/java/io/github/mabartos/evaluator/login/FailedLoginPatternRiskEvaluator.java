@@ -20,7 +20,7 @@ import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -58,8 +58,8 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.IMPORTANT;
+    public double getDefaultTrust() {
+        return Trust.IMPORTANT;
     }
 
     @Override

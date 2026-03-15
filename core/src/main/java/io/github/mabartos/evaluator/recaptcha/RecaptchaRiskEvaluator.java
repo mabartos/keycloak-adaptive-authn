@@ -1,7 +1,7 @@
 package io.github.mabartos.evaluator.recaptcha;
 
 import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -60,8 +60,8 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.IMPORTANT;
+    public double getDefaultTrust() {
+        return Trust.IMPORTANT;
     }
 
     @Override

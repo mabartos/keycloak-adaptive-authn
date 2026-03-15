@@ -20,7 +20,7 @@ import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.os.OperatingSystemCondition;
 import io.github.mabartos.context.os.OperatingSystemConditionFactory;
 import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
@@ -41,8 +41,8 @@ public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.LOW;
+    public double getDefaultTrust() {
+        return Trust.LOW;
     }
 
     @Override

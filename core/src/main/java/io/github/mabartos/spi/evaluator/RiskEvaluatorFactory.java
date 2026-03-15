@@ -31,7 +31,7 @@ import java.util.List;
  */
 public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, EnvironmentDependentProviderFactory, ConfiguredProvider {
     String NAME_PREFIX = "Risk Evaluator - ";
-    String WEIGHT_CONFIG = "riskEvaluatorWeightConfig";
+    String TRUST_CONFIG = "riskEvaluatorTrustConfig";
     String ENABLED_CONFIG = "riskEvaluatorEnabledConfig";
 
     /**
@@ -57,9 +57,9 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
                 .defaultValue(true)
                 .add()
                 .property()
-                .name(getWeightConfig(evaluatorClass()))
-                .label(getName() + " Risk Weight")
-                .helpText(WEIGHT_CONFIG + ".tooltip")
+                .name(getTrustConfig(evaluatorClass()))
+                .label(getName() + " Trust Level")
+                .helpText(TRUST_CONFIG + ".tooltip")
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
                 .build();
@@ -88,7 +88,7 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
         return ENABLED_CONFIG + "-" + evaluator.getSimpleName();
     }
 
-    static String getWeightConfig(Class<? extends RiskEvaluator> evaluator) {
-        return WEIGHT_CONFIG + "-" + evaluator.getSimpleName();
+    static String getTrustConfig(Class<? extends RiskEvaluator> evaluator) {
+        return TRUST_CONFIG + "-" + evaluator.getSimpleName();
     }
 }

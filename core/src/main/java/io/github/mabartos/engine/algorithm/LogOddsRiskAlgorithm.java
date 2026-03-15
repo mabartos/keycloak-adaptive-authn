@@ -1,5 +1,6 @@
 package io.github.mabartos.engine.algorithm;
 
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.level.AdvancedRiskLevels;
@@ -99,13 +100,13 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
                                    @Nullable UserModel knownUser) {
         var filteredEvaluators = evaluators.stream()
                 .filter(eval -> eval.getRisk() != null)
-                .filter(f -> isValidWeight(f.getWeight(realm)))
+                .filter(f -> Trust.isValid(f.getTrust(realm)))
                 .collect(Collectors.toSet());
 
-        // Calculate weighted evidence sum
-        var weightedEvidenceSum = filteredEvaluators.stream()
+        // Calculate trust-weighted evidence sum
+        var trustWeightedEvidenceSum = filteredEvaluators.stream()
                 .filter(eval -> valuesMapper.isValid(eval.getRisk()))
-                .mapToDouble(eval -> valuesMapper.getRiskValue(eval.getRisk()).get() * eval.getWeight(realm))
+                .mapToDouble(eval -> valuesMapper.getRiskValue(eval.getRisk()).get() * eval.getTrust(realm))
                 .sum();
 
         if (filteredEvaluators.isEmpty()) {
@@ -113,7 +114,7 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
         }
 
         // Apply logistic transformation: P(fraud) = 1 / (1 + exp(-(evidence + bias)))
-        double totalEvidence = weightedEvidenceSum + biasScore;
+        double totalEvidence = trustWeightedEvidenceSum + biasScore;
         double riskProbability = logisticTransform(totalEvidence);
 
         return ResultRisk.of(riskProbability);
@@ -158,9 +159,5 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
         public boolean isValid(Risk risk) {
             return getRiskValue(risk).isPresent();
         }
-    }
-
-    protected static boolean isValidWeight(double value) {
-        return value >= 0.0d && value <= 1.0d;
     }
 }

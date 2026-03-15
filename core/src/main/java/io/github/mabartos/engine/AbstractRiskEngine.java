@@ -205,7 +205,7 @@ public abstract class AbstractRiskEngine implements RiskEngine {
                 results.add(new EvaluatorResult(
                         evaluator.getClass().getSimpleName(),
                         evaluator.getRisk(),
-                        evaluator.getWeight(realm),
+                        evaluator.getTrust(realm),
                         duration
                 ));
             }

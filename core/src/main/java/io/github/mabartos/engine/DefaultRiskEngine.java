@@ -155,7 +155,7 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                     if (span.isRecording()) {
                         span.setAttribute("keycloak.risk.engine.evaluator.score", eval.getRisk().getScore().name());
                         eval.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                        span.setAttribute("keycloak.risk.engine.evaluator.weight", eval.getWeight(realm));
+                        span.setAttribute("keycloak.risk.engine.evaluator.trust", eval.getTrust(realm));
                     }
                 }))
                 .onFailure()

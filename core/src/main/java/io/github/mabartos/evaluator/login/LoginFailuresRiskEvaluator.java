@@ -20,7 +20,7 @@ import inet.ipaddr.IPAddress;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -57,8 +57,8 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getDefaultWeight() {
-        return Weight.IMPORTANT;
+    public double getDefaultTrust() {
+        return Trust.IMPORTANT;
     }
 
     protected Risk getRiskLoginFailures(int failuresCount) {

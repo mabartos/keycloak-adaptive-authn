@@ -48,11 +48,13 @@ public interface RiskEvaluator extends Provider {
     Set<EvaluationPhase> evaluationPhases();
 
     /**
-     * Get weight of the evaluation claims how much the evaluations should influence the overall risk score
+     * Get trust level of the evaluator - how much the administrator trusts this evaluator's assessment
+     * <p>
+     * Higher trust means the evaluator's score has more influence on the overall risk calculation.
      *
-     * @return weight of the evaluation in range (0,1>
+     * @return trust level in range (0,1>
      */
-    double getWeight(@Nonnull RealmModel realm);
+    double getTrust(@Nonnull RealmModel realm);
 
     /**
      * Execute evaluation of the risk score

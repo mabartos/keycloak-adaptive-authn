@@ -17,7 +17,7 @@
 package io.github.mabartos.evaluator;
 
 import com.apicatalog.jsonld.StringUtils;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakContext;
@@ -29,37 +29,37 @@ import java.util.Optional;
 public class EvaluatorUtils {
 
     /**
-     * Get weight of the required risk evaluator
+     * Get trust level of the required risk evaluator
      */
-    private static Optional<String> getWeight(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
+    private static Optional<String> getTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
         return Optional.ofNullable(realm)
-                .map(f -> f.getAttribute(RiskEvaluatorFactory.getWeightConfig(evaluator)))
+                .map(f -> f.getAttribute(RiskEvaluatorFactory.getTrustConfig(evaluator)))
                 .filter(StringUtils::isNotBlank);
     }
 
     /**
-     * Get stored weight of the required risk evaluator
+     * Get stored trust level of the required risk evaluator
      */
-    public static double getStoredEvaluatorWeight(RealmModel realm, Class<? extends RiskEvaluator> evaluator, double defaultValue) {
-        return getWeight(realm, evaluator)
+    public static double getStoredEvaluatorTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator, double defaultValue) {
+        return getTrust(realm, evaluator)
                 .map(Double::parseDouble)
                 .orElse(defaultValue);
     }
 
-    public static double getStoredEvaluatorWeight(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
-        return getStoredEvaluatorWeight(realm, evaluator, Weight.NORMAL);
+    public static double getStoredEvaluatorTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
+        return getStoredEvaluatorTrust(realm, evaluator, Trust.NORMAL);
     }
 
-    public static boolean existsStoredEvaluatorWeight(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
-        return getWeight(realm, evaluator).isPresent();
+    public static boolean existsStoredEvaluatorTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
+        return getTrust(realm, evaluator).isPresent();
     }
 
     /**
-     * Store risk evaluator weight in realm attributes
+     * Store risk evaluator trust level in realm attributes
      */
-    public static void storeEvaluatorWeight(RealmModel realm, Class<? extends RiskEvaluator> evaluator, double value) {
+    public static void storeEvaluatorTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator, double value) {
         Optional.ofNullable(realm)
-                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getWeightConfig(evaluator), Double.toString(value)));
+                .ifPresent(f -> f.setAttribute(RiskEvaluatorFactory.getTrustConfig(evaluator), Double.toString(value)));
     }
 
     /**

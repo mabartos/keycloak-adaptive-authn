@@ -16,11 +16,27 @@
  */
 package io.github.mabartos.level;
 
-public interface Weight {
+/**
+ * Trust levels for risk evaluators
+ * <p>
+ * Represents how much the administrator trusts a specific evaluator's assessment.
+ * Higher trust means the evaluator's score has more influence on the overall risk calculation.
+ */
+public interface Trust {
     double NEGLIGIBLE = 0.2;
     double LOW = 0.5;
     double NORMAL = 0.8;
     double IMPORTANT = 1;
 
     double DEFAULT = NORMAL;
+
+    /**
+     * Validates that a trust value is within the valid range [0.0, 1.0]
+     *
+     * @param value the trust value to validate
+     * @return true if the value is in the range [0.0, 1.0], false otherwise
+     */
+    static boolean isValid(double value) {
+        return value >= 0.0d && value <= 1.0d;
+    }
 }

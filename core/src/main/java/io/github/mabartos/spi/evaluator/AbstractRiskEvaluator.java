@@ -2,7 +2,7 @@ package io.github.mabartos.spi.evaluator;
 
 import io.github.mabartos.evaluator.EvaluatorUtils;
 import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Weight;
+import io.github.mabartos.level.Trust;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
@@ -26,15 +26,15 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     }
 
     /**
-     * Default/starting weight for the evaluator
+     * Default/starting trust level for the evaluator
      */
-    public double getDefaultWeight() {
-        return Weight.DEFAULT;
+    public double getDefaultTrust() {
+        return Trust.DEFAULT;
     }
 
     @Override
-    public double getWeight(@Nonnull RealmModel realm) {
-        return EvaluatorUtils.getStoredEvaluatorWeight(realm, this.getClass(), getDefaultWeight());
+    public double getTrust(@Nonnull RealmModel realm) {
+        return EvaluatorUtils.getStoredEvaluatorTrust(realm, this.getClass(), getDefaultTrust());
     }
 
     @Override

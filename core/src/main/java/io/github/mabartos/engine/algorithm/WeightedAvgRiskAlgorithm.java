@@ -1,5 +1,6 @@
 package io.github.mabartos.engine.algorithm;
 
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.level.ResultRisk;
 import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
@@ -61,23 +62,23 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
                                    @Nullable UserModel knownUser) {
         var filteredEvaluators = evaluators.stream()
                 .filter(eval -> eval.getRisk() != null)
-                .filter(f -> isValue0to1(f.getWeight(realm)))
+                .filter(f -> Trust.isValid(f.getTrust(realm)))
                 .collect(Collectors.toSet());
 
         var weightedRisk = filteredEvaluators.stream()
                 .filter(eval -> valuesMapper.isValid(eval.getRisk()))
-                .mapToDouble(eval -> valuesMapper.getRiskValue(eval.getRisk()).get() * eval.getWeight(realm))
+                .mapToDouble(eval -> valuesMapper.getRiskValue(eval.getRisk()).get() * eval.getTrust(realm))
                 .sum();
 
-        var weights = filteredEvaluators.stream()
-                .mapToDouble(f -> f.getWeight(realm))
+        var trustSum = filteredEvaluators.stream()
+                .mapToDouble(f -> f.getTrust(realm))
                 .sum();
 
         // Weighted arithmetic mean
-        if (weights == 0) {
+        if (trustSum == 0) {
             return ResultRisk.invalid("No valid evaluators found for this phase");
         }
-        return ResultRisk.of(weightedRisk / weights);
+        return ResultRisk.of(weightedRisk / trustSum);
     }
 
     public static class ValuesMapper implements RiskValuesMapper {
@@ -102,12 +103,8 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
         @Override
         public boolean isValid(Risk risk) {
             return getRiskValue(risk)
-                    .filter(WeightedAvgRiskAlgorithm::isValue0to1)
+                    .filter(Trust::isValid)
                     .isPresent();
         }
-    }
-
-    protected static boolean isValue0to1(double value) {
-        return value >= 0.0d && value <= 1.0d;
     }
 }

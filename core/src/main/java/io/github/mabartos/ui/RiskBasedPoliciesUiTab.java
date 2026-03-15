@@ -16,6 +16,7 @@
  */
 package io.github.mabartos.ui;
 
+import io.github.mabartos.level.Trust;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import io.github.mabartos.evaluator.EvaluatorUtils;
@@ -44,7 +45,7 @@ import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_
 import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
 import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
 import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
-import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getWeightConfig;
+import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getTrustConfig;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
 
 /**
@@ -95,10 +96,10 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 EvaluatorUtils.setEvaluatorEnabled(realm, evalFactory.evaluatorClass(), Boolean.parseBoolean(value));
             });
 
-            var weight = model.get(getWeightConfig(evalFactory.evaluatorClass()));
-            doIfPresent(weight, value -> {
-                logger.tracef("putting weight '%f' for evaluator '%s' ('%s')", value, evalFactory.getName(),evalFactory.evaluatorClass());
-                EvaluatorUtils.storeEvaluatorWeight(realm, evalFactory.evaluatorClass(), Double.parseDouble(value));
+            var trust = model.get(getTrustConfig(evalFactory.evaluatorClass()));
+            doIfPresent(trust, value -> {
+                logger.tracef("putting trust level '%f' for evaluator '%s' ('%s')", value, evalFactory.getName(),evalFactory.evaluatorClass());
+                EvaluatorUtils.storeEvaluatorTrust(realm, evalFactory.evaluatorClass(), Double.parseDouble(value));
             });
         });
     }
@@ -130,12 +131,12 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             }
 
             {
-                var oldWeight = oldModel.get(getWeightConfig(f.evaluatorClass()));
-                var newWeight = newModel.get(getWeightConfig(f.evaluatorClass()));
-                if (!Objects.equals(oldWeight, newWeight)) {
-                    doIfPresent(newWeight, value -> {
-                        logger.tracef("setting new value for '%s' = '%s'", getWeightConfig(f.evaluatorClass()), value);
-                        EvaluatorUtils.storeEvaluatorWeight(realm, f.evaluatorClass(), Double.parseDouble(value));
+                var oldTrust = oldModel.get(getTrustConfig(f.evaluatorClass()));
+                var newTrust = newModel.get(getTrustConfig(f.evaluatorClass()));
+                if (!Objects.equals(oldTrust, newTrust)) {
+                    doIfPresent(newTrust, value -> {
+                        logger.tracef("setting new value for '%s' = '%s'", getTrustConfig(f.evaluatorClass()), value);
+                        EvaluatorUtils.storeEvaluatorTrust(realm, f.evaluatorClass(), Double.parseDouble(value));
                     });
                 }
             }
@@ -151,16 +152,15 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         riskEvaluatorFactories.forEach(f -> {
             try {
-                var value = model.get(getWeightConfig(f.evaluatorClass()));
+                var value = model.get(getTrustConfig(f.evaluatorClass()));
                 if (StringUtil.isBlank(value)) return; // default value is an empty string
 
-                var weight = Double.parseDouble(value);
-                // TODO have some util class
-                if (weight < 0.0 || weight > 1.0) {
+                var trust = Double.parseDouble(value);
+                if (!Trust.isValid(trust)) {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
-                throw new ComponentValidationException("Risk Weights must be double values in range (0,1>");
+                throw new ComponentValidationException("Risk Trust levels must be double values in range [0.0, 1.0]");
             }
         });
     }

@@ -174,7 +174,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
             if (span.isRecording()) {
                 span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
                 evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                span.setAttribute("keycloak.risk.engine.evaluator.weight", evaluator.getWeight(realm));
+                span.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(realm));
             }
         });
     }
