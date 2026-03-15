@@ -19,9 +19,8 @@ package io.github.mabartos.evaluator.os;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.os.OperatingSystemCondition;
 import io.github.mabartos.context.os.OperatingSystemConditionFactory;
-import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -38,11 +37,6 @@ public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
 
     public OperatingSystemRiskEvaluator(KeycloakSession session) {
         this.condition = UserContexts.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
-    }
-
-    @Override
-    public double getDefaultTrust() {
-        return Trust.LOW;
     }
 
     @Override

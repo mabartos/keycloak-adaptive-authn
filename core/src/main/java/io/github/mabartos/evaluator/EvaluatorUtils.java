@@ -47,7 +47,7 @@ public class EvaluatorUtils {
     }
 
     public static double getStoredEvaluatorTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {
-        return getStoredEvaluatorTrust(realm, evaluator, Trust.NORMAL);
+        return getStoredEvaluatorTrust(realm, evaluator, Trust.FULL);
     }
 
     public static boolean existsStoredEvaluatorTrust(RealmModel realm, Class<? extends RiskEvaluator> evaluator) {

@@ -19,9 +19,8 @@ package io.github.mabartos.evaluator.browser;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.browser.BrowserCondition;
 import io.github.mabartos.context.browser.BrowserConditionFactory;
-import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -45,10 +44,5 @@ public class BrowserRiskEvaluator extends DeviceRiskEvaluator {
         return browserCondition.isDefaultKnownBrowser(realm)
             ? Risk.of(NEGATIVE_LOW, "Known browser - trust signal")
             : Risk.of(MEDIUM, "Unknown browser");
-    }
-
-    @Override
-    public double getDefaultTrust() {
-        return Trust.LOW;
     }
 }

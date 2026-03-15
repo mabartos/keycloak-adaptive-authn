@@ -21,14 +21,22 @@ package io.github.mabartos.level;
  * <p>
  * Represents how much the administrator trusts a specific evaluator's assessment.
  * Higher trust means the evaluator's score has more influence on the overall risk calculation.
+ * <p>
+ * By default, evaluators are fully trusted (1.0). Administrators can reduce trust for
+ * evaluators they consider less reliable or accurate.
  */
 public interface Trust {
-    double NEGLIGIBLE = 0.2;
-    double LOW = 0.5;
-    double NORMAL = 0.8;
-    double IMPORTANT = 1;
+    /** Minimal trust - evaluator is highly unreliable */
+    double MINIMAL = 0.2;
 
-    double DEFAULT = NORMAL;
+    /** Low trust - evaluator has significant limitations */
+    double LOW = 0.5;
+
+    /** Moderate trust - evaluator is generally reliable but may have some edge cases */
+    double MODERATE = 0.8;
+
+    /** Full trust - evaluator is completely trusted (default) */
+    double FULL = 1.0;
 
     /**
      * Validates that a trust value is within the valid range [0.0, 1.0]

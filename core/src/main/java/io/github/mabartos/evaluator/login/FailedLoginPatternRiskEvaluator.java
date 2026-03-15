@@ -19,9 +19,8 @@ package io.github.mabartos.evaluator.login;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
-import io.github.mabartos.spi.level.Risk;
-import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.common.util.Time;
@@ -32,7 +31,11 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.github.mabartos.spi.level.Risk.Score.HIGH;
@@ -55,11 +58,6 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public Set<EvaluationPhase> evaluationPhases() {
         return Set.of(EvaluationPhase.USER_KNOWN);
-    }
-
-    @Override
-    public double getDefaultTrust() {
-        return Trust.IMPORTANT;
     }
 
     @Override

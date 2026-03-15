@@ -56,11 +56,6 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
         return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
-    @Override
-    public double getDefaultTrust() {
-        return Trust.IMPORTANT;
-    }
-
     protected Risk getRiskLoginFailures(int failuresCount) {
         if (failuresCount <= 3) {
             return Risk.of(NONE);

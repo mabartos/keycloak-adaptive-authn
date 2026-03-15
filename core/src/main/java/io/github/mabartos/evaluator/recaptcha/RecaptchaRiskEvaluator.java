@@ -60,11 +60,6 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
     }
 
     @Override
-    public double getDefaultTrust() {
-        return Trust.IMPORTANT;
-    }
-
-    @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
         try {
             if (!configIsValid()) {

@@ -105,11 +105,6 @@ public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
-    public double getDefaultTrust() {
-        return Trust.IMPORTANT;
-    }
-
-    @Override
     public boolean allowRetries() {
         return false;
     }

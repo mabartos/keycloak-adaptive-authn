@@ -29,7 +29,7 @@ public abstract class AbstractRiskEvaluator implements RiskEvaluator {
      * Default/starting trust level for the evaluator
      */
     public double getDefaultTrust() {
-        return Trust.DEFAULT;
+        return Trust.FULL;
     }
 
     @Override

@@ -9,50 +9,43 @@ public class TrustTest {
 
     @Test
     public void testTrustConstants() {
-        assertThat(Trust.NEGLIGIBLE, is(0.2));
+        assertThat(Trust.MINIMAL, is(0.2));
         assertThat(Trust.LOW, is(0.5));
-        assertThat(Trust.NORMAL, is(0.8));
-        assertThat(Trust.IMPORTANT, is(1.0));
-        assertThat(Trust.DEFAULT, is(Trust.NORMAL));
+        assertThat(Trust.MODERATE, is(0.8));
+        assertThat(Trust.FULL, is(1.0));
     }
 
     @Test
     public void testTrustOrdering() {
-        assertThat(Trust.NEGLIGIBLE < Trust.LOW, is(true));
-        assertThat(Trust.LOW < Trust.NORMAL, is(true));
-        assertThat(Trust.NORMAL < Trust.IMPORTANT, is(true));
+        assertThat(Trust.MINIMAL < Trust.LOW, is(true));
+        assertThat(Trust.LOW < Trust.MODERATE, is(true));
+        assertThat(Trust.MODERATE < Trust.FULL, is(true));
     }
 
     @Test
     public void testTrustValidRange() {
-        assertThat(Trust.NEGLIGIBLE >= 0.0, is(true));
-        assertThat(Trust.NEGLIGIBLE <= 1.0, is(true));
+        assertThat(Trust.MINIMAL >= 0.0, is(true));
+        assertThat(Trust.MINIMAL <= 1.0, is(true));
 
         assertThat(Trust.LOW >= 0.0, is(true));
         assertThat(Trust.LOW <= 1.0, is(true));
 
-        assertThat(Trust.NORMAL >= 0.0, is(true));
-        assertThat(Trust.NORMAL <= 1.0, is(true));
+        assertThat(Trust.MODERATE >= 0.0, is(true));
+        assertThat(Trust.MODERATE <= 1.0, is(true));
 
-        assertThat(Trust.IMPORTANT >= 0.0, is(true));
-        assertThat(Trust.IMPORTANT <= 1.0, is(true));
-    }
-
-    @Test
-    public void testDefaultTrust() {
-        assertThat(Trust.DEFAULT, is(0.8));
-        assertThat(Trust.DEFAULT, is(Trust.NORMAL));
+        assertThat(Trust.FULL >= 0.0, is(true));
+        assertThat(Trust.FULL <= 1.0, is(true));
     }
 
     @Test
     public void testTrustDifferences() {
-        double negligibleToLow = Trust.LOW - Trust.NEGLIGIBLE;
-        double lowToNormal = Trust.NORMAL - Trust.LOW;
-        double normalToImportant = Trust.IMPORTANT - Trust.NORMAL;
+        double minimalToLow = Trust.LOW - Trust.MINIMAL;
+        double lowToModerate = Trust.MODERATE - Trust.LOW;
+        double moderateToFull = Trust.FULL - Trust.MODERATE;
 
-        assertThat(negligibleToLow, is(org.hamcrest.Matchers.closeTo(0.3, 0.001)));
-        assertThat(lowToNormal, is(org.hamcrest.Matchers.closeTo(0.3, 0.001)));
-        assertThat(normalToImportant, is(org.hamcrest.Matchers.closeTo(0.2, 0.001)));
+        assertThat(minimalToLow, is(org.hamcrest.Matchers.closeTo(0.3, 0.001)));
+        assertThat(lowToModerate, is(org.hamcrest.Matchers.closeTo(0.3, 0.001)));
+        assertThat(moderateToFull, is(org.hamcrest.Matchers.closeTo(0.2, 0.001)));
     }
 
     @Test
@@ -61,11 +54,10 @@ public class TrustTest {
         assertThat(Trust.isValid(0.0), is(true));
         assertThat(Trust.isValid(0.5), is(true));
         assertThat(Trust.isValid(1.0), is(true));
-        assertThat(Trust.isValid(Trust.NEGLIGIBLE), is(true));
+        assertThat(Trust.isValid(Trust.MINIMAL), is(true));
         assertThat(Trust.isValid(Trust.LOW), is(true));
-        assertThat(Trust.isValid(Trust.NORMAL), is(true));
-        assertThat(Trust.isValid(Trust.IMPORTANT), is(true));
-        assertThat(Trust.isValid(Trust.DEFAULT), is(true));
+        assertThat(Trust.isValid(Trust.MODERATE), is(true));
+        assertThat(Trust.isValid(Trust.FULL), is(true));
 
         // Invalid values
         assertThat(Trust.isValid(-0.1), is(false));
