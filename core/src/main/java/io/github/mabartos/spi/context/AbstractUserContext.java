@@ -25,11 +25,13 @@ import org.keycloak.tracing.TracingProvider;
 import org.keycloak.tracing.TracingProviderUtil;
 
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractUserContext<T> implements UserContext<T> {
     protected static int COUNT_OF_INIT_RETRIES = 2;
 
     protected final KeycloakSession session;
+    private final ReentrantLock lock = new ReentrantLock();
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<T> data;
@@ -46,7 +48,8 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
 
     /**
      * Get the specific user context data.
-     * If the data are not properly initialized, it retries the retrieval
+     * If the data are not properly initialized, it retries the retrieval.
+     * Thread-safe lazy initialization using ReentrantLock (compatible with virtual threads in JDK 21+)
      *
      * @return specific data
      */
@@ -55,22 +58,58 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
         final var tracingProvider = TracingProviderUtil.getTracingProvider(session);
 
         return tracingProvider.trace(this.getClass(), "getData", (span) -> {
-            if (span.isRecording()) {
-                span.setAttribute("keycloak.user.context.always-fetch", alwaysFetch());
-            }
-
+            // Fast path - no lock needed if already initialized
             if (!alwaysFetch() && isInitialized()) {
+                recordSpanAttributes(span, true, false);
                 return data;
             }
-            this.data = tryInitDataMultipleTimes(realm, knownUser, tracingProvider);
 
-            // try to call chained delegates
-            if (data.isEmpty() && getDelegate().isPresent()) {
-                this.data = getDelegate().get().getData(realm, knownUser);
+            lock.lock();
+            try {
+                // Double-check inside lock
+                if (!alwaysFetch() && isInitialized()) {
+                    recordSpanAttributes(span, true, false);
+                    return data;
+                }
+
+                recordSpanAttributes(span, false, false);
+
+                // Initialize data
+                Optional<T> localData = tryInitDataMultipleTimes(realm, knownUser, tracingProvider);
+
+                // Try delegate if needed (release lock first to avoid nested locking)
+                if (localData.isEmpty() && getDelegate().isPresent()) {
+                    lock.unlock();
+                    try {
+                        recordSpanAttributes(span, false, true);
+                        localData = getDelegate().get().getData(realm, knownUser);
+                    } finally {
+                        lock.lock();
+                    }
+
+                    // Check if another thread initialized while we were calling delegate
+                    if (this.data != null && this.data.isPresent()) {
+                        return this.data;
+                    }
+                }
+
+                // Store and return the result
+                this.data = localData;
+                return this.data;
+            } finally {
+                lock.unlock();
             }
-
-            return data;
         });
+    }
+
+    private void recordSpanAttributes(io.opentelemetry.api.trace.Span span, boolean alreadyInitialized, boolean usingDelegate) {
+        if (span.isRecording()) {
+            span.setAttribute("keycloak.user.context.always-fetch", alwaysFetch());
+            span.setAttribute("keycloak.user.context.already-initialized", alreadyInitialized);
+            if (usingDelegate) {
+                span.setAttribute("keycloak.user.context.using-delegate", true);
+            }
+        }
     }
 
     @Override
