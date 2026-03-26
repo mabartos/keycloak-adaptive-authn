@@ -63,7 +63,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                 tracingProvider.trace(DefaultVTRiskEngine.class, "evaluateContinuous", span -> {
                     var results = new EvaluatorResults();
                     evaluators.forEach(evaluator -> executeEvaluator(evaluator, realm, knownUser, 1, results));
-                    var risk = getRiskScoreAlgorithm(realm).evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
+                    var risk = getRiskScoreAlgorithm(realm).evaluateRisk(session, evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
 
                     if (risk.isValid()) {
                         if (span.isRecording()) {
@@ -120,17 +120,27 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
 
                 var evaluatedRisks = evaluateInParallel(evaluators, realm, knownUser, retries, timeout, tracer, span);
 
-                this.risk = getRiskScoreAlgorithm(realm).evaluateRisk(evaluatedRisks, phase, realm, knownUser);
+                var algorithm = getRiskScoreAlgorithm(realm);
+                this.risk = algorithm.evaluateRisk(session, evaluatedRisks, phase, realm, knownUser);
 
                 if (risk.isValid()) {
-                    logger.debugf("The overall risk score is %f - (evaluation phase: %s)", risk.getScore(), phase);
+                    logger.debugf("The phase risk score is %f - (evaluation phase: %s)", risk.getScore(), phase);
 
                     if (span.isRecording()) {
-                        span.setAttribute("keycloak.risk.engine.overall", risk.getScore());
+                        span.setAttribute("keycloak.risk.engine.phase.score", risk.getScore());
                         span.setAttribute("keycloak.risk.engine.phase", phase.name());
                     }
 
-                    storedRiskProvider.storeRisk(risk, phase);
+                    // Compute overall risk from all stored phase data
+                    var overallRisk = algorithm.getOverallRiskScore(session, realm);
+                    if (overallRisk.isValid()) {
+                        storedRiskProvider.storeOverallRisk(overallRisk);
+                        logger.debugf("The overall combined risk score is %f", overallRisk.getScore());
+
+                        if (span.isRecording()) {
+                            span.setAttribute("keycloak.risk.engine.overall", overallRisk.getScore());
+                        }
+                    }
                 }
                 return risk;
             } catch (Exception e) {

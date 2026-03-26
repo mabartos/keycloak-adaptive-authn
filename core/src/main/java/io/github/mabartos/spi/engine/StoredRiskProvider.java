@@ -17,59 +17,88 @@
 package io.github.mabartos.spi.engine;
 
 import io.github.mabartos.spi.level.ResultRisk;
-import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.provider.Provider;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Provider for storing the evaluated overall risk score through the authentication flow processing
- * The overall risk score is calculated in several phases and then aggregated
+ * Provider for storing phase-level data and the overall risk score through the authentication flow.
+ * This is a pure storage layer with no business logic - algorithms decide what to store and how to combine.
  */
 public interface StoredRiskProvider extends Provider {
 
     /**
-     * Get evaluated overall stored risk score
+     * Store multiple attributes for a specific phase.
+     * Each key can have multiple values.
      *
-     * @return overall risk score in range (0,1>
+     * @param phase      phase of the evaluation
+     * @param attributes multi-valued attributes to store
      */
+    void storePhaseAttributes(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull MultivaluedHashMap<String, String> attributes);
+
+    /**
+     * Get all stored attributes for a specific phase.
+     *
+     * @param phase phase of the evaluation
+     * @return multi-valued attributes, or empty map if none stored
+     */
+    @Nonnull
+    MultivaluedHashMap<String, String> getPhaseAttributes(@Nonnull RiskEvaluator.EvaluationPhase phase);
+
+    /**
+     * Store a single attribute for a specific phase.
+     *
+     * @param phase phase of the evaluation
+     * @param key   attribute key
+     * @param value attribute value
+     */
+    void storePhaseAttribute(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull String key, @Nonnull String value);
+
+    /**
+     * Get a single attribute value for a specific phase.
+     * If the key has multiple values, returns the first one.
+     *
+     * @param phase phase of the evaluation
+     * @param key   attribute key
+     * @return attribute value, or null if not found
+     */
+    @Nullable
+    String getPhaseAttribute(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull String key);
+
+    /**
+     * Get all values for a specific attribute key in a phase.
+     *
+     * @param phase phase of the evaluation
+     * @param key   attribute key
+     * @return list of values, or empty list if not found
+     */
+    @Nonnull
+    List<String> getPhaseAttributeValues(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull String key);
+
+    /**
+     * Store the overall combined risk score.
+     *
+     * @param risk overall risk score in range (0,1] and other attributes
+     */
+    void storeOverallRisk(@Nonnull ResultRisk risk);
+
+    /**
+     * Get the stored overall risk score.
+     *
+     * @return overall risk score in range (0,1]
+     */
+    @Nonnull
     ResultRisk getStoredOverallRisk();
 
     /**
-     * Get evaluated stored risk score for the specific phase
-     *
-     * @param phase phase of the evaluation
-     * @return overall risk score in range (0,1>
-     */
-    ResultRisk getStoredRisk(RiskEvaluator.EvaluationPhase phase);
-
-    /**
-     * Store the overall risk score
-     *
-     * @param risk overall risk score in range (0,1> and other attributes
-     */
-    void storeOverallRisk(ResultRisk risk);
-
-    /**
-     * Store the overall risk score for the specific phase
-     *
-     * @param risk      risk score in range (0,1> and other attributes
-     * @param phase     phase of the risk score evaluation
-     */
-    void storeRisk(ResultRisk risk, RiskEvaluator.EvaluationPhase phase);
-
-    /**
-     * Get stored overall risk score in a printable version
+     * Get stored overall risk score in a printable version.
      */
     default Optional<String> printStoredRisk() {
         return Optional.of(getStoredOverallRisk()).filter(ResultRisk::isValid).map(risk -> String.format("%.2f", risk.getScore()));
-    }
-
-    /**
-     * Get stored risk score in a printable version for specific risk phase
-     */
-    default Optional<String> printStoredRisk(RiskEvaluator.EvaluationPhase phase) {
-        return Optional.of(getStoredRisk(phase)).filter(ResultRisk::isValid).map(risk -> String.format("%.2f", risk.getScore()));
     }
 }

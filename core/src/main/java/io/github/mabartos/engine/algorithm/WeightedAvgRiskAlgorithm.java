@@ -4,13 +4,16 @@ import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.level.ResultRisk;
 import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
+import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import org.keycloak.models.KeycloakSession;
 import io.github.mabartos.spi.level.RiskLevel;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ import io.github.mabartos.spi.level.AdvancedRiskLevels;
 import static java.util.Optional.of;
 
 public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
+    static final String SCORE_KEY = "score";
     // Simple 3-level with equal divisions
     private static final RiskLevel SIMPLE_LEVEL_LOW = new RiskLevel(SimpleRiskLevels.LOW, 0.0, 0.33);
     private static final RiskLevel SIMPLE_LEVEL_MEDIUM = new RiskLevel(SimpleRiskLevels.MEDIUM, 0.33, 0.66);
@@ -56,7 +60,8 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     }
 
     @Override
-    public ResultRisk evaluateRisk(@Nonnull Set<RiskEvaluator> evaluators,
+    public ResultRisk evaluateRisk(@Nonnull KeycloakSession session,
+                                   @Nonnull Set<RiskEvaluator> evaluators,
                                    @Nonnull RiskEvaluator.EvaluationPhase phase,
                                    @Nonnull RealmModel realm,
                                    @Nullable UserModel knownUser) {
@@ -78,7 +83,39 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
         if (trustSum == 0) {
             return ResultRisk.invalid("No valid evaluators found for this phase");
         }
-        return ResultRisk.of(weightedRisk / trustSum);
+
+        var score = weightedRisk / trustSum;
+
+        // Store the phase score for cross-phase combination
+        var provider = session.getProvider(StoredRiskProvider.class);
+        provider.storePhaseAttribute(phase, SCORE_KEY, Double.toString(score));
+
+        return ResultRisk.of(score);
+    }
+
+    @Override
+    public ResultRisk getOverallRiskScore(@Nonnull KeycloakSession session,
+                                          @Nonnull RealmModel realm) {
+        var provider = session.getProvider(StoredRiskProvider.class);
+        double maxScore = -1;
+        boolean hasAny = false;
+
+        for (var phase : List.of(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN, RiskEvaluator.EvaluationPhase.USER_KNOWN)) {
+            var scoreStr = provider.getPhaseAttribute(phase, SCORE_KEY);
+            if (scoreStr != null) {
+                hasAny = true;
+                double score = Double.parseDouble(scoreStr);
+                if (score > maxScore) {
+                    maxScore = score;
+                }
+            }
+        }
+
+        if (!hasAny) {
+            return ResultRisk.invalid("No phase scores found");
+        }
+
+        return ResultRisk.of(maxScore);
     }
 
     public static class ValuesMapper implements RiskValuesMapper {

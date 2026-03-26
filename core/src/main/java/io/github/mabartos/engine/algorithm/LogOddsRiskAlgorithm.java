@@ -2,7 +2,9 @@ package io.github.mabartos.engine.algorithm;
 
 import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
+import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import org.keycloak.models.KeycloakSession;
 import io.github.mabartos.spi.level.AdvancedRiskLevels;
 import io.github.mabartos.spi.level.ResultRisk;
 import io.github.mabartos.spi.level.Risk;
@@ -10,9 +12,12 @@ import io.github.mabartos.spi.level.RiskLevel;
 import io.github.mabartos.spi.level.SimpleRiskLevels;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +51,8 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
      * Negative bias makes the algorithm less aggressive, requiring more evidence to reach high risk levels.
      */
     private static final double DEFAULT_BIAS = -0.5;
+
+    static final String EVIDENCE_KEY = "evidence";
 
     private final ValuesMapper valuesMapper;
 
@@ -94,30 +101,63 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
     }
 
     @Override
-    public ResultRisk evaluateRisk(@Nonnull Set<RiskEvaluator> evaluators,
+    public ResultRisk evaluateRisk(@Nonnull KeycloakSession session,
+                                   @Nonnull Set<RiskEvaluator> evaluators,
                                    @Nonnull RiskEvaluator.EvaluationPhase phase,
                                    @Nonnull RealmModel realm,
                                    @Nullable UserModel knownUser) {
+        var provider = session.getProvider(StoredRiskProvider.class);
         var filteredEvaluators = evaluators.stream()
                 .filter(eval -> eval.getRisk() != null)
                 .filter(f -> Trust.isValid(f.getTrust(realm)))
                 .collect(Collectors.toSet());
 
-        // Calculate trust-weighted evidence sum
+        if (filteredEvaluators.isEmpty()) {
+            return ResultRisk.invalid("No valid evaluators found for this phase");
+        }
+
+        // Store individual evidence entries for cross-phase combination
+        var attributes = new MultivaluedHashMap<String, String>();
+        filteredEvaluators.stream()
+                .filter(eval -> valuesMapper.isValid(eval.getRisk()))
+                .forEach(eval -> {
+                    double evidence = valuesMapper.getRiskValue(eval.getRisk()).get();
+                    double trust = eval.getTrust(realm);
+                    attributes.add(EVIDENCE_KEY, formatEvidence(evidence, trust));
+                });
+        provider.storePhaseAttributes(phase, attributes);
+
+        // Calculate trust-weighted evidence sum for phase-level score
         var trustWeightedEvidenceSum = filteredEvaluators.stream()
                 .filter(eval -> valuesMapper.isValid(eval.getRisk()))
                 .mapToDouble(eval -> valuesMapper.getRiskValue(eval.getRisk()).get() * eval.getTrust(realm))
                 .sum();
-
-        if (filteredEvaluators.isEmpty()) {
-            return ResultRisk.invalid("No valid evaluators found for this phase");
-        }
 
         // Apply logistic transformation: P(fraud) = 1 / (1 + exp(-(evidence + bias)))
         double totalEvidence = trustWeightedEvidenceSum + biasScore;
         double riskProbability = logisticTransform(totalEvidence);
 
         return ResultRisk.of(riskProbability);
+    }
+
+    @Override
+    public ResultRisk getOverallRiskScore(@Nonnull KeycloakSession session,
+                                          @Nonnull RealmModel realm) {
+        var provider = session.getProvider(StoredRiskProvider.class);
+        var allEntries = new ArrayList<String>();
+        for (var phase : List.of(RiskEvaluator.EvaluationPhase.BEFORE_AUTHN, RiskEvaluator.EvaluationPhase.USER_KNOWN)) {
+            allEntries.addAll(provider.getPhaseAttributeValues(phase, EVIDENCE_KEY));
+        }
+
+        if (allEntries.isEmpty()) {
+            return ResultRisk.invalid("No evidence found across phases");
+        }
+
+        double totalEvidence = allEntries.stream()
+                .mapToDouble(LogOddsRiskAlgorithm::parseWeightedEvidence)
+                .sum();
+
+        return ResultRisk.of(logisticTransform(totalEvidence + biasScore));
     }
 
     /**
@@ -128,6 +168,18 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
      */
     private double logisticTransform(double evidence) {
         return 1.0 / (1.0 + Math.exp(-evidence));
+    }
+
+    static String formatEvidence(double evidence, double trust) {
+        return String.format("%.4f(%.4f)", evidence, trust);
+    }
+
+    static double parseWeightedEvidence(String entry) {
+        int parenOpen = entry.indexOf('(');
+        int parenClose = entry.indexOf(')');
+        double evidence = Double.parseDouble(entry.substring(0, parenOpen));
+        double trust = Double.parseDouble(entry.substring(parenOpen + 1, parenClose));
+        return evidence * trust;
     }
 
     /**

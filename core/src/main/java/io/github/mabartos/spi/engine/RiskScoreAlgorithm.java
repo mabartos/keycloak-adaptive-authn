@@ -7,6 +7,7 @@ import io.github.mabartos.spi.level.SimpleRiskLevels;
 import io.github.mabartos.spi.level.AdvancedRiskLevels;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
@@ -22,15 +23,17 @@ import java.util.Set;
 public interface RiskScoreAlgorithm extends Provider {
 
     /**
-     * Evaluate complex risk score for certain evaluators
+     * Evaluate risk score for certain evaluators.
      *
      * @param evaluators risk evaluators
      * @param phase      evaluation phase
      * @param realm      realm
      * @param knownUser  knownUser
-     * @return complex risk for a specific phase
+     * @param session    keycloak session
+     * @return risk score for a specific phase
      */
-    ResultRisk evaluateRisk(@Nonnull Set<RiskEvaluator> evaluators,
+    ResultRisk evaluateRisk(@Nonnull KeycloakSession session,
+                            @Nonnull Set<RiskEvaluator> evaluators,
                             @Nonnull RiskEvaluator.EvaluationPhase phase,
                             @Nonnull RealmModel realm,
                             @Nullable UserModel knownUser);
@@ -52,6 +55,16 @@ public interface RiskScoreAlgorithm extends Provider {
      */
     @Nonnull
     AdvancedRiskLevels getAdvancedRiskLevels();
+
+    /**
+     * Compute the overall risk score from data stored across all evaluated phases.
+     *
+     * @param realm   realm
+     * @param session keycloak session
+     * @return overall combined risk score
+     */
+    ResultRisk getOverallRiskScore(@Nonnull KeycloakSession session,
+                                   @Nonnull RealmModel realm);
 
     interface RiskValuesMapper {
         Optional<Double> getRiskValue(Risk risk);

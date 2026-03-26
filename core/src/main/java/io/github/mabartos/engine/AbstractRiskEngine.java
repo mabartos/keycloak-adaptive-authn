@@ -70,9 +70,9 @@ public abstract class AbstractRiskEngine implements RiskEngine {
             return ResultRisk.invalid("Cannot execute risk score evaluation, because the user needs to be known");
         }
 
-        final var storedRisk = storedRiskProvider.getStoredRisk(phase);
-        if (storedRisk.isValid()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
+        final var storedScore = storedRiskProvider.getPhaseAttribute(phase, "score");
+        if (storedScore != null) {
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedScore);
         }
 
         logger.debug("--------------------------------------------------");
@@ -119,7 +119,15 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         if (phase == null) {
             return ResultRisk.invalid("Invalid evaluation phase");
         }
-        return storedRiskProvider.getStoredRisk(phase);
+        var score = storedRiskProvider.getPhaseAttribute(phase, "score");
+        if (score == null) {
+            return ResultRisk.invalid("No risk score stored for phase " + phase.name());
+        }
+        try {
+            return ResultRisk.of(Double.parseDouble(score));
+        } catch (NumberFormatException e) {
+            return ResultRisk.invalid("Invalid risk score for phase " + phase.name());
+        }
     }
 
     @Override

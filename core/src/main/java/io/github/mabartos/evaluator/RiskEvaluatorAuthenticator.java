@@ -34,10 +34,10 @@ public class RiskEvaluatorAuthenticator implements Authenticator, ConfigurableRe
         var requiresUser = requiresUser(context.getAuthenticatorConfig());
         var phase = requiresUser ? RiskEvaluator.EvaluationPhase.USER_KNOWN : RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 
-        final var storedRisk = storedRiskProvider.getStoredRisk(phase);
+        final var storedScore = storedRiskProvider.getPhaseAttribute(phase, "score");
 
-        if (storedRisk.isValid()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
+        if (storedScore != null) {
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedScore);
         } else {
             riskEngine.evaluateRisk(phase, context.getRealm(), context.getUser());
         }
