@@ -26,81 +26,98 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class LocationConditionFactory extends UserContextConditionFactory<LocationContext> {
-    public static final String PROVIDER_ID = "location-conditional-authenticator";
+        public static final String PROVIDER_ID = "location-conditional-authenticator";
 
-    public static final String COUNTRY_LIST_CONFIG = "countryListConfig";
-    public static final String COUNTRY_VALUE_CONFIG = "countryValueConfig";
+        public static final String COUNTRY_LIST_CONFIG = "countryListConfig";
+        public static final String COUNTRY_VALUE_CONFIG = "countryValueConfig";
 
-    public static final String CITY_LIST_CONFIG = "cityListConfig";
-    public static final String CITY_VALUE_CONFIG = "cityValueConfig";
+        public static final String CITY_LIST_CONFIG = "cityListConfig";
+        public static final String CITY_VALUE_CONFIG = "cityValueConfig";
 
-    public static final Operation<LocationContext> COUNTRY_IS = new Operation<>("COUNTRY_EQ", "country is", (realm, location, val) -> location.getData(realm).map(LocationData::getCountry).filter(f -> f.equals(val)).isPresent());
-    public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not", (realm, location, val) -> location.getData(realm).map(LocationData::getCountry).filter(f -> f.equals(val)).isEmpty());
+        public static final Operation<LocationContext> COUNTRY_IS = new Operation<>("COUNTRY_EQ", "country is",
+                        (realm, location, vals) -> location.getData(realm).map(LocationData::getCountry)
+                                        .map(country -> vals.contains(country)).orElse(false),
+                        true);
+        public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not",
+                        (realm, location, vals) -> location.getData(realm).map(LocationData::getCountry)
+                                        .map(country -> !vals.contains(country)).orElse(true),
+                        true);
 
-    public static final Operation<LocationContext> CITY_IS = new Operation<>("CITY_EQ", "city is", (realm, location, val) -> location.getData(realm).map(LocationData::getCity).filter(f -> f.equals(val)).isPresent());
-    public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (realm, location, val) -> location.getData(realm).map(LocationData::getCity).filter(f -> f.equals(val)).isEmpty());
+        public static final Operation<LocationContext> CITY_IS = new Operation<>("CITY_EQ", "city is", (realm, location,
+                        vals) -> location.getData(realm).map(LocationData::getCity).map(city -> vals.contains(city))
+                                        .orElse(false),
+                        true);
+        public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (realm,
+                        location, vals) -> location.getData(realm).map(LocationData::getCity)
+                                        .map(city -> !vals.contains(city)).orElse(true),
+                        true);
 
-    public LocationConditionFactory() {
-    }
+        public LocationConditionFactory() {
+        }
 
-    @Override
-    public LocationCondition create(KeycloakSession session) {
-        return new LocationCondition(session, getOperations());
-    }
+        @Override
+        public LocationCondition create(KeycloakSession session) {
+                return new LocationCondition(session, getOperations());
+        }
 
-    @Override
-    public List<Operation<LocationContext>> initOperations() {
-        return List.of(COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
-    }
+        @Override
+        public List<Operation<LocationContext>> initOperations() {
+                return List.of(COUNTRY_IS, COUNTRY_IS_NOT, CITY_IS, CITY_IS_NOT);
+        }
 
-    @Override
-    public String getDisplayType() {
-        return "Condition - Location";
-    }
+        @Override
+        public String getDisplayType() {
+                return "Condition - Location";
+        }
 
-    @Override
-    public String getHelpText() {
-        return "Condition matching Location attributes";
-    }
+        @Override
+        public String getHelpText() {
+                return "Condition matching Location attributes";
+        }
 
-    @Override
-    public List<ProviderConfigProperty> getConfigProperties() {
-        return ProviderConfigurationBuilder.create()
-                // Country
-                .property()
-                .name(COUNTRY_LIST_CONFIG)
-                .options(Stream.of(COUNTRY_IS, COUNTRY_IS_NOT).map(Operation::getText).toList())
-                .label(COUNTRY_LIST_CONFIG)
-                .helpText(COUNTRY_LIST_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.LIST_TYPE)
-                .add()
-                .property()
-                .name(COUNTRY_VALUE_CONFIG)
-                .label(COUNTRY_VALUE_CONFIG)
-                .helpText(COUNTRY_VALUE_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("")
-                .add()
-                // City
-                .property()
-                .name(CITY_LIST_CONFIG)
-                .options(Stream.of(CITY_IS, CITY_IS_NOT).map(Operation::getText).toList())
-                .label(CITY_LIST_CONFIG)
-                .helpText(CITY_LIST_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.LIST_TYPE)
-                .add()
-                .property()
-                .name(CITY_VALUE_CONFIG)
-                .label(CITY_VALUE_CONFIG)
-                .helpText(CITY_VALUE_CONFIG + ".tooltip")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("")
-                .add()
-                .build();
-    }
+        @Override
+        public List<ProviderConfigProperty> getConfigProperties() {
+                return ProviderConfigurationBuilder.create()
 
-    @Override
-    public String getId() {
-        return PROVIDER_ID;
-    }
+                                // Country
+                                .property()
+                                .name(COUNTRY_LIST_CONFIG)
+                                .options(Stream.of(COUNTRY_IS, COUNTRY_IS_NOT).map(Operation::getText).toList())
+                                .label("Country condition")
+                                .helpText("whether the user's country must match or must not match the configured values.")
+                                .type(ProviderConfigProperty.LIST_TYPE)
+                                .add()
+
+                                .property()
+                                .name(COUNTRY_VALUE_CONFIG)
+                                .label("Countries")
+                                .helpText("Enter one or more country names, for example: France, Germany, Switzerland ...")
+                                .type(ProviderConfigProperty.MULTIVALUED_STRING_TYPE)
+                                .defaultValue(List.of())
+                                .add()
+
+                                // City
+                                .property()
+                                .name(CITY_LIST_CONFIG)
+                                .options(Stream.of(CITY_IS, CITY_IS_NOT).map(Operation::getText).toList())
+                                .label("City condition")
+                                .helpText("Defines whether the user's city must match or must not match the configured value.")
+                                .type(ProviderConfigProperty.LIST_TYPE)
+                                .add()
+
+                                .property()
+                                .name(CITY_VALUE_CONFIG)
+                                .label("City")
+                                .helpText("Enter one or more city names, for example: Paris, Berlin, Zurich ...")
+                                .type(ProviderConfigProperty.MULTIVALUED_STRING_TYPE)
+                                .defaultValue("")
+                                .add()
+
+                                .build();
+        }
+
+        @Override
+        public String getId() {
+                return PROVIDER_ID;
+        }
 }

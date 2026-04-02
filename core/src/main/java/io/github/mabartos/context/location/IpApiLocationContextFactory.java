@@ -24,7 +24,14 @@ import java.util.function.Function;
 
 public class IpApiLocationContextFactory implements UserContextFactory<LocationContext> {
     public static final String PROVIDER_ID = "ip-api-location-context";
-    public static final Function<IPAddress, String> SERVICE_URL = ip -> String.format("https://ipapi.co/%s/json", ip.toString());
+
+    public static final Function<IPAddress, String> SERVICE_URL = ip -> {
+        String apiToken = System.getenv("KC_SPI_ADAPTIVE_AUTHN_IPAPI_TOKEN");
+        String tokenPart = (apiToken != null && !apiToken.isBlank())
+                ? "?token=" + apiToken
+                : "";
+        return String.format("https://ipapi.co/%s/json%s", ip.toString(), tokenPart);
+    };
 
     @Override
     public IpApiLocationContext create(KeycloakSession session) {

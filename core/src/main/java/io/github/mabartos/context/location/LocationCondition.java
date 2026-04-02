@@ -19,6 +19,7 @@ package io.github.mabartos.context.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.UserContextCondition;
+import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -31,6 +32,7 @@ import java.util.List;
  * Condition for checking location properties
  */
 public class LocationCondition implements UserContextCondition, ConditionalAuthenticator {
+    private static final Logger log = Logger.getLogger(LocationCondition.class);
     private final LocationContext locationContext;
     private final List<Operation<LocationContext>> rules;
 
@@ -41,13 +43,19 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
 
     @Override
     public boolean requiresUser() {
+        log.tracef("[requiresUser()] return false");
         return false;
     }
 
     @Override
     public boolean matchCondition(AuthenticationFlowContext context) {
+        log.tracef("[matchCondition()] start");
+
         AuthenticatorConfigModel authConfig = context.getAuthenticatorConfig();
-        if (authConfig == null) return false;
+        if (authConfig == null) {
+            log.tracef("[matchCondition()] authConfig is null, return false");
+            return false;
+        }
 
         var config = authConfig.getConfig();
 
@@ -55,7 +63,10 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
         var countryOperation = config.get(LocationConditionFactory.COUNTRY_LIST_CONFIG);
         var countryValue = config.get(LocationConditionFactory.COUNTRY_VALUE_CONFIG);
 
+        log.tracef("[matchCondition()] countryOperation=%s & countryValue=%s", countryOperation, countryValue);
+
         if (StringUtil.isBlank(countryOperation) || StringUtil.isBlank(countryValue)) {
+            log.tracef("[matchCondition()] countryOperation or countryValue is blank, return false");
             return false;
         }
 
@@ -63,6 +74,7 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
         boolean countryMatches = rules.stream()
                 .filter(f -> f.getText().equals(countryOperation))
                 .allMatch(f -> f.match(context.getRealm(), locationContext, countryValue));
+        log.tracef("[matchCondition()] countryMatches result: %s", countryMatches);
 
         if (!countryMatches) {
             return false;
@@ -72,12 +84,18 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
         var cityOperation = config.get(LocationConditionFactory.CITY_LIST_CONFIG);
         var cityValue = config.get(LocationConditionFactory.CITY_VALUE_CONFIG);
 
+        log.tracef("[matchCondition()] cityOperation=%s & cityValue=%s", cityOperation, cityValue);
+
         if (StringUtil.isNotBlank(cityOperation) && StringUtil.isNotBlank(cityValue)) {
-            return rules.stream()
+            boolean cityMatches = rules.stream()
                     .filter(f -> f.getText().equals(cityOperation))
                     .allMatch(f -> f.match(context.getRealm(), locationContext, cityValue));
+
+            log.tracef("[matchCondition()] cityMatches result: %s", cityMatches);
+            return cityMatches;
         }
 
+        log.tracef("[matchCondition()] cityOperation or cityValue is blank, return true");
         return true;
     }
 }
