@@ -2,6 +2,7 @@ io.github.mabartos.context.device.DeviceRepresentationContextFactory
 io.github.mabartos.context.user.KcUserRoleContextFactory
 io.github.mabartos.context.ip.proxy.ProxyIpAddressContextFactory
 io.github.mabartos.context.location.AuthnSessionLocationContextFactory
+io.github.mabartos.context.location.GlobalCacheLocationContextFactory
 io.github.mabartos.context.location.IpApiLocationContextFactory
 io.github.mabartos.context.ip.client.DeviceIpAddressContextFactory
 io.github.mabartos.context.ip.client.HeaderIpAddressContextFactory

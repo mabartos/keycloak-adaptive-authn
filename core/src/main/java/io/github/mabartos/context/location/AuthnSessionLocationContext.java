@@ -53,8 +53,7 @@ public class AuthnSessionLocationContext extends LocationContext {
             return Optional.empty();
         }
 
-        // Get current IP address
-        var currentIp = ipAddressContext.getData(realm).orElse(null);
+        IPAddress currentIp = ipAddressContext.getData(realm).orElse(null);
         if (currentIp == null) {
             log.trace("No IP address available");
             return Optional.empty();
@@ -73,7 +72,12 @@ public class AuthnSessionLocationContext extends LocationContext {
         return Optional.empty();
     }
 
-    static void updateCache(AuthenticationSessionModel authSession, IPAddress ip, LocationData location) {
+    public void updateCache(IPAddress ip, LocationData location) {
+        AuthenticationSessionModel authSession = session.getContext().getAuthenticationSession();
+        if (authSession == null || ip == null || location == null) {
+            return;
+        }
+
         authSession.setAuthNote(LAST_IP_KEY, ip.toString());
         String locationString = LocationDataUtils.formatToAttribute(location);
         authSession.setAuthNote(LAST_LOCATION_KEY, locationString);

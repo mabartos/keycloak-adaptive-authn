@@ -16,11 +16,13 @@
  */
 package io.github.mabartos.context.location;
 
+import io.github.mabartos.spi.condition.DefaultOperation;
 import io.github.mabartos.spi.condition.Operation;
 import io.github.mabartos.spi.condition.UserContextConditionFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.utils.StringUtil;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -34,25 +36,46 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
         public static final String CITY_LIST_CONFIG = "cityListConfig";
         public static final String CITY_VALUE_CONFIG = "cityValueConfig";
 
-        public static final Operation<LocationContext> COUNTRY_IS = new Operation<>("COUNTRY_EQ", "country is",
-                        (realm, location, vals) -> location.getData(realm).map(LocationData::getCountry)
-                                        .map(country -> vals.contains(country)).orElse(false),
+        public static final Operation<LocationContext> COUNTRY_IS = new Operation<>(
+                        "COUNTRY_" + DefaultOperation.ANY_OF.symbol(),
+                        "country is",
+                        LocationConditionFactory::matchesAnyCountry,
                         true);
-        public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>("COUNTRY_NEQ", "country is not",
-                        (realm, location, vals) -> location.getData(realm).map(LocationData::getCountry)
-                                        .map(country -> !vals.contains(country)).orElse(true),
+        public static final Operation<LocationContext> COUNTRY_IS_NOT = new Operation<>(
+                        "COUNTRY_" + DefaultOperation.NONE_OF.symbol(),
+                        "country is not",
+                        (realm, location, vals) -> !matchesAnyCountry(realm, location, vals),
                         true);
 
-        public static final Operation<LocationContext> CITY_IS = new Operation<>("CITY_EQ", "city is", (realm, location,
-                        vals) -> location.getData(realm).map(LocationData::getCity).map(city -> vals.contains(city))
-                                        .orElse(false),
+        public static final Operation<LocationContext> CITY_IS = new Operation<>(
+                        "CITY_" + DefaultOperation.ANY_OF.symbol(),
+                        "city is",
+                        LocationConditionFactory::matchesAnyCity,
                         true);
-        public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>("CITY_NEQ", "city is not", (realm,
-                        location, vals) -> location.getData(realm).map(LocationData::getCity)
-                                        .map(city -> !vals.contains(city)).orElse(true),
+        public static final Operation<LocationContext> CITY_IS_NOT = new Operation<>(
+                        "CITY_" + DefaultOperation.NONE_OF.symbol(),
+                        "city is not",
+                        (realm, location, vals) -> !matchesAnyCity(realm, location, vals),
                         true);
 
         public LocationConditionFactory() {
+        }
+
+        private static boolean matchesAnyCountry(org.keycloak.models.RealmModel realm, LocationContext location, List<String> countries) {
+                String detectedCountry = location.getData(realm).map(LocationData::getCountry).orElse("<unknown>");
+                return normalizeValues(countries).stream().anyMatch(detectedCountry::equals);
+        }
+
+        private static boolean matchesAnyCity(org.keycloak.models.RealmModel realm, LocationContext location, List<String> cities) {
+                String detectedCity = location.getData(realm).map(LocationData::getCity).orElse("<unknown>");
+                return normalizeValues(cities).stream().anyMatch(detectedCity::equals);
+        }
+
+        private static List<String> normalizeValues(List<String> values) {
+                return values.stream()
+                                .map(value -> value != null ? value.trim() : null)
+                                .filter(StringUtil::isNotBlank)
+                                .toList();
         }
 
         @Override
@@ -110,7 +133,7 @@ public class LocationConditionFactory extends UserContextConditionFactory<Locati
                                 .label("City")
                                 .helpText("Enter one or more city names, for example: Paris, Berlin, Zurich ...")
                                 .type(ProviderConfigProperty.MULTIVALUED_STRING_TYPE)
-                                .defaultValue("")
+                                .defaultValue(List.of())
                                 .add()
 
                                 .build();

@@ -43,7 +43,6 @@ public class LocationCondition implements UserContextCondition, ConditionalAuthe
 
     @Override
     public boolean requiresUser() {
-        log.tracef("[requiresUser()] return false");
         return false;
     }
 

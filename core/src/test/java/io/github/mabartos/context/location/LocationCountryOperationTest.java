@@ -65,6 +65,19 @@ public class LocationCountryOperationTest {
         assertThat(result, is(false));
     }
 
+    @Test
+    public void testCountryIsMultiValuesTrimmedMatch() {
+        var context = new StaticLocationContext("France");
+        RealmModel realm = null;
+
+        String delimiter = Operation.DEFAULT_MULTI_VALUES_DELIMITER;
+        String values = "Germany" + delimiter + " France " + delimiter + "Spain";
+
+        boolean result = LocationConditionFactory.COUNTRY_IS.match(realm, context, values);
+
+        assertThat(result, is(true));
+    }
+
     /* Tests 'COUNTRY_IS_NOT' single-value */
     @Test
     public void testCountryIsNotSingleValueMatch() {

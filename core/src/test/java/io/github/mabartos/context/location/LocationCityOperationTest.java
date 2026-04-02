@@ -63,6 +63,19 @@ public class LocationCityOperationTest {
         assertThat(result, is(false));
     }
 
+    @Test
+    public void testCityIsMultiValuesTrimmedMatch() {
+        var context = new StaticLocationContext("Paris");
+        RealmModel realm = null;
+
+        String delimiter = Operation.DEFAULT_MULTI_VALUES_DELIMITER;
+        String values = "Lyon" + delimiter + " Paris " + delimiter + "Marseille";
+
+        boolean result = LocationConditionFactory.CITY_IS.match(realm, context, values);
+
+        assertThat(result, is(true));
+    }
+
     /* Tests 'CITY_IS_NOT' single-value */
     @Test
     public void testCityIsNotSingleValueMatch() {

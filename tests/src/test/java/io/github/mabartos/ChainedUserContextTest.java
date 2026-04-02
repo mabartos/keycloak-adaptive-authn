@@ -22,6 +22,10 @@ import io.github.mabartos.context.ip.client.DeviceIpAddressContext;
 import io.github.mabartos.context.ip.client.HeaderIpAddressContext;
 import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.context.ip.client.TestIpAddressContext;
+import io.github.mabartos.context.location.AuthnSessionLocationContext;
+import io.github.mabartos.context.location.GlobalCacheLocationContext;
+import io.github.mabartos.context.location.IpApiLocationContext;
+import io.github.mabartos.context.location.LocationContext;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.KeycloakSession;
@@ -130,6 +134,24 @@ public class ChainedUserContextTest {
                 // This should throw because NonExistentContext doesn't have any registered providers
                 UserContexts.getContext(session, NonExistentContext.class);
             });
+        });
+    }
+
+    @Test
+    @Order(4)
+    public void locationContextDelegatesByCachePriority() {
+        runOnServer.run(session -> {
+            LocationContext context = UserContexts.getContext(session, LocationContext.class);
+            assertNotNull(context);
+            assertThat(context.getClass(), is(AuthnSessionLocationContext.class));
+
+            var firstDelegate = context.getDelegate();
+            assertThat(firstDelegate.isPresent(), is(true));
+            assertThat(firstDelegate.get().getClass(), is(GlobalCacheLocationContext.class));
+
+            var secondDelegate = firstDelegate.get().getDelegate();
+            assertThat(secondDelegate.isPresent(), is(true));
+            assertThat(secondDelegate.get().getClass(), is(IpApiLocationContext.class));
         });
     }
 
