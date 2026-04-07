@@ -50,10 +50,8 @@ public class IpApiLocationContext extends LocationContext {
         super(session);
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
         this.ipAddressContext = UserContexts.getContext(session, IpAddressContext.class);
-        Object authnSessionContext = UserContexts.getContext(session, AuthnSessionLocationContextFactory.PROVIDER_ID);
-        this.authnSessionLocationContext = authnSessionContext instanceof AuthnSessionLocationContext cache ? cache : null;
-        Object globalCacheContext = UserContexts.getContext(session, GlobalCacheLocationContextFactory.PROVIDER_ID);
-        this.globalCacheLocationContext = globalCacheContext instanceof GlobalCacheLocationContext cache ? cache : null;
+        this.authnSessionLocationContext = UserContexts.getContext(session, AuthnSessionLocationContextFactory.PROVIDER_ID);
+        this.globalCacheLocationContext = UserContexts.getContext(session, GlobalCacheLocationContextFactory.PROVIDER_ID);
     }
 
     @Override

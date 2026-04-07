@@ -1,7 +1,6 @@
 package io.github.mabartos.context.ip.client;
 
 import io.github.mabartos.context.ip.IPAddress;
-import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.context.ip.IpAddressUtils;
 import jakarta.annotation.Nonnull;
 import org.jboss.logging.Logger;
@@ -35,18 +34,15 @@ public class TestIpAddressContext extends IpAddressContext {
     }
 
     public static boolean isTestIpAddressUsed() {
-        return isLegacyTestingIpEnabled() || isRandomTestingIpEnabled() || !getConfiguredTestingIps().isEmpty();
+        return resolveTestingIp().isPresent();
     }
 
     @Override
     public Optional<IPAddress> initData(@Nonnull RealmModel realm) {
-        if (isTestIpAddressUsed()) {
-            return IpAddressUtils.getIpAddress(resolveTestingIp());
-        }
-        return Optional.empty();
+        return resolveTestingIp().flatMap(IpAddressUtils::getIpAddress);
     }
 
-    private static String resolveTestingIp() {
+    private static Optional<String> resolveTestingIp() {
         List<String> configuredIps = getConfiguredTestingIps();
 
         if (!configuredIps.isEmpty()) {
@@ -54,22 +50,26 @@ public class TestIpAddressContext extends IpAddressContext {
             if (useRandomIp && configuredIps.size() > 1) {
                 String ip = configuredIps.get(ThreadLocalRandom.current().nextInt(configuredIps.size()));
                 log.tracef("Using random configured testing IP: %s", ip);
-                return ip;
+                return Optional.of(ip);
             }
 
             String ip = configuredIps.getFirst();
             log.tracef("Using configured testing IP: %s", ip);
-            return ip;
+            return Optional.of(ip);
         }
 
         boolean useRandomIp = isRandomTestingIpEnabled();
         if (useRandomIp && !TESTING_IPS.isEmpty()) {
             String ip = TESTING_IPS.get(ThreadLocalRandom.current().nextInt(TESTING_IPS.size()));
             log.tracef("Using random testing IP: %s", ip);
-            return ip;
+            return Optional.of(ip);
         }
 
-        return TESTING_IP;
+        if (isLegacyTestingIpEnabled()) {
+            return Optional.of(TESTING_IP);
+        }
+
+        return Optional.empty();
     }
 
     private static boolean isLegacyTestingIpEnabled() {
