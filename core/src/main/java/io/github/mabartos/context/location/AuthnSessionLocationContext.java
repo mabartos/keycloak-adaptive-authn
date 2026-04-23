@@ -46,6 +46,11 @@ public class AuthnSessionLocationContext extends LocationContext {
     }
 
     @Override
+    protected int maxInitDataAttempts() {
+        return 1;
+    }
+
+    @Override
     public Optional<LocationData> initData(@Nonnull RealmModel realm) {
         var authSession = session.getContext().getAuthenticationSession();
         if (authSession == null) {
@@ -65,8 +70,22 @@ public class AuthnSessionLocationContext extends LocationContext {
 
         // If IP hasn't changed and we have cached location, reuse it
         if (StringUtil.isNotBlank(cachedIp) && cachedIp.equals(currentIp.toString()) && StringUtil.isNotBlank(cachedLocation)) {
-            log.tracef("IP address unchanged (%s), using cached location: %s", cachedIp, cachedLocation);
-            return parseCachedLocation(cachedLocation);
+            Optional<LocationData> parsed = parseCachedLocation(cachedLocation);
+            if (parsed.isPresent()) {
+                LocationData loc = parsed.get();
+                log.tracef(
+                        "GeoIP auth-session cache hit for ip=%s realm=%s country=%s city=%s",
+                        currentIp,
+                        realm.getName(),
+                        loc.getCountry(),
+                        loc.getCity());
+                return parsed;
+            }
+            log.tracef(
+                    "GeoIP auth-session cache entry present but invalid for ip=%s realm=%s",
+                    currentIp,
+                    realm.getName());
+            return Optional.empty();
         }
 
         return Optional.empty();

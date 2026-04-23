@@ -122,8 +122,16 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
         this.delegate = (UserContext<T>) delegate;
     }
 
+    /**
+     * How many times {@link #initData} may run when it returns empty before delegating / giving up.
+     * Pure caches override with {@code 1} (a miss stays a miss); remote contexts keep {@value #COUNT_OF_INIT_RETRIES} for transient failures.
+     */
+    protected int maxInitDataAttempts() {
+        return COUNT_OF_INIT_RETRIES;
+    }
+
     protected Optional<T> tryInitDataMultipleTimes(RealmModel realm, UserModel knownUser, TracingProvider tracing) {
-        for (int i = 0; i < COUNT_OF_INIT_RETRIES; i++) {
+        for (int i = 0; i < maxInitDataAttempts(); i++) {
             Optional<T> data = tracing.trace(this.getClass(), "initData", (span) -> {
                 return initData(realm, knownUser);
             });

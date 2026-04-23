@@ -39,7 +39,7 @@ public class AuthnSessionLocationContextFactory implements UserContextFactory<Lo
 
     @Override
     public int getPriority() {
-        // Higher priority than IpApiLocationContext (default is 0)
+        // Higher priority than GeoIpLocationContextFactory (default is 0)
         // This ensures the session cache is checked first before calling external APIs
         return 100;
     }

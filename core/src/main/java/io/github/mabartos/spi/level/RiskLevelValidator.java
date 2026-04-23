@@ -18,6 +18,7 @@ package io.github.mabartos.spi.level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Validator for risk levels to ensure they cover the entire 0-1 spectrum with no gaps or overlaps.
@@ -37,7 +38,7 @@ public final class RiskLevelValidator {
      */
     public static void validate(List<RiskLevel> levels, String context) {
         if (levels == null || levels.isEmpty()) {
-            throw new IllegalStateException(String.format("[%s] Risk levels cannot be null or empty", context));
+            throw new IllegalStateException(String.format(Locale.ROOT, "[%s] Risk levels cannot be null or empty", context));
         }
 
         List<String> errors = new ArrayList<>();
@@ -45,14 +46,14 @@ public final class RiskLevelValidator {
         // Check first level starts at 0.0
         RiskLevel first = levels.get(0);
         if (first.lowestRiskValue() != 0.0) {
-            errors.add(String.format("First risk level '%s' must start at 0.0 but starts at %.2f",
+            errors.add(String.format(Locale.ROOT, "First risk level '%s' must start at 0.0 but starts at %.2f",
                     first.name(), first.lowestRiskValue()));
         }
 
         // Check last level ends at 1.0
         RiskLevel last = levels.get(levels.size() - 1);
         if (last.highestRiskValue() != 1.0) {
-            errors.add(String.format("Last risk level '%s' must end at 1.0 but ends at %.2f",
+            errors.add(String.format(Locale.ROOT, "Last risk level '%s' must end at 1.0 but ends at %.2f",
                     last.name(), last.highestRiskValue()));
         }
 
@@ -66,32 +67,34 @@ public final class RiskLevelValidator {
 
             // Check for gaps
             if (currentHigh < nextLow) {
-                errors.add(String.format("Gap detected: '%s' ends at %.2f but '%s' starts at %.2f (gap: %.2f-%.2f)",
+                errors.add(String.format(Locale.ROOT,
+                        "Gap detected: '%s' ends at %.2f but '%s' starts at %.2f (gap: %.2f-%.2f)",
                         current.name(), currentHigh, next.name(), nextLow, currentHigh, nextLow));
             }
 
             // Check for overlaps (allowing exact match where one ends and next begins)
             if (currentHigh > nextLow) {
-                errors.add(String.format("Overlap detected: '%s' ends at %.2f but '%s' starts at %.2f",
+                errors.add(String.format(Locale.ROOT, "Overlap detected: '%s' ends at %.2f but '%s' starts at %.2f",
                         current.name(), currentHigh, next.name(), nextLow));
             }
 
             // Levels should be contiguous (current.high == next.low)
             if (currentHigh != nextLow) {
-                errors.add(String.format("Levels not contiguous: '%s' ends at %.2f but '%s' starts at %.2f",
+                errors.add(String.format(Locale.ROOT, "Levels not contiguous: '%s' ends at %.2f but '%s' starts at %.2f",
                         current.name(), currentHigh, next.name(), nextLow));
             }
 
             // Check ascending order
             if (current.lowestRiskValue() >= next.lowestRiskValue()) {
-                errors.add(String.format("Levels not in ascending order: '%s' (%.2f-%.2f) should come before '%s' (%.2f-%.2f)",
+                errors.add(String.format(Locale.ROOT,
+                        "Levels not in ascending order: '%s' (%.2f-%.2f) should come before '%s' (%.2f-%.2f)",
                         current.name(), current.lowestRiskValue(), current.highestRiskValue(),
                         next.name(), next.lowestRiskValue(), next.highestRiskValue()));
             }
         }
 
         if (!errors.isEmpty()) {
-            String errorMessage = String.format("Risk level validation failed for '%s':\n- %s",
+            String errorMessage = String.format(Locale.ROOT, "Risk level validation failed for '%s':\n- %s",
                     context, String.join("\n- ", errors));
             throw new IllegalStateException(errorMessage);
         }
