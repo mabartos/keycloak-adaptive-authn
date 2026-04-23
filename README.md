@@ -98,6 +98,41 @@ The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to 
 
 For full build instructions, installation options, and configuration, see the [Start Guide](docs/start.md).
 
+## Configuration
+
+Configured in [`core/src/main/resources/application.properties`](core/src/main/resources/application.properties). Environment names match the `${VAR:default}` placeholders there.
+
+| Environment variable | Application property | Default (when env unset) | Examples / accepted values | Purpose |
+| --- | --- | --- | --- | --- |
+| `KC_SPI_AI_ENGINE__PROVIDER` | `kc.spi-ai-engine--provider` | `granite` | `granite`, `gpt`, `claude`, `gemini` (SPI provider ids) | Default AI engine provider id (SPI). |
+| `OPEN_AI_API_URL` | `ai.openai.api.url` | `https://api.openai.com/v1/chat/completions` | Any HTTPS URL to OpenAI-compatible chat completions endpoint | OpenAI Chat Completions endpoint URL. |
+| `OPEN_AI_API_KEY` | `ai.openai.api.key` | *(empty)* | `sk-...` API secret | OpenAI API key. |
+| `OPEN_AI_API_ORGANIZATION` | `ai.openai.api.organization` | *(empty)* | `org-...` if using org-scoped keys | Optional OpenAI organization id. |
+| `OPEN_AI_API_PROJECT` | `ai.openai.api.project` | *(empty)* | `proj_...` if using project-scoped keys | Optional OpenAI project id. |
+| `OPEN_AI_API_MODEL` | `ai.openai.api.model` | `gpt-4o-mini` | e.g. `gpt-4o-mini`, `gpt-4o` | OpenAI model name. |
+| `GRANITE_API_URL` | `ai.granite.api.url` | *(empty)* | Base URL from your IBM Granite deployment | IBM Granite API URL. |
+| `GRANITE_API_KEY` | `ai.granite.api.key` | *(empty)* | Service API key / token | IBM Granite API key. |
+| `GRANITE_API_MODEL` | `ai.granite.api.model` | `granite-8b-code-instruct-128k` | Model id offered by your Granite endpoint | IBM Granite model name. |
+| `CLAUDE_API_URL` | `ai.claude.api.url` | `https://api.anthropic.com/v1/messages` | Anthropic Messages API HTTPS URL | Anthropic Messages API URL. |
+| `CLAUDE_API_KEY` | `ai.claude.api.key` | *(empty)* | `sk-ant-api03-...` | Anthropic API key. |
+| `CLAUDE_API_MODEL` | `ai.claude.api.model` | `claude-haiku-4-5-20251001` | Any Claude model id supported by your key | Claude model name. |
+| `CLAUDE_API_VERSION` | `ai.claude.api.version` | `2023-06-01` | Date string per Anthropic docs, e.g. `2023-06-01` | Anthropic API version header value. |
+| `CLAUDE_API_ENABLE_CACHING` | `ai.claude.api.enable.caching` | `true` | `true` or `false` | Enable Anthropic prompt caching (`true` / `false`). |
+| `GEMINI_API_URL` | `ai.gemini.api.url` | `https://generativelanguage.googleapis.com/v1beta` | Google Generative Language API base URL | Google Generative Language API base URL. |
+| `GEMINI_API_KEY` | `ai.gemini.api.key` | *(empty)* | Google AI Studio / Cloud API key | Google Gemini API key. |
+| `GEMINI_API_MODEL` | `ai.gemini.api.model` | `gemini-2.5-flash-lite` | e.g. `gemini-2.5-flash-lite`, `gemini-2.0-flash` | Gemini model name. |
+| `AI_ANONYMIZE_ENABLED` | `ai.anonymize.enabled` | `true` | `true` or `false` | Anonymize user data before AI calls (`true` / `false`). |
+| `RECAPTCHA_SITE_KEY` | `recaptcha.site.key` | *(empty)* | reCAPTCHA / Enterprise site key string | reCAPTCHA site key. |
+| `RECAPTCHA_PROJECT_ID` | `recaptcha.project.id` | *(empty)* | GCP project id (reCAPTCHA Enterprise) | Google Cloud project id for reCAPTCHA Enterprise. |
+| `RECAPTCHA_PROJECT_API_KEY` | `recaptcha.project.api.key` | *(empty)* | API key with reCAPTCHA Enterprise access | Google Cloud API key for reCAPTCHA Enterprise. |
+| `KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED` | `ip.address.testing.random.enabled` | `false` | `true` or `false` | Controls randomness for the test IP provider (`TestIpAddressContext`). If `true` and `ip.address.testing.value` is **empty**, each lookup uses a **random** IP from the **built-in** list in code (5 fixed public IPs). If `true` and `ip.address.testing.value` has **two or more** comma-separated IPs, picks randomly among them. If `false` and `ip.address.testing.value` is set, always uses the **first** IP of that list. |
+| `KC_ADAPTIVE_TESTING_IP_VALUE` | `ip.address.testing.value` | *(empty)* | One IP or comma-separated list, e.g. `203.0.113.1` or `1.1.1.1,8.8.8.8` | Optional override list (IPv4/IPv6). When non-empty, replaces the built-in pool for fixed or random selection (see `KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED`). When empty and random is `false`, legacy `ip.address.use.testing=true` can still force default `77.75.72.3`—see `TestIpAddressContext`. |
+| `KC_ADAPTIVE_LOCATION_PROVIDERS` | `location.providers` | `ipapi-co-free` | Comma-separated ids (try order). **ipapi.co:** `ipapi-co-free` (no token), `ipapi-co-pro` (requires `KC_ADAPTIVE_IPAPI_TOKEN`). **ip-api.com:** `ip-api-com-free` (HTTP, no key), `ip-api-com-pro` (requires `KC_ADAPTIVE_IP_API_COM_API_KEY`). Example: `ipapi-co-free,ip-api-com-free`. | GeoIP resolver chain. If **every** resolver fails, location falls back to `UnknownLocationData` (all string attributes `Unknown`, lat/lon `null`, not cached, **ERROR** logged). See `GeoIpLocationContextFactory`. |
+| `KC_ADAPTIVE_IPAPI_TOKEN` | `location.ipapi.token` | *(empty)* | ipapi.co paid-plan token (sent as `?token=`) | **Required** when `location.providers` includes `ipapi-co-pro`. Ignored for `ipapi-co-free`. Host is fixed to `https://ipapi.co`. |
+| `KC_ADAPTIVE_IP_API_COM_API_KEY` | `location.ip-api-com.api-key` | *(empty)* | Pro `key` from [ip-api.com](https://ip-api.com) | **Required** when providers include `ip-api-com-pro` (HTTPS `https://pro.ip-api.com/json/{ip}?key=…`). Ignored for `ip-api-com-free`. |
+| `KC_ADAPTIVE_LOCATION_GLOBAL_CACHE_TTL` | `location.global-cache.ttl` | `PT24H` | ISO-8601 duration, e.g. `PT1H`, `PT24H`, `P1D` | Global location cache entry TTL. |
+| `KC_ADAPTIVE_LOCATION_GLOBAL_CACHE_MAXIMUM_SIZE` | `location.global-cache.maximum-size` | `10000` | Positive integer (max entries) | Global location cache maximum entries. |
+
 ## Resources with more info
 
 1. **Unlocking Adaptive Authentication (most recent)**

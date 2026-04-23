@@ -24,7 +24,7 @@ import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.context.ip.client.TestIpAddressContext;
 import io.github.mabartos.context.location.AuthnSessionLocationContext;
 import io.github.mabartos.context.location.GlobalCacheLocationContext;
-import io.github.mabartos.context.location.IpApiLocationContext;
+import io.github.mabartos.context.location.GeoIpLocationContext;
 import io.github.mabartos.context.location.LocationContext;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -151,7 +151,7 @@ public class ChainedUserContextTest {
 
             var secondDelegate = firstDelegate.get().getDelegate();
             assertThat(secondDelegate.isPresent(), is(true));
-            assertThat(secondDelegate.get().getClass(), is(IpApiLocationContext.class));
+            assertThat(secondDelegate.get().getClass(), is(GeoIpLocationContext.class));
         });
     }
 

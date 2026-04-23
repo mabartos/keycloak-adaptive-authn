@@ -24,6 +24,11 @@ public class GlobalCacheLocationContext extends LocationContext {
     }
 
     @Override
+    protected int maxInitDataAttempts() {
+        return 1;
+    }
+
+    @Override
     public Optional<LocationData> initData(@Nonnull RealmModel realm) {
         IPAddress currentIp = ipAddressContext.getData(realm).orElse(null);
         if (currentIp == null) {
@@ -31,7 +36,19 @@ public class GlobalCacheLocationContext extends LocationContext {
             return Optional.empty();
         }
 
-        return GlobalLocationCache.get(currentIp);
+        Optional<LocationData> cached = GlobalLocationCache.get(currentIp);
+        if (cached.isPresent()) {
+            LocationData loc = cached.get();
+            log.tracef(
+                    "GeoIP global cache hit for ip=%s realm=%s country=%s city=%s",
+                    currentIp,
+                    realm.getName(),
+                    loc.getCountry(),
+                    loc.getCity());
+            return cached;
+        }
+        log.tracef("GeoIP global cache miss for ip=%s realm=%s", currentIp, realm.getName());
+        return Optional.empty();
     }
 
     public void updateCache(IPAddress ip, LocationData location) {

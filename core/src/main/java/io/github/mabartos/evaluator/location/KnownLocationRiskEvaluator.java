@@ -1,8 +1,6 @@
 package io.github.mabartos.evaluator.location;
 
 import io.github.mabartos.context.UserContexts;
-import io.github.mabartos.context.location.IpApiLocationContext;
-import io.github.mabartos.context.location.IpApiLocationContextFactory;
 import io.github.mabartos.context.location.KnownLocationContext;
 import io.github.mabartos.context.location.KnownLocationContextFactory;
 import io.github.mabartos.context.location.LocationContext;
