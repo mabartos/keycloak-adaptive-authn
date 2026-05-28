@@ -21,16 +21,29 @@ import java.util.stream.Collectors;
 import static java.util.Optional.of;
 
 public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
+    private final String id;
     private final ValuesMapper valuesMapper;
     private final StoredRiskProvider storedRiskProvider;
     private final SimpleRiskLevels simpleRiskLevels;
     private final AdvancedRiskLevels advancedRiskLevels;
 
-    public WeightedAvgRiskAlgorithm(KeycloakSession session, SimpleRiskLevels simpleRiskLevels, AdvancedRiskLevels advancedRiskLevels) {
+    public WeightedAvgRiskAlgorithm(
+            KeycloakSession session,
+            @Nonnull String id,
+            SimpleRiskLevels simpleRiskLevels,
+            AdvancedRiskLevels advancedRiskLevels
+    ) {
+        this.id = id;
         this.simpleRiskLevels = simpleRiskLevels;
         this.advancedRiskLevels = advancedRiskLevels;
         this.valuesMapper = new ValuesMapper();
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
+    }
+
+    @Override
+    @Nonnull
+    public String getId() {
+        return id;
     }
 
     @Override

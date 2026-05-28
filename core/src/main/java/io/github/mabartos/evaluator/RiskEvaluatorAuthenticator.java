@@ -1,6 +1,7 @@
 package io.github.mabartos.evaluator;
 
 import org.jboss.logging.Logger;
+import io.github.mabartos.spi.audit.RiskAuditPublisher;
 import io.github.mabartos.spi.engine.ConfigurableRequirements;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
@@ -38,6 +39,13 @@ public class RiskEvaluatorAuthenticator implements Authenticator, ConfigurableRe
 
         if (storedRisk.isValid()) {
             logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
+            if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN && context.getUser() != null) {
+                var auditPublisher = RiskAuditPublisher.get(session);
+                if (auditPublisher != null) {
+                    auditPublisher.recordLoginEvaluationFromStored(context.getRealm(), context.getUser());
+                    auditPublisher.flushNow(); // sync path when evaluation was skipped
+                }
+            }
         } else {
             riskEngine.evaluateRisk(phase, context.getRealm(), context.getUser());
         }

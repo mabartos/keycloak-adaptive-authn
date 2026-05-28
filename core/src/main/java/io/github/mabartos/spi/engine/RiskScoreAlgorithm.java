@@ -22,6 +22,13 @@ import java.util.Set;
 public interface RiskScoreAlgorithm extends Provider {
 
     /**
+     * Stable provider identifier (same value as {@link RiskScoreAlgorithmFactory#getId()} and realm
+     * {@code adaptive-risk-score-algorithm} when configured).
+     */
+    @Nonnull
+    String getId();
+
+    /**
      * Evaluate complex risk score for certain evaluators
      *
      * @param evaluators risk evaluators

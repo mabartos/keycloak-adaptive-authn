@@ -419,7 +419,6 @@
     "email" : "user@user",
     "emailVerified" : true,
     "attributes" : {
-      "adaptive-engine-continuousTimerSet" : [ "true" ],
       "adaptive-time-pattern-meanCos" : [ "-0.07500000000000007" ],
       "adaptive-time-pattern-meanSin" : [ "-0.12990381056766576" ],
       "adaptive-location-known" : [ "Czechia:Prague" ]
@@ -1213,7 +1212,21 @@
   "eventsEnabled" : true,
   "eventsExpiration" : 63072000,
   "eventsListeners" : [ "jboss-logging", "login-events-adaptive-authn" ],
-  "enabledEventTypes" : [ "LOGIN_ERROR", "LOGIN" ],
+  "enabledEventTypes" : [
+    "LOGIN_ERROR",
+    "LOGIN",
+    "RESET_PASSWORD",
+    "RESET_PASSWORD_ERROR",
+    "UPDATE_EMAIL",
+    "UPDATE_EMAIL_ERROR",
+    "UPDATE_CREDENTIAL",
+    "UPDATE_CREDENTIAL_ERROR",
+    "REMOVE_CREDENTIAL",
+    "REMOVE_CREDENTIAL_ERROR",
+    "DELETE_ACCOUNT",
+    "DELETE_ACCOUNT_ERROR",
+    "CUSTOM_REQUIRED_ACTION"
+  ],
   "adminEventsEnabled" : false,
   "adminEventsDetailsEnabled" : false,
   "identityProviders" : [ ],
@@ -1340,7 +1353,7 @@
       "subComponents" : { },
       "config" : {
         "adaptive-algorithm-log-odds-bias" : [ "-0.5" ],
-        "adaptive-evaluator-enabled-AiAccountTakeoverEvaluator" : [ "true" ],
+        "adaptive-evaluator-enabled-AiAccountTakeoverEvaluator" : [ "false" ],
         "adaptive-evaluator-enabled-BrowserRiskEvaluator" : [ "true" ],
         "adaptive-evaluator-enabled-InitLocationRiskEvaluator" : [ "true" ],
         "adaptive-evaluator-enabled-LoginEventIpAddressRiskEvaluator" : [ "true" ],
@@ -1363,7 +1376,19 @@
         "adaptive-evaluator-enabled-TimePatternRiskEvaluator" : [ "true" ],
         "adaptive-evaluator-enabled-UserActionsRiskEvaluator" : [ "true" ]
       }
-    } ]
+    } ],
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "id": "f767d788-5c76-41bd-8c4d-824f6180606f",
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"firstName\",\"displayName\":\"${firstName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"lastName\",\"displayName\":\"${lastName}\",\"validations\":{\"length\":{\"max\":255},\"person-name-prohibited-characters\":{}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}],\"unmanagedAttributePolicy\":\"ADMIN_VIEW\"}"
+          ]
+        }
+      }
+    ]
   },
   "internationalizationEnabled" : false,
   "authenticationFlows" : [ {

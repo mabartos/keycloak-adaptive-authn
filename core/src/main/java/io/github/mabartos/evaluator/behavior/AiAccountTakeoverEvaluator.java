@@ -134,7 +134,6 @@ public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
 
         // Send to AI for pattern analysis
         String prompt = buildPrompt(behaviorContext);
-        logger.debugf("AI Account Takeover prompt for user %s: %s", user.getUsername(), prompt);
 
         return aiEngine.getRisk(prompt);
     }

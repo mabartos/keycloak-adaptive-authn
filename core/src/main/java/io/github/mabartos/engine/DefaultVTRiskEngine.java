@@ -77,6 +77,7 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                                     knownUser.getId(),
                                     risk.getScore(),
                                     risk.getSummary().orElse(""));
+                            auditContinuousRemediation(realm, knownUser, risk, getRiskScoreAlgorithm(realm), results);
                         }
                     }
                     results.logAll();
@@ -118,7 +119,8 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                     span.setAttribute("keycloak.risk.engine.provider", DefaultVTRiskEngine.class.getSimpleName());
                 }
 
-                var evaluatedRisks = evaluateInParallel(evaluators, realm, knownUser, retries, timeout, tracer, span);
+                var results = new EvaluatorResults();
+                var evaluatedRisks = evaluateInParallel(evaluators, realm, knownUser, retries, timeout, tracer, span, results);
                 var algorithm = getRiskScoreAlgorithm(realm);
                 risk = algorithm.evaluateRisk(evaluatedRisks, phase, realm, knownUser);
 
@@ -131,16 +133,17 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                     }
                 }
 
+                ResultRisk overallRisk = null;
                 if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN) {
-                    var overallRisk = algorithm.getOverallRisk();
+                    overallRisk = algorithm.getOverallRisk();
                     logger.debugf("The overall risk score is '%f' (algorithm: %s)", overallRisk.getScore(), algorithm.getClass().getSimpleName());
-                    if (overallRisk.isValid()) {
-                        storedRiskProvider.storeOverallRisk(overallRisk);
-                    }
                     if (span.isRecording()) {
                         span.setAttribute("keycloak.risk.engine.overall", overallRisk.getScore());
                     }
                 }
+
+                storePhaseRiskAndAudit(phase, realm, knownUser, risk, overallRisk, algorithm, results);
+                results.logAll();
                 return risk;
             } catch (Exception e) {
                 tracingProvider.error(e);
@@ -151,9 +154,17 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
         }, "DefaultVTRiskEngine.evaluateRiskAuthentication");
     }
 
-    protected Set<RiskEvaluator> evaluateInParallel(Set<RiskEvaluator> evaluators, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, @Nonnull Duration timeout, @Nonnull Tracer tracer, @Nonnull Span parentSpan) {
+    protected Set<RiskEvaluator> evaluateInParallel(
+            Set<RiskEvaluator> evaluators,
+            @Nonnull RealmModel realm,
+            @Nullable UserModel knownUser,
+            int retries,
+            @Nonnull Duration timeout,
+            @Nonnull Tracer tracer,
+            @Nonnull Span parentSpan,
+            @Nonnull EvaluatorResults results
+    ) {
         Map<RiskEvaluator, Boolean> completedEvaluators = new ConcurrentHashMap<>();
-        var results = new EvaluatorResults();
 
         try (var scope = new StructuredTaskScope<RiskEvaluator>()) {
             for (var evaluator : evaluators) {
@@ -208,8 +219,6 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
         } catch (Exception e) {
             logger.error("Error during parallel risk evaluation", e);
         }
-
-        results.logAll();
 
         return completedEvaluators.keySet().stream()
                 .filter(e -> e.getRisk().isValid())

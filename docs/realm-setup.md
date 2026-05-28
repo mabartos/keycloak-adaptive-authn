@@ -31,3 +31,16 @@ Under **Event listeners**, add:
 - `login-events-adaptive-authn`
 
 This listener captures login events used by the risk engine for evaluating user behavior.
+
+#### Risk evaluation audit (optional)
+
+To persist one risk summary per login in the user event store :
+
+1. In **Saved event types**, add **`Custom required action`** (Keycloak has no extension-specific event type yet, see [Custom EventType #15288](https://github.com/keycloak/keycloak/issues/15288)).
+2. Complete a login: after the `USER_KNOWN` step, one event is stored with detail :
+    - `custom_required_action=adaptive-risk-evaluation`
+    - Numeric scores and simple levels (`adaptive_*_level`: `LOW` / `MEDIUM` / `HIGH`) for `BEFORE_AUTHN` (if run, `USER_KNOWN`, and overall risk
+    - Per-evaluator decision (one `Evaluator=SCORE` or `Evaluator=INVALID:reason` per line, sorted by severity).
+3. When continuous evaluation revokes sessions (score ≥ threshold), one event is stored with `custom_required_action=adaptive-risk-remediation`, `adaptive_phase=CONTINUOUS`, `adaptive_remediation=sessions_revoked`, continuous score, `adaptive_continuous_level`, and evaluators.
+
+Filter in **Events** > **User events** by those detail values (`adaptive-risk-evaluation` vs `adaptive-risk-remediation`) to distinguish login audit, remediation, and real required actions.

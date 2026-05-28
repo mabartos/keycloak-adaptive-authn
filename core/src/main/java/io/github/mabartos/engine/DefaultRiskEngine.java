@@ -17,8 +17,8 @@
 package io.github.mabartos.engine;
 
 import io.github.mabartos.spi.engine.RiskEngine;
-import io.github.mabartos.spi.level.ResultRisk;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import io.github.mabartos.spi.level.ResultRisk;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.Nonnull;
@@ -71,7 +71,9 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                                     knownUser.getId(),
                                     risk.getScore(),
                                     risk.getSummary().orElse(""));
+                            auditContinuousRemediation(realm, knownUser, risk, getRiskScoreAlgorithm(realm), results);
                         }
+
                     }
                     results.logAll();
                     return risk;
@@ -131,6 +133,7 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                 evaluatedRisks.subscribe().with(risks -> {
                     var algorithm = getRiskScoreAlgorithm(realm);
                     this.risk = algorithm.evaluateRisk(risks, phase, realm, knownUser);
+                    ResultRisk overallRisk = null;
 
                     if (risk.isValid()) {
                         logger.debugf("The phase risk score is %f - (evaluation phase: %s, algorithm: %s)", risk.getScore(), phase, algorithm.getClass().getSimpleName());
@@ -140,19 +143,17 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                             span.setAttribute("keycloak.risk.engine.phase", phase.name());
                         }
 
-                        storedRiskProvider.storeRisk(risk, phase);
                     }
 
                     if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN) {
-                        var overallRisk = algorithm.getOverallRisk();
+                        overallRisk = algorithm.getOverallRisk();
                         logger.debugf("The overall risk score is '%f' (algorithm: %s)", overallRisk.getScore(), algorithm.getClass().getSimpleName());
-                        if (overallRisk.isValid()) {
-                            storedRiskProvider.storeOverallRisk(overallRisk);
-                        }
                         if (span.isRecording()) {
                             span.setAttribute("keycloak.risk.engine.overall", overallRisk.getScore());
                         }
                     }
+
+                    storePhaseRiskAndAudit(phase, realm, knownUser, risk, overallRisk, algorithm, results);
 
                     results.logAll();
                 });

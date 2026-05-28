@@ -42,6 +42,7 @@ public abstract class AbstractRiskEngine implements RiskEngine {
     protected final Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> riskEvaluators;
     protected final Set<UserContext> userContexts;
     protected final StoredRiskProvider storedRiskProvider;
+    protected final RiskEvaluationAuditPublisher auditPublisher;
 
     protected ResultRisk risk = ResultRisk.invalid();
 
@@ -51,7 +52,45 @@ public abstract class AbstractRiskEngine implements RiskEngine {
         this.defaultRiskScoreAlgorithm = session.getProvider(RiskScoreAlgorithm.class);
         this.userContexts = session.getAllProviders(UserContext.class);
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
+        this.auditPublisher = RiskEvaluationAuditPublisher.forSession(session);
         this.riskEvaluators = initializeRiskEvaluators(session);
+    }
+
+    /**
+     * Persists phase and overall risk in the auth session, and emits optional user audit events (login flow).
+     */
+    protected void storePhaseRiskAndAudit(
+            @Nonnull RiskEvaluator.EvaluationPhase phase,
+            @Nonnull RealmModel realm,
+            @Nullable UserModel knownUser,
+            @Nonnull ResultRisk phaseRisk,
+            @Nullable ResultRisk overallRisk,
+            @Nonnull RiskScoreAlgorithm algorithm,
+            @Nonnull EvaluatorResults results
+    ) {
+        if (phaseRisk.isValid()) {
+            storedRiskProvider.storeRisk(phaseRisk, phase);
+        }
+        if (overallRisk != null && overallRisk.isValid()) {
+            storedRiskProvider.storeOverallRisk(overallRisk);
+        }
+        if (phase == RiskEvaluator.EvaluationPhase.BEFORE_AUTHN) {
+            auditPublisher.stageBeforeAuthnEvaluators(results.snapshot());
+        } else if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN && knownUser != null) {
+            auditPublisher.recordLoginEvaluation(realm, knownUser, phaseRisk, overallRisk, algorithm, results.snapshot());
+            auditPublisher.flushNow();
+        }
+    }
+
+    protected void auditContinuousRemediation(
+            @Nonnull RealmModel realm,
+            @Nonnull UserModel knownUser,
+            @Nonnull ResultRisk continuousRisk,
+            @Nonnull RiskScoreAlgorithm algorithm,
+            @Nonnull EvaluatorResults results
+    ) {
+        auditPublisher.recordContinuousSessionRevocation(realm, knownUser, continuousRisk, algorithm, results.snapshot());
+        auditPublisher.flushNow();
     }
 
     protected abstract ResultRisk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser);
@@ -182,6 +221,10 @@ public abstract class AbstractRiskEngine implements RiskEngine {
 
         public void logAll() {
             results.forEach(r -> logger.debug(r.format()));
+        }
+
+        public List<EvaluatorResult> snapshot() {
+            return List.copyOf(results);
         }
     }
 
