@@ -7,6 +7,7 @@ import io.github.mabartos.spi.level.SimpleRiskLevels;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,7 +43,8 @@ class RiskLevelValidationTest {
                 () -> RiskLevelValidator.validate(levels, "TestGapLevels"));
 
         assertTrue(exception.getMessage().contains("Gap detected"));
-        assertTrue(exception.getMessage().contains("0.33-0.35"));
+        String expectedGap = String.format(Locale.getDefault(), "%.2f-%.2f", 0.33, 0.35);
+        assertTrue(exception.getMessage().contains(expectedGap));
     }
 
     @Test
