@@ -2,17 +2,21 @@ package io.github.mabartos;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.testframework.realm.RealmBuilder;
 import org.keycloak.testframework.realm.RealmConfig;
+import org.keycloak.testframework.realm.RealmConfigBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Realm config for released Keycloak (26.5.x / 26.6.x) using {@link RealmConfigBuilder}
+ * in test-framework-core.
+ */
 public class AdaptiveRealmConfig implements RealmConfig {
     public static final String REALM_JSON_NAME = "test-adaptive-realm.json";
 
     @Override
-    public RealmBuilder configure(RealmBuilder realm) {
+    public RealmConfigBuilder configure(RealmConfigBuilder realm) {
         try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(REALM_JSON_NAME)) {
             if (is == null) {
                 throw new RuntimeException(REALM_JSON_NAME + " not found in classpath");
@@ -21,7 +25,7 @@ public class AdaptiveRealmConfig implements RealmConfig {
             ObjectMapper mapper = new ObjectMapper();
             RealmRepresentation realmRep = mapper.readValue(is, RealmRepresentation.class);
 
-            return RealmBuilder.update(realmRep);
+            return RealmConfigBuilder.update(realmRep);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load " + REALM_JSON_NAME, e);
         }
