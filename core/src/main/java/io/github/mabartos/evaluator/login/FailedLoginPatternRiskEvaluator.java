@@ -18,6 +18,7 @@ package io.github.mabartos.evaluator.login;
 
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
+import io.github.mabartos.context.user.KcLoginFailuresEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
 import io.github.mabartos.spi.level.Risk;
@@ -49,10 +50,17 @@ import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
  */
 public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
     private final LoginEventsContext loginEventsContext;
+    private final LoginEventsContext loginFailuresEventsContext;
     private final List<EventType> RELEVANT_EVENTS = List.of(EventType.LOGIN, EventType.LOGIN_ERROR);
 
     public FailedLoginPatternRiskEvaluator(KeycloakSession session) {
         this.loginEventsContext = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
+        this.loginFailuresEventsContext = UserContexts.getContext(session, KcLoginFailuresEventsContextFactory.PROVIDER_ID);
+    }
+
+    FailedLoginPatternRiskEvaluator(LoginEventsContext loginEventsContext, LoginEventsContext loginFailuresEventsContext) {
+        this.loginEventsContext = loginEventsContext;
+        this.loginFailuresEventsContext = loginFailuresEventsContext;
     }
 
     @Override
@@ -66,8 +74,8 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
             return Risk.invalid("User is null");
         }
 
-        var events = loginEventsContext.getData(realm, knownUser).orElse(null);
-        if (events == null || events.size() < 3) {
+        var events = loadLoginActivityEvents(realm, knownUser);
+        if (events.size() < 3) {
             return Risk.invalid("Not enough login events");
         }
 
@@ -115,6 +123,13 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
         }
 
         return risk;
+    }
+
+    private List<Event> loadLoginActivityEvents(RealmModel realm, UserModel knownUser) {
+        List<Event> events = new ArrayList<>();
+        loginEventsContext.getData(realm, knownUser).ifPresent(events::addAll);
+        loginFailuresEventsContext.getData(realm, knownUser).ifPresent(events::addAll);
+        return events;
     }
 
     private PatternAnalysis analyzePattern(List<Event> events, long currentTime, long timeWindowMs) {

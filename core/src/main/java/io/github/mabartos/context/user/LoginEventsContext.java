@@ -9,7 +9,7 @@ import java.util.List;
 
 public abstract class LoginEventsContext extends AbstractUserContext<List<Event>> {
     public static final String LOGIN_EVENTS = "login-events-user-context";
-    public static final String LOGIN_FAILURES_EVENTS = "login-events-user-context";
+    public static final String LOGIN_FAILURES_EVENTS = "login-failures-events-user-context";
     public static final int MAX_EVENTS_COUNT = 60;
 
     public LoginEventsContext(KeycloakSession session) {
