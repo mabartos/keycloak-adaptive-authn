@@ -27,4 +27,24 @@ public class RecaptchaRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "reCAPTCHA";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Uses Google reCAPTCHA Enterprise risk scores for the login attempt (requires reCAPTCHA integration).";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Typically runs as part of the authentication flow; disable only if reCAPTCHA is not configured.";
+    }
 }

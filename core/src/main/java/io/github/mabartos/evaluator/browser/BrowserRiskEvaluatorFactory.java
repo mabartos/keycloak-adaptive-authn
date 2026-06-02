@@ -45,4 +45,24 @@ public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return BrowserRiskEvaluator.class;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return NAME;
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Scores unknown or unusual browsers before login. Known browsers can reduce risk (negative evidence).";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Uses the browser fingerprint context collected from the login request.";
+    }
 }

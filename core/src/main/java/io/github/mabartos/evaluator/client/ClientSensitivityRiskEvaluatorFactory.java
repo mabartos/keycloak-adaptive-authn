@@ -27,4 +27,24 @@ public class ClientSensitivityRiskEvaluatorFactory implements RiskEvaluatorFacto
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return ClientSensitivityRiskEvaluator.class;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Client sensitivity";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Raises risk for OAuth clients marked with higher sensitivity (client attribute). Runs before the user is identified.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Applies the client sensitivity score when the requesting client is known from the authorization request.";
+    }
 }

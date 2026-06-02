@@ -43,4 +43,24 @@ public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return DefaultUserRoleEvaluator.class;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Realm role";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Scores realm-level roles assigned to the user after identification.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Useful for privileged realm roles; pair with client role mapping for per-application roles.";
+    }
 }

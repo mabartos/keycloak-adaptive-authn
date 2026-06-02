@@ -37,4 +37,24 @@ public class AiAccountTakeoverEvaluatorFactory implements RiskEvaluatorFactory {
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "AI account takeover";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "LLM behavioral analysis for account takeover after the user is known (experimental).";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Higher CPU/latency than rule-based evaluators; tune trust down while evaluating in non-production.";
+    }
 }

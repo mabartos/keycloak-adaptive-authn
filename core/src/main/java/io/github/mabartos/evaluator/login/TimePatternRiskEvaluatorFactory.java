@@ -31,4 +31,24 @@ public class TimePatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Unusual login time";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Flags logins outside the user's typical time-of-day/weekday pattern (learned from history).";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Needs sufficient login history; new users may produce neutral scores until the profile stabilizes.";
+    }
 }

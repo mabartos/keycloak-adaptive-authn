@@ -56,25 +56,58 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
      */
     Class<? extends RiskEvaluator> evaluatorClass();
 
+    /**
+     * Primary evaluation phase for admin console grouping.
+     * Must match {@link RiskEvaluator#evaluationPhases()} on the evaluator implementation.
+     */
+    RiskEvaluator.EvaluationPhase evaluationPhase();
+
+    /**
+     * Short label for the realm admin Risk-based policies tab.
+     */
+    default String adminDisplayName() {
+        return getName();
+    }
+
+    /**
+     * Tooltip for the enabled toggle in the realm admin Risk-based policies tab.
+     */
+    default String adminEnabledHelpText() {
+        return "Runs during the " + evaluationPhase().name().toLowerCase().replace('_', ' ')
+                + " evaluation phase of adaptive authentication.";
+    }
+
+    /**
+     * Tooltip for the trust weight field in the realm admin Risk-based policies tab.
+     */
+    default String adminTrustHelpText() {
+        return "Adjust how strongly this evaluator influences the combined risk score.";
+    }
+
     @Override
     default String getHelpText() {
         return getName().toLowerCase().contains("risk evaluator") ? getName() : NAME_PREFIX + getName();
     }
 
+    /**
+     * Default {@link ConfiguredProvider} schema for enabled/trust realm attributes.
+     * Realm admin UI is built by {@code RiskBasedPoliciesUiTab}; this default keeps
+     * {@link ConfiguredProvider} consumers aligned with {@link #adminDisplayName()} and admin help text.
+     */
     @Override
     default List<ProviderConfigProperty> getConfigProperties() {
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(isEnabledConfig(evaluatorClass()))
-                .label(getName() + " Enabled")
-                .helpText(ENABLED_CONFIG + ".tooltip")
+                .label(adminDisplayName())
+                .helpText(adminEnabledHelpText())
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
                 .add()
                 .property()
                 .name(getTrustConfig(evaluatorClass()))
-                .label(getName() + " Trust Level")
-                .helpText(TRUST_CONFIG + ".tooltip")
+                .label(adminDisplayName() + " trust")
+                .helpText(adminTrustHelpText())
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
                 .build();

@@ -43,4 +43,24 @@ public class LoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return LoginFailuresRiskEvaluator.class;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return NAME;
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Increases risk when recent login failures exist for the user.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Uses Keycloak login failure records for the account.";
+    }
 }

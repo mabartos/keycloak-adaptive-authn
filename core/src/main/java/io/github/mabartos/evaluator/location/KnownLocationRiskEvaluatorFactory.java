@@ -44,4 +44,24 @@ public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Known location";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Compares the current login location (GeoIP) to the user's known locations after identification.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Requires location context; enable Init Location if this evaluator is active.";
+    }
 }

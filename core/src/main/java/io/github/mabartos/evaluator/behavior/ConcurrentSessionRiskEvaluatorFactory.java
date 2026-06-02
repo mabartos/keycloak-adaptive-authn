@@ -27,4 +27,24 @@ public class ConcurrentSessionRiskEvaluatorFactory implements RiskEvaluatorFacto
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Concurrent sessions";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.CONTINUOUS;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Detects many concurrent sessions or spread across IPs for the same user during the session.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Useful for session hijacking or shared-credential abuse after login.";
+    }
 }

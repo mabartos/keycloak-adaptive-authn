@@ -27,4 +27,24 @@ public class UserActionsRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "User actions";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.CONTINUOUS;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Re-evaluates risk during the session when user actions occur (continuous phase, event-driven).";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Works with the adaptive event listener; not part of the initial login risk calculation only.";
+    }
 }

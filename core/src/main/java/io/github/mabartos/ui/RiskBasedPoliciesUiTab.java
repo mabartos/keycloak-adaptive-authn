@@ -37,14 +37,13 @@ import org.keycloak.services.ui.extend.UiTabProvider;
 import org.keycloak.services.ui.extend.UiTabProviderFactory;
 import org.keycloak.utils.StringUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
 import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
@@ -58,6 +57,14 @@ import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledCon
  */
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private static final Logger logger = Logger.getLogger(RiskBasedPoliciesUiTab.class);
+
+    private static final List<RiskEvaluator.EvaluationPhase> EVALUATOR_PHASE_ORDER = List.of(
+            RiskEvaluator.EvaluationPhase.BEFORE_AUTHN,
+            RiskEvaluator.EvaluationPhase.USER_KNOWN,
+            RiskEvaluator.EvaluationPhase.CONTINUOUS);
+
+    private static final String TRUST_FIELD_HELP =
+            "Weight from 0 to 1 (e.g. 0.75). 1 = full influence on the combined risk score.";
 
     private List<RiskEvaluatorFactory> riskEvaluatorFactories = Collections.emptyList();
     private List<RiskScoreAlgorithmFactory> algorithmFactories = Collections.emptyList();
@@ -86,110 +93,111 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public String getHelpText() {
-        return "Risk-based policies";
+        return "Configure the adaptive risk engine, scoring algorithm, and risk evaluators for this realm.";
     }
 
     @Override
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
         logger.debugf("onCreate execution");
 
-        storeRealmAttribute(model, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onCreate");
-        storeRealmAttribute(model, realm, EVALUATOR_TIMEOUT_CONFIG, "onCreate");
-        storeRealmAttribute(model, realm, EVALUATOR_RETRIES_CONFIG, "onCreate");
-        storeRealmAttribute(model, realm, RISK_SCORE_ALGORITHM_CONFIG, "onCreate");
-        storeRealmAttribute(model, realm, SIMPLE_FALLBACK_LEVEL_CONFIG, "onCreate");
-        storeRealmAttribute(model, realm, ADVANCED_FALLBACK_LEVEL_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, EVALUATOR_TIMEOUT_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, EVALUATOR_RETRIES_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, RISK_SCORE_ALGORITHM_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, SIMPLE_FALLBACK_LEVEL_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, ADVANCED_FALLBACK_LEVEL_CONFIG, "onCreate");
 
-        // Set algorithm property defaults as realm attributes
         algorithmFactories.forEach(algFactory -> algFactory.getConfigProperties().forEach(prop -> {
-            if (realm.getAttribute(prop.getName()) == null && prop.getDefaultValue() != null) {
-                logger.debugf("onCreate setting algorithm default '%s' = '%s'", prop.getName(), prop.getDefaultValue());
-                realm.setAttribute(prop.getName(), prop.getDefaultValue().toString());
-            }
-        }));
+                    if (realm.getAttribute(prop.getName()) == null && prop.getDefaultValue() != null) {
+                        logger.debugf("onCreate setting algorithm default '%s' = '%s'", prop.getName(), prop.getDefaultValue());
+                        realm.setAttribute(prop.getName(), prop.getDefaultValue().toString());
+                    }
+                }));
 
-        riskEvaluatorFactories.forEach(evalFactory -> {
-            var enabledKey = isEnabledConfig(evalFactory.evaluatorClass());
-            doIfPresent(model.get(enabledKey), value -> {
-                logger.debugf("onCreate storing evaluator enabled '%s' = '%s'", enabledKey, value);
-                EvaluatorUtils.setEvaluatorEnabled(realm, evalFactory.evaluatorClass(), Boolean.parseBoolean(value));
-            });
-
-            var trustKey = getTrustConfig(evalFactory.evaluatorClass());
-            doIfPresent(model.get(trustKey), value -> {
-                logger.debugf("onCreate storing evaluator trust '%s' = '%s'", trustKey, value);
-                EvaluatorUtils.storeEvaluatorTrust(realm, evalFactory.evaluatorClass(), Double.parseDouble(value));
-            });
-        });
+        riskEvaluatorFactories.forEach(evalFactory -> persistEvaluatorSettings(model, realm, evalFactory, "onCreate"));
     }
 
-    private void storeRealmAttribute(ComponentModel model, RealmModel realm, String key, String context) {
-        doIfPresent(model.get(key), value -> {
-            logger.debugf("%s storing '%s' = '%s'", context, key, value);
-            realm.setAttribute(key, value);
-        });
-    }
-
-    private void doIfPresent(String value, Consumer<String> operation) {
-        Optional.ofNullable(value)
-                .filter(StringUtil::isNotBlank)
-                .ifPresent(operation);
+    /**
+     * Persists a realm attribute when the admin form submitted the key (including {@code false} for booleans).
+     */
+    private void storeRealmAttributeFromModel(ComponentModel model, RealmModel realm, String key, String context) {
+        if (!model.contains(key)) {
+            return;
+        }
+        var value = model.get(key);
+        if (value == null) {
+            value = "";
+        }
+        logger.debugf("%s storing '%s' = '%s'", context, key, value);
+        realm.setAttribute(key, value);
     }
 
     @Override
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         logger.debugf("onUpdate execution");
 
-        storeRealmAttribute(newModel, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onUpdate");
-        storeRealmAttribute(newModel, realm, EVALUATOR_TIMEOUT_CONFIG, "onUpdate");
-        storeRealmAttribute(newModel, realm, EVALUATOR_RETRIES_CONFIG, "onUpdate");
-        storeRealmAttribute(newModel, realm, RISK_SCORE_ALGORITHM_CONFIG, "onUpdate");
-        storeRealmAttribute(newModel, realm, SIMPLE_FALLBACK_LEVEL_CONFIG, "onUpdate");
-        storeRealmAttribute(newModel, realm, ADVANCED_FALLBACK_LEVEL_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, EVALUATOR_TIMEOUT_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, EVALUATOR_RETRIES_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, RISK_SCORE_ALGORITHM_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, SIMPLE_FALLBACK_LEVEL_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, ADVANCED_FALLBACK_LEVEL_CONFIG, "onUpdate");
 
         algorithmFactories.forEach(algFactory -> algFactory.getConfigProperties().forEach(prop -> {
-            var oldVal = oldModel.get(prop.getName());
-            var newVal = newModel.get(prop.getName());
-            if (!Objects.equals(oldVal, newVal)) {
-                if (StringUtil.isNotBlank(newVal)) {
-                    logger.debugf("onUpdate storing algorithm prop '%s' = '%s' (was '%s')", prop.getName(), newVal, oldVal);
-                    realm.setAttribute(prop.getName(), newVal);
-                } else if (prop.getDefaultValue() != null) {
-                    logger.debugf("onUpdate resetting algorithm prop '%s' to default '%s' (was '%s')", prop.getName(), prop.getDefaultValue(), oldVal);
-                    realm.setAttribute(prop.getName(), prop.getDefaultValue().toString());
-                }
-            }
-        }));
+                    var oldVal = oldModel.get(prop.getName());
+                    var newVal = newModel.get(prop.getName());
+                    if (!Objects.equals(oldVal, newVal)) {
+                        if (StringUtil.isNotBlank(newVal)) {
+                            logger.debugf("onUpdate storing algorithm prop '%s' = '%s' (was '%s')", prop.getName(), newVal, oldVal);
+                            realm.setAttribute(prop.getName(), newVal);
+                        } else if (prop.getDefaultValue() != null) {
+                            logger.debugf("onUpdate resetting algorithm prop '%s' to default '%s' (was '%s')",
+                                    prop.getName(), prop.getDefaultValue(), oldVal);
+                            realm.setAttribute(prop.getName(), prop.getDefaultValue().toString());
+                        }
+                    }
+                }));
 
         riskEvaluatorFactories.forEach(f -> {
             var enabledKey = isEnabledConfig(f.evaluatorClass());
-            var oldEnabled = oldModel.get(enabledKey);
-            var newEnabled = newModel.get(enabledKey);
-            if (!Objects.equals(oldEnabled, newEnabled)) {
-                doIfPresent(newEnabled, value -> {
-                    logger.debugf("onUpdate storing evaluator enabled '%s' = '%s' (was '%s')", enabledKey, value, oldEnabled);
-                    EvaluatorUtils.setEvaluatorEnabled(realm, f.evaluatorClass(), Boolean.parseBoolean(value));
-                });
+            if (!Objects.equals(oldModel.get(enabledKey), newModel.get(enabledKey)) && newModel.contains(enabledKey)) {
+                var value = newModel.get(enabledKey);
+                var enabled = value == null || Boolean.parseBoolean(value);
+                logger.debugf("onUpdate storing evaluator enabled '%s' = '%s'", enabledKey, enabled);
+                EvaluatorUtils.setEvaluatorEnabled(realm, f.evaluatorClass(), enabled);
             }
 
             var trustKey = getTrustConfig(f.evaluatorClass());
             var oldTrust = oldModel.get(trustKey);
             var newTrust = newModel.get(trustKey);
-            if (!Objects.equals(oldTrust, newTrust)) {
-                doIfPresent(newTrust, value -> {
-                    logger.debugf("onUpdate storing evaluator trust '%s' = '%s' (was '%s')", trustKey, value, oldTrust);
-                    EvaluatorUtils.storeEvaluatorTrust(realm, f.evaluatorClass(), Double.parseDouble(value));
-                });
+            if (!Objects.equals(oldTrust, newTrust) && newModel.contains(trustKey) && StringUtil.isNotBlank(newTrust)) {
+                logger.debugf("onUpdate storing evaluator trust '%s' = '%s' (was '%s')", trustKey, newTrust, oldTrust);
+                EvaluatorUtils.storeEvaluatorTrust(realm, f.evaluatorClass(), Double.parseDouble(newTrust));
             }
         });
+    }
+
+    private void persistEvaluatorSettings(ComponentModel model, RealmModel realm, RiskEvaluatorFactory evalFactory, String context) {
+        var enabledKey = isEnabledConfig(evalFactory.evaluatorClass());
+        if (model.contains(enabledKey)) {
+            var value = model.get(enabledKey);
+            var enabled = value == null || Boolean.parseBoolean(value);
+            logger.debugf("%s storing evaluator enabled '%s' = '%s'", context, enabledKey, enabled);
+            EvaluatorUtils.setEvaluatorEnabled(realm, evalFactory.evaluatorClass(), enabled);
+        }
+
+        var trustKey = getTrustConfig(evalFactory.evaluatorClass());
+        var trustValue = model.get(trustKey);
+        if (model.contains(trustKey) && StringUtil.isNotBlank(trustValue)) {
+            logger.debugf("%s storing evaluator trust '%s' = '%s'", context, trustKey, trustValue);
+            EvaluatorUtils.storeEvaluatorTrust(realm, evalFactory.evaluatorClass(), Double.parseDouble(trustValue));
+        }
     }
 
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
         logger.tracef("validateConfiguration execution");
 
-        // Populate missing config properties with defaults so the admin console
-        // includes them in future form submissions
         populateMissingDefaults(model);
 
         validateInteger(model.get(EVALUATOR_TIMEOUT_CONFIG), "Timeout");
@@ -199,25 +207,22 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         validateFallbackLevel(model.get(ADVANCED_FALLBACK_LEVEL_CONFIG), AdvancedRiskLevels.getAdvancedLevelNames(), "Advanced fallback risk level");
 
         riskEvaluatorFactories.forEach(f -> {
+            var value = model.get(getTrustConfig(f.evaluatorClass()));
+            if (StringUtil.isBlank(value)) {
+                return;
+            }
             try {
-                var value = model.get(getTrustConfig(f.evaluatorClass()));
-                if (StringUtil.isBlank(value)) return; // default value is an empty string
-
                 var trust = Double.parseDouble(value);
                 if (!Trust.isValid(trust)) {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
-                throw new ComponentValidationException("Risk Trust levels must be double values in range [0.0, 1.0]");
+                throw new ComponentValidationException(
+                        "Risk Trust levels must be double values in range [0.0, 1.0]");
             }
         });
     }
 
-    /**
-     * Ensures all config properties defined by {@link #getConfigProperties()} exist in the component model.
-     * The admin console only submits keys already present in the component config,
-     * so missing properties must be populated with defaults to be editable.
-     */
     private void populateMissingDefaults(ComponentModel model) {
         getConfigProperties().forEach(prop -> {
             if (model.get(prop.getName()) == null && prop.getDefaultValue() != null) {
@@ -246,64 +251,105 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
-        final List<ProviderConfigProperty> list = ProviderConfigurationBuilder.create().property()
+        return buildConfigProperties(algorithmFactories, riskEvaluatorFactories);
+    }
+
+    static List<ProviderConfigProperty> buildConfigProperties(
+            List<RiskScoreAlgorithmFactory> algorithmFactories,
+            List<RiskEvaluatorFactory> riskEvaluatorFactories) {
+        var list = new ArrayList<ProviderConfigProperty>();
+
+        list.addAll(ProviderConfigurationBuilder.create().property()
                 .name(RISK_BASED_AUTHN_ENABLED_CONFIG)
-                .label("enabled")
-                .helpText("Whether risk-based authentication should be enabled")
+                .label("Enable adaptive authentication")
+                .helpText("Master switch for the adaptive risk engine on this realm. When off, risk evaluators do not run during login.")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
                 .add()
                 .property()
                 .name(EVALUATOR_TIMEOUT_CONFIG)
-                .label("Risk evaluator timeout (ms)")
-                .helpText("Timeout for evaluating risk score")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue(DEFAULT_EVALUATOR_TIMEOUT.toMillis())
+                .label("Evaluator timeout ms")
+                .helpText("Maximum time allowed for a single risk evaluator call. Evaluators exceeding this limit may be retried or skipped depending on retries.")
+                .type(ProviderConfigProperty.INTEGER_TYPE)
+                .defaultValue((int) DEFAULT_EVALUATOR_TIMEOUT.toMillis())
                 .add()
                 .property()
                 .name(EVALUATOR_RETRIES_CONFIG)
-                .label("Risk evaluator retries")
-                .helpText("Number of retries for evaluating risk score")
-                .type(ProviderConfigProperty.STRING_TYPE)
+                .label("Evaluator retries")
+                .helpText("How many times to retry an evaluator after timeout or transient failure before treating it as failed.")
+                .type(ProviderConfigProperty.INTEGER_TYPE)
                 .defaultValue(DEFAULT_EVALUATOR_RETRIES)
                 .add()
                 .property()
                 .name(RISK_SCORE_ALGORITHM_CONFIG)
-                .label("Risk score algorithm")
-                .helpText("Algorithm used to compute the overall risk score from individual evaluator results")
+                .label("Score algorithm")
+                .helpText("How per-phase evaluator evidence is combined into an overall score. Log-odds (Bayesian) is recommended; weighted average is deprecated.")
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .options(algorithmFactories.stream().map(RiskScoreAlgorithmFactory::getId).toList())
                 .defaultValue(algorithmFactories.isEmpty() ? null : algorithmFactories.getFirst().getId())
                 .add()
                 .property()
                 .name(SIMPLE_FALLBACK_LEVEL_CONFIG)
-                .label("Fallback risk level (simple)")
-                .helpText("Risk level used when the risk engine fails to evaluate. Applied to simple (3-level) conditions.")
+                .label("Fallback on error simple 3 levels")
+                .helpText("Risk level applied when the engine cannot compute a score. Used by authentication conditions configured with the 3-level (LOW/MEDIUM/HIGH) model.")
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .options(SimpleRiskLevels.getSimpleLevelNames())
                 .defaultValue(SimpleRiskLevels.MEDIUM)
                 .add()
                 .property()
                 .name(ADVANCED_FALLBACK_LEVEL_CONFIG)
-                .label("Fallback risk level (advanced)")
-                .helpText("Risk level used when the risk engine fails to evaluate. Applied to advanced (5-level) conditions.")
+                .label("Fallback on error advanced 5 levels")
+                .helpText("Risk level applied when the engine cannot compute a score. Used by conditions with the 5-level advanced model.")
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .options(AdvancedRiskLevels.getAdvancedLevelNames())
                 .defaultValue(AdvancedRiskLevels.MEDIUM)
                 .add()
-                .build();
+                .build());
 
-        // Add Algorithm-specific Properties
-        list.addAll(algorithmFactories.stream()
+        algorithmFactories.stream()
                 .flatMap(f -> f.getConfigProperties().stream())
-                .toList());
+                .forEach(list::add);
 
-        // Add Risk Evaluator Properties
-        list.addAll(riskEvaluatorFactories.stream()
-                .flatMap(f -> f.getConfigProperties().stream())
-                .toList());
+        for (var phase : EVALUATOR_PHASE_ORDER) {
+            appendEvaluatorPhase(list, riskEvaluatorFactories, phase);
+        }
 
         return list;
+    }
+
+    private static void appendEvaluatorPhase(
+            List<ProviderConfigProperty> list,
+            List<RiskEvaluatorFactory> factories,
+            RiskEvaluator.EvaluationPhase phase) {
+        factories.stream()
+                .filter(f -> f.evaluationPhase() == phase)
+                .sorted(Comparator.comparing(RiskEvaluatorFactory::adminDisplayName))
+                .flatMap(f -> evaluatorAdminProperties(f).stream())
+                .forEach(list::add);
+    }
+
+    private static List<ProviderConfigProperty> evaluatorAdminProperties(RiskEvaluatorFactory factory) {
+        var evaluatorClass = factory.evaluatorClass();
+        var properties = new ArrayList<ProviderConfigProperty>();
+        properties.addAll(ProviderConfigurationBuilder.create()
+                .property()
+                .name(isEnabledConfig(evaluatorClass))
+                .label(RiskEvaluatorUi.enabledLabel(factory))
+                .helpText(RiskEvaluatorUi.enabledTooltip(factory))
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(true)
+                .add()
+                .build());
+        properties.add(ProviderConfigurationBuilder.create()
+                .property()
+                .name(getTrustConfig(evaluatorClass))
+                .label(RiskEvaluatorUi.trustLabel(factory))
+                .helpText(RiskEvaluatorUi.trustTooltip(factory) + " " + TRUST_FIELD_HELP)
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .add()
+                .build()
+                .getFirst());
+        return properties;
     }
 
     @Override
@@ -312,7 +358,9 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-        this.riskEvaluatorFactories = factory.getProviderFactoriesStream(RiskEvaluator.class).map(f -> (RiskEvaluatorFactory) f).toList();
+        this.riskEvaluatorFactories = factory.getProviderFactoriesStream(RiskEvaluator.class)
+                .map(f -> (RiskEvaluatorFactory) f)
+                .toList();
         this.algorithmFactories = factory.getProviderFactoriesStream(RiskScoreAlgorithm.class)
                 .map(f -> (RiskScoreAlgorithmFactory) f)
                 .sorted(Comparator.comparingInt(RiskScoreAlgorithmFactory::order).reversed())
@@ -323,6 +371,4 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     public void close() {
 
     }
-
-
 }

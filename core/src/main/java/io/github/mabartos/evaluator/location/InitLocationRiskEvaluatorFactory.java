@@ -39,7 +39,27 @@ public class InitLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
+    public String adminDisplayName() {
+        return "Init location";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return InitLocationRiskEvaluator.class;
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Prepares GeoIP/location context for later evaluators. Runs before authentication; does not score risk by itself.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Keep enabled when using location-based evaluators so IP geolocation data is available early in the flow.";
     }
 }

@@ -27,4 +27,24 @@ public class LoginEventIpAddressRiskEvaluatorFactory implements RiskEvaluatorFac
     public String getId() {
         return PROVIDER_ID;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Known IP address";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Scores whether the current IP was seen in the user's successful login history.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "New or rare IPs increase risk; familiar IPs can reduce it.";
+    }
 }

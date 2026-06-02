@@ -43,4 +43,24 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return OperatingSystemRiskEvaluator.class;
     }
+
+    @Override
+    public String adminDisplayName() {
+        return "Operating system";
+    }
+
+    @Override
+    public RiskEvaluator.EvaluationPhase evaluationPhase() {
+        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+    }
+
+    @Override
+    public String adminEnabledHelpText() {
+        return "Scores unknown or unusual operating systems from the user agent before login.";
+    }
+
+    @Override
+    public String adminTrustHelpText() {
+        return "Complements browser and device signals in the BEFORE_AUTHN phase.";
+    }
 }
