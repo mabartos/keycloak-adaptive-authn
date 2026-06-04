@@ -168,14 +168,18 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
                                 session.getKeycloakSessionFactory(),
                                 session.getContext(),
                                 s -> {
-                                    executeEvaluator(evaluator, realm, knownUser, retries, results);
+                                    // Fresh references from ISPN cache bound to session 's'
+                                    var freshRealm = s.realms().getRealm(realm.getId());
+                                    var freshUser = knownUser != null ? s.users().getUserById(freshRealm, knownUser.getId()) : null;
+
+                                    executeEvaluator(evaluator, freshRealm, freshUser, retries, results);
                                     completedEvaluators.put(evaluator, true);
 
                                     Span currentSpan = span.get();
                                     if (currentSpan.isRecording()) {
                                         currentSpan.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
                                         evaluator.getRisk().getReason().ifPresent(reason -> currentSpan.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                                        currentSpan.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(realm));
+                                        currentSpan.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(freshRealm));
                                     }
                                     return evaluator;
                                 }, "evaluateInParallel");
