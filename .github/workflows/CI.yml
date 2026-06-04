@@ -16,9 +16,9 @@ jobs:
           - keycloak-version: 999.0.0-SNAPSHOT
             build-args: ""
             test-args: -Dkeycloak.version=999.0.0-SNAPSHOT
-- keycloak-version: 26.6.0
-            build-args: -Pdist-maven -Dkeycloak.version=26.6.0 -Dkeycloak.test.realm.source=released
-            test-args: -Dkeycloak.version=26.6.0 -Dkeycloak.test.realm.source=released
+          - keycloak-version: 26.6.2
+            build-args: -Pdist-maven -Dkeycloak.version=26.6.2 -Dkeycloak.test.realm.source=released
+            test-args: -Dkeycloak.version=26.6.2 -Dkeycloak.test.realm.source=released
 
     name: Keycloak ${{ matrix.keycloak-version }}
     steps:
@@ -32,7 +32,7 @@ jobs:
         cache: maven
 
     - name: Build extension
-      # maven.test.skip (not skipTests): tests compile later with test-args (version may differ from build on 26.5.7)
+      # maven.test.skip (not skipTests): tests compile later with test-args (version may differ from build)
       run: ./mvnw clean install -Dmaven.test.skip=true -Pbuild-distribution ${{ matrix.build-args }}
 
     - name: Test execute 'build' command

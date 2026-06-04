@@ -320,7 +320,7 @@
         </profile>
 
         <!-- Fetch released Keycloak distribution from Maven Central instead of GitHub -->
-        <!-- Usage: mvn install -Pbuild-distribution,dist-maven -Dkeycloak.dist.version=26.5.6 -->
+        <!-- Usage: mvn install -Pbuild-distribution,dist-maven -Dkeycloak.dist.version=26.6.2 -->
         <profile>
             <id>dist-maven</id>
             <build>

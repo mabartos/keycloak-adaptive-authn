@@ -60,9 +60,26 @@ Example for Keycloak 26.5.4:
   -Dkeycloak.github.tag=26.5.4
 ```
 
+#### Running Tests with a Specific Release
+
+When testing against a released version, pass `-Dkeycloak.test.realm.source=released` to switch to the released realm config:
+
+```shell
+# Build (skip test execution)
+./mvnw clean install -Dmaven.test.skip=true -Pbuild-distribution,dist-maven \
+  -Dkeycloak.version=26.6.2 -Dkeycloak.test.realm.source=released
+
+# Run integration tests
+./mvnw -f tests test \
+  -Dkeycloak.version=26.6.2 -Dkeycloak.test.realm.source=released
+```
+
+Without `-Dkeycloak.test.realm.source=released`, the build defaults to `nightly` and tries to resolve dependencies only available in SNAPSHOT.
+
 **Key Points:**
 - **Nightly is default** - Both Maven dependencies and the distribution use `999.0.0-SNAPSHOT` from the `nightly` tag
 - **For specific versions** - Set both `-Dkeycloak.version` and `-Dkeycloak.github.tag` to the same version
+- **For tests with specific versions** - Add `-Dkeycloak.test.realm.source=released`
 - **Downloads are cached** in `~/.m2/repository/.cache/keycloak/{tag}/` for faster rebuilds
 - **All distributions come from GitHub** - no Maven Central dependency
 
