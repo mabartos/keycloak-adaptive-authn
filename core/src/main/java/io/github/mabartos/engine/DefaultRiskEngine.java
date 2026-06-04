@@ -180,6 +180,6 @@ public class DefaultRiskEngine extends AbstractRiskEngine {
                 .ifNoItem()
                 .after(timeout)
                 .recoverWithUni(Uni.createFrom().nothing());
-        return requiresUser ? item : item.emitOn(thread);
+        return evaluator.isRemote() ? item.emitOn(thread) : item;
     }
 }

@@ -60,6 +60,11 @@ public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authe
     }
 
     @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
         try {
             if (!configIsValid()) {

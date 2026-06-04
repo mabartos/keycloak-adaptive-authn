@@ -83,6 +83,16 @@ public interface RiskEvaluator extends Provider {
     boolean allowRetries();
 
     /**
+     * Flag to determine whether the evaluator makes remote/network calls
+     * <p>
+     * When remote, the evaluator benefits from parallel execution with timeout enforcement.
+     * Local evaluators can run synchronously without the overhead of separate threads and transactions.
+     */
+    default boolean isRemote() {
+        return false;
+    }
+
+    /**
      * Evaluation phase representing in what phase/situation the risk should be evaluated
      */
     enum EvaluationPhase {

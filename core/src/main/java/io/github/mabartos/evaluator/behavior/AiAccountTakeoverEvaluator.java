@@ -111,6 +111,11 @@ public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
     public Set<EvaluationPhase> evaluationPhases() {
         return Set.of(EvaluationPhase.USER_KNOWN);
     }

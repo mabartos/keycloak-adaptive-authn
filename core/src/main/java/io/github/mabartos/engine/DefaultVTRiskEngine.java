@@ -152,66 +152,92 @@ public class DefaultVTRiskEngine extends AbstractRiskEngine {
     }
 
     protected Set<RiskEvaluator> evaluateInParallel(Set<RiskEvaluator> evaluators, @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, @Nonnull Duration timeout, @Nonnull Tracer tracer, @Nonnull Span parentSpan) {
-        Map<RiskEvaluator, Boolean> completedEvaluators = new ConcurrentHashMap<>();
         var results = new EvaluatorResults();
+        Set<RiskEvaluator> completedEvaluators = ConcurrentHashMap.newKeySet();
 
-        try (var scope = new StructuredTaskScope<RiskEvaluator>()) {
-            for (var evaluator : evaluators) {
-                AtomicReference<Span> span = new AtomicReference<>();
-                scope.fork(() -> {
-                    try {
-                        // Custom span builder to track parents as we cannot do span hierarchy due to different keycloak session and its context
-                        SpanBuilder spanBuilder = tracer.spanBuilder("%s.evaluate".formatted(evaluator.getClass().getSimpleName()));
-                        spanBuilder.setParent(Context.current().with(parentSpan));
-                        span.set(spanBuilder.startSpan());
-                        return KeycloakModelUtils.runJobInTransactionWithResult(
-                                session.getKeycloakSessionFactory(),
-                                session.getContext(),
-                                s -> {
-                                    // Fresh references from ISPN cache bound to session 's'
-                                    var freshRealm = s.realms().getRealm(realm.getId());
-                                    var freshUser = knownUser != null ? s.users().getUserById(freshRealm, knownUser.getId()) : null;
+        var localEvaluators = evaluators.stream().filter(e -> !e.isRemote()).collect(Collectors.toSet());
+        var remoteEvaluators = evaluators.stream().filter(RiskEvaluator::isRemote).collect(Collectors.toSet());
 
-                                    executeEvaluator(evaluator, freshRealm, freshUser, retries, results);
-                                    completedEvaluators.put(evaluator, true);
-
-                                    Span currentSpan = span.get();
-                                    if (currentSpan.isRecording()) {
-                                        currentSpan.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
-                                        evaluator.getRisk().getReason().ifPresent(reason -> currentSpan.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                                        currentSpan.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(freshRealm));
-                                    }
-                                    return evaluator;
-                                }, "evaluateInParallel");
-                    } catch (Exception e) {
-                        logger.warnf(e, "Evaluator %s failed with exception", evaluator.getClass().getSimpleName());
-                        return null;
-                    } finally {
-                        var currentSpan = span.get();
-                        if (currentSpan != null) {
-                            currentSpan.end();
-                        }
-                    }
-                });
-            }
-
+        for (var evaluator : localEvaluators) {
+            SpanBuilder spanBuilder = tracer.spanBuilder("%s.evaluate".formatted(evaluator.getClass().getSimpleName()));
+            spanBuilder.setParent(Context.current().with(parentSpan));
+            Span span = spanBuilder.startSpan();
             try {
-                scope.joinUntil(Instant.now().plus(timeout));
-                logger.debugf("Risk evaluation completed - %d/%d evaluators finished in time", completedEvaluators.size(), evaluators.size());
-            } catch (TimeoutException e) {
-                logger.warnf("Risk evaluation timeout exceeded: %d ms - %d/%d evaluators completed",
-                        timeout.toMillis(), completedEvaluators.size(), evaluators.size());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.error("Risk evaluation was interrupted", e);
+                executeEvaluator(evaluator, realm, knownUser, retries, results);
+                completedEvaluators.add(evaluator);
+
+                if (span.isRecording()) {
+                    span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
+                    evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
+                    span.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(realm));
+                }
+            } catch (Exception e) {
+                logger.warnf(e, "Local evaluator %s failed with exception", evaluator.getClass().getSimpleName());
+            } finally {
+                span.end();
             }
-        } catch (Exception e) {
-            logger.error("Error during parallel risk evaluation", e);
         }
 
+        if (!remoteEvaluators.isEmpty()) {
+            try (var scope = new StructuredTaskScope<RiskEvaluator>()) {
+                for (var evaluator : remoteEvaluators) {
+                    AtomicReference<Span> span = new AtomicReference<>();
+                    scope.fork(() -> {
+                        try {
+                            SpanBuilder spanBuilder = tracer.spanBuilder("%s.evaluate".formatted(evaluator.getClass().getSimpleName()));
+                            spanBuilder.setParent(Context.current().with(parentSpan));
+                            span.set(spanBuilder.startSpan());
+                            return KeycloakModelUtils.runJobInTransactionWithResult(
+                                    session.getKeycloakSessionFactory(),
+                                    session.getContext(),
+                                    s -> {
+                                        var freshRealm = s.realms().getRealm(realm.getId());
+                                        var freshUser = knownUser != null ? s.users().getUserById(freshRealm, knownUser.getId()) : null;
+
+                                        executeEvaluator(evaluator, freshRealm, freshUser, retries, results);
+                                        completedEvaluators.add(evaluator);
+
+                                        Span currentSpan = span.get();
+                                        if (currentSpan.isRecording()) {
+                                            currentSpan.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
+                                            evaluator.getRisk().getReason().ifPresent(reason -> currentSpan.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
+                                            currentSpan.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(freshRealm));
+                                        }
+                                        return evaluator;
+                                    }, "evaluateInParallel");
+                        } catch (Exception e) {
+                            logger.warnf(e, "Remote evaluator %s failed with exception", evaluator.getClass().getSimpleName());
+                            return null;
+                        } finally {
+                            var currentSpan = span.get();
+                            if (currentSpan != null) {
+                                currentSpan.end();
+                            }
+                        }
+                    });
+                }
+
+                try {
+                    scope.joinUntil(Instant.now().plus(timeout));
+                    logger.debugf("Remote risk evaluation completed - %d/%d remote evaluators finished in time",
+                            completedEvaluators.size() - localEvaluators.size(), remoteEvaluators.size());
+                } catch (TimeoutException e) {
+                    logger.warnf("Remote risk evaluation timeout exceeded: %d ms - %d/%d remote evaluators completed",
+                            timeout.toMillis(), completedEvaluators.size() - localEvaluators.size(), remoteEvaluators.size());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Risk evaluation was interrupted", e);
+                }
+            } catch (Exception e) {
+                logger.error("Error during parallel remote risk evaluation", e);
+            }
+        }
+
+        logger.debugf("Risk evaluation completed - %d/%d evaluators total (%d local, %d remote)",
+                completedEvaluators.size(), evaluators.size(), localEvaluators.size(), remoteEvaluators.size());
         results.logAll();
 
-        return completedEvaluators.keySet().stream()
+        return completedEvaluators.stream()
                 .filter(e -> e.getRisk().isValid())
                 .collect(Collectors.toSet());
     }
