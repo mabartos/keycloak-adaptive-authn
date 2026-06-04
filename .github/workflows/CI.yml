@@ -16,12 +16,7 @@ jobs:
           - keycloak-version: 999.0.0-SNAPSHOT
             build-args: ""
             test-args: -Dkeycloak.version=999.0.0-SNAPSHOT
-          - keycloak-version: 26.5.7
-            # realm.source=released on build too: avoids resolving builders (nightly-only) at ${keycloak.version}
-            build-args: -Pdist-maven -Dkeycloak.version=26.5.7 -Dkeycloak.test.realm.source=released
-            # 26.5.7 test-framework cannot resolve remote-providers, fixed in 26.6.0+ (https://github.com/keycloak/keycloak/pull/45636)
-            test-args: -Dkeycloak.version=26.6.0 -Dkeycloak.test.realm.source=released
-          - keycloak-version: 26.6.0
+- keycloak-version: 26.6.0
             build-args: -Pdist-maven -Dkeycloak.version=26.6.0 -Dkeycloak.test.realm.source=released
             test-args: -Dkeycloak.version=26.6.0 -Dkeycloak.test.realm.source=released
 
