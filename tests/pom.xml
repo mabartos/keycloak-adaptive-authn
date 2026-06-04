@@ -59,7 +59,7 @@
         <plugins>
             <!--
               Realm config: java-${keycloak.test.realm.source} (default nightly).
-              Stable Keycloak: pass -Dkeycloak.test.realm.source=released with -Dkeycloak.version=26.6.0 (or 26.5.7).
+              Stable Keycloak: pass -Dkeycloak.test.realm.source=released with -Dkeycloak.version=26.6.2.
             -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
