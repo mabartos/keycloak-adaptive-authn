@@ -87,6 +87,9 @@
         <keycloak.dist.version>${keycloak.version}</keycloak.dist.version>
         <keycloak.github.tag>nightly</keycloak.github.tag>
         <keycloak.github.url>https://github.com/keycloak/keycloak/releases/download/${keycloak.github.tag}/keycloak-${keycloak.dist.version}.zip</keycloak.github.url>
+
+        <!-- Integration tests: java-nightly (RealmBuilder) or java-released (RealmConfigBuilder); override with -Dkeycloak.test.realm.source=released -->
+        <keycloak.test.realm.source>nightly</keycloak.test.realm.source>
     </properties>
 
     <dependencyManagement>

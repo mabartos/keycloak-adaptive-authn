@@ -8,6 +8,10 @@ import org.keycloak.testframework.realm.RealmConfigBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Realm config for released Keycloak (26.5.x / 26.6.x) using {@link RealmConfigBuilder}
+ * in test-framework-core.
+ */
 public class AdaptiveRealmConfig implements RealmConfig {
     public static final String REALM_JSON_NAME = "test-adaptive-realm.json";
 

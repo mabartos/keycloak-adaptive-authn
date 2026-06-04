@@ -57,6 +57,29 @@
 
     <build>
         <plugins>
+            <!--
+              Realm config: java-${keycloak.test.realm.source} (default nightly).
+              Stable Keycloak: pass -Dkeycloak.test.realm.source=released with -Dkeycloak.version=26.6.0 (or 26.5.7).
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-realm-config-test-source</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/src/test/java-${keycloak.test.realm.source}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -71,5 +94,25 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- keycloak-test-framework-builders: SNAPSHOT / java-nightly only (keycloak/keycloak#48315) -->
+        <profile>
+            <id>keycloak-nightly-test-framework</id>
+            <activation>
+                <property>
+                    <name>keycloak.test.realm.source</name>
+                    <value>nightly</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.keycloak.testframework</groupId>
+                    <artifactId>keycloak-test-framework-builders</artifactId>
+                    <version>${keycloak.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>
