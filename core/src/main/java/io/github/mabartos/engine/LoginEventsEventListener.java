@@ -10,6 +10,8 @@ import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.storage.UserStorageUtil;
+import org.keycloak.storage.federated.UserFederatedStorageProvider;
 import org.keycloak.timer.ScheduledTask;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.utils.StringUtil;
@@ -68,13 +70,23 @@ public class LoginEventsEventListener implements EventListenerProvider {
                 .stream()
                 .filter(context -> context instanceof OnSuccessfulLoginCallback)
                 .forEach(context -> ((OnSuccessfulLoginCallback) context).onSuccessfulLogin(realm, user));
-
-        var timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
+ 
+        String timerScheduled = String.valueOf(false);
+        if (user.isFederated()) {
+            timerScheduled = userFederatedStorage().getAttributes(realm, user.getId())
+                    .getFirst(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
+        } else {
+            timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
+        }
         if (!Boolean.parseBoolean(timerScheduled)) {
             timerProvider.scheduleTask(new ScheduledContinuousRiskEvaluation(realm.getId(), userId),
                     Duration.ofMinutes(DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis(),
                     getUserTimerName(userId));
-            user.setAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
+            if (user.isFederated()) {
+                userFederatedStorage().setAttribute(realm, user.getId(), USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
+            } else {
+                user.setAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
+            }
             log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", userId, DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
         }
     }
@@ -108,7 +120,11 @@ public class LoginEventsEventListener implements EventListenerProvider {
             return;
         }
         timerProvider.cancelTask(getUserTimerName(userId));
-        user.removeAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
+        if (user.isFederated()) {
+            userFederatedStorage().removeAttribute(realm, user.getId(), USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
+        } else {
+            user.removeAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
+        }
     }
 
     protected static String getUserTimerName(String userId) {
@@ -123,5 +139,9 @@ public class LoginEventsEventListener implements EventListenerProvider {
     @Override
     public void close() {
 
+    }
+
+    private UserFederatedStorageProvider userFederatedStorage() {
+        return UserStorageUtil.userFederatedStorage(session);
     }
 }

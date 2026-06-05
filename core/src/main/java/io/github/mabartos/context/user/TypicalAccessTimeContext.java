@@ -15,6 +15,9 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
 import org.keycloak.common.util.Time;
+import org.keycloak.models.AbstractKeycloakTransaction;
+import org.keycloak.storage.UserStorageUtil;
+import org.keycloak.storage.federated.UserFederatedStorageProvider;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -81,7 +84,7 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
 
         // Load or bootstrap the profile from HISTORICAL data only
         // The current login is NOT included yet (will be persisted after successful auth)
-        CircularEwmaProfile profile = loadOrBootstrapProfile(user, loginOnlyEvents);
+        CircularEwmaProfile profile = loadOrBootstrapProfile(realm, user, loginOnlyEvents);
 
         return Optional.of(new TypicalAccessTimeData(profile, loginCount));
     }
@@ -95,18 +98,18 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
                 .atZone(ZoneId.systemDefault())
                 .getHour();
 
-        CircularEwmaProfile profile = loadProfileFromAttributes(user)
+        CircularEwmaProfile profile = loadProfileFromAttributes(realm, user)
                 .orElseGet(() -> new CircularEwmaProfile(ALPHA));
 
         profile.update(currentHour);
-        saveProfile(user, profile);
+        saveProfile(realm, user, profile);
     }
 
     /**
      * Loads profile from user attributes or bootstraps from historical events if not found.
      */
-    private CircularEwmaProfile loadOrBootstrapProfile(UserModel user, List<Event> loginEvents) {
-        return loadProfileFromAttributes(user).orElseGet(() -> {
+    private CircularEwmaProfile loadOrBootstrapProfile(RealmModel realm, UserModel user, List<Event> loginEvents) {
+        return loadProfileFromAttributes(realm, user).orElseGet(() -> {
             // No valid profile exists - bootstrap from historical login events
             logger.tracef("Bootstrapping time pattern for user %s from %d historical logins",
                     user.getUsername(), loginEvents.size());
@@ -118,18 +121,24 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
             }
 
             // Save bootstrapped profile
-            saveProfile(user, profile);
+            saveProfile(realm, user, profile);
             return profile;
         });
     }
 
     /**
-     * Loads profile from user attributes, returns empty if not found or invalid.
+     * Loads profile from the same storage Keycloak uses for the user type.
      */
-    private Optional<CircularEwmaProfile> loadProfileFromAttributes(UserModel user) {
-        List<String> meanSinValues = user.getAttributes().get(ATTR_MEAN_SIN);
-        List<String> meanCosValues = user.getAttributes().get(ATTR_MEAN_COS);
+    private Optional<CircularEwmaProfile> loadProfileFromAttributes(RealmModel realm, UserModel user) {
+        if (user.isFederated()) {
+            var federatedAttributes = userFederatedStorage().getAttributes(realm, user.getId());
+            return parseProfile(federatedAttributes.get(ATTR_MEAN_SIN), federatedAttributes.get(ATTR_MEAN_COS), user);
+        }
 
+        return parseProfile(user.getAttributes().get(ATTR_MEAN_SIN), user.getAttributes().get(ATTR_MEAN_COS), user);
+    }
+
+    private Optional<CircularEwmaProfile> parseProfile(List<String> meanSinValues, List<String> meanCosValues, UserModel user) {
         if (CollectionUtil.isEmpty(meanSinValues) || CollectionUtil.isEmpty(meanCosValues)) {
             return Optional.empty();
         }
@@ -144,12 +153,29 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
         }
     }
 
-    private void saveProfile(UserModel user, CircularEwmaProfile profile) {
-        user.setSingleAttribute(ATTR_MEAN_SIN, String.valueOf(profile.getMeanSin()));
-        user.setSingleAttribute(ATTR_MEAN_COS, String.valueOf(profile.getMeanCos()));
+    private void saveProfile(RealmModel realm, UserModel user, CircularEwmaProfile profile) {
+        if (session.getTransactionManager().isActive()) {
+            session.getTransactionManager().enlistPrepare(new AbstractKeycloakTransaction() {
+                @Override
+                protected void commitImpl() {
+                    setAttributes(realm, user, profile);
+                }
+
+                @Override
+                protected void rollbackImpl() {
+                    // noop
+                }
+            });
+        } else {
+            setAttributes(realm, user, profile);
+        }
 
         logger.tracef("Saved time pattern for user %s: meanSin=%.4f, meanCos=%.4f",
                 user.getUsername(), profile.getMeanSin(), profile.getMeanCos());
+    }
+
+    private UserFederatedStorageProvider userFederatedStorage() {
+        return UserStorageUtil.userFederatedStorage(session);
     }
 
     private int getHourFromEvent(Event event) {
@@ -157,5 +183,16 @@ public class TypicalAccessTimeContext extends AbstractUserContext<TypicalAccessT
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
                 .getHour();
+    }
+
+    private void setAttributes(RealmModel realm, UserModel user, CircularEwmaProfile profile) {
+        if (user.isFederated()) {
+            UserFederatedStorageProvider federatedStorage = userFederatedStorage();
+            federatedStorage.setSingleAttribute(realm, user.getId(), ATTR_MEAN_SIN, String.valueOf(profile.getMeanSin()));
+            federatedStorage.setSingleAttribute(realm, user.getId(), ATTR_MEAN_COS, String.valueOf(profile.getMeanCos()));
+            return;
+        }
+        user.setSingleAttribute(ATTR_MEAN_SIN, String.valueOf(profile.getMeanSin()));
+        user.setSingleAttribute(ATTR_MEAN_COS, String.valueOf(profile.getMeanCos()));
     }
 }

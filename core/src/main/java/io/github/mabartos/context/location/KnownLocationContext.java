@@ -1,6 +1,7 @@
 package io.github.mabartos.context.location;
 
 import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.evaluator.login.CircularEwmaProfile;
 import io.github.mabartos.spi.context.AbstractUserContext;
 import io.github.mabartos.spi.engine.OnSuccessfulLoginCallback;
 import jakarta.annotation.Nonnull;
@@ -9,8 +10,12 @@ import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.AbstractKeycloakTransaction;
+import org.keycloak.storage.UserStorageUtil;
+import org.keycloak.storage.federated.UserFederatedStorageProvider;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -38,7 +43,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
             return Optional.empty();
         }
 
-        var knownLocations = getKnownLocationData(knownUser);
+        var knownLocations = getKnownLocationData(realm, knownUser);
 
         if (knownLocations.isEmpty()) {
             logger.trace("No known locations yet");
@@ -58,7 +63,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
         }
 
         var currentKnownLocation = LocationDataUtils.create(location.getCountry(), location.getCity());
-        var knownLocations = getKnownLocationData(user);
+        var knownLocations = getKnownLocationData(realm, user);
 
         // Remove if already present to update position (move to end)
         removeMatchingLocation(knownLocations, currentKnownLocation);
@@ -72,21 +77,43 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
         }
 
         // Save back to user attributes
-        saveKnownLocationData(user, knownLocations);
+        saveKnownLocationData(realm, user, knownLocations);
     }
 
-    private LinkedHashSet<LocationData> getKnownLocationData(UserModel knownUser) {
+    private LinkedHashSet<LocationData> getKnownLocationData(RealmModel realm, UserModel knownUser) {
+        if (knownUser.isFederated()) {
+            return userFederatedStorage().getAttributes(realm, knownUser.getId())
+                    .getOrDefault(KNOWN_LOCATIONS_ATTR, List.of()).stream()
+                    .map(LocationDataUtils::parseFromAttribute)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
         return knownUser.getAttributeStream(KNOWN_LOCATIONS_ATTR)
                 .map(LocationDataUtils::parseFromAttribute)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void saveKnownLocationData(UserModel user, Set<LocationData> knownLocations) {
+    private void saveKnownLocationData(RealmModel realm, UserModel user, Set<LocationData> knownLocations) {
         var locationKeys = knownLocations.stream()
                 .map(LocationDataUtils::formatToAttribute)
                 .toList();
-        user.setAttribute(KNOWN_LOCATIONS_ATTR, locationKeys);
+        if (session.getTransactionManager().isActive()) {
+            session.getTransactionManager().enlistPrepare(new AbstractKeycloakTransaction() {
+                @Override
+                protected void commitImpl() {
+                    setAttributes(realm, user, locationKeys);
+                }
+
+                @Override
+                protected void rollbackImpl() {
+                    // noop
+                }
+            });
+            return;
+        }
+
+        setAttributes(realm, user, locationKeys);
     }
 
     private void removeMatchingLocation(Set<LocationData> locations, LocationData toRemove) {
@@ -94,5 +121,17 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
                 Objects.equals(loc.getCountry(), toRemove.getCountry()) &&
                 Objects.equals(loc.getCity(), toRemove.getCity())
         );
+    }
+
+    private UserFederatedStorageProvider userFederatedStorage() {
+        return UserStorageUtil.userFederatedStorage(session);
+    }
+
+    private void setAttributes(RealmModel realm, UserModel user, List<String> locationKeys) {
+        if (user.isFederated()) {
+            userFederatedStorage().setAttribute(realm, user.getId(), KNOWN_LOCATIONS_ATTR, locationKeys);
+            return;
+        }
+        user.setAttribute(KNOWN_LOCATIONS_ATTR, locationKeys);
     }
 }
