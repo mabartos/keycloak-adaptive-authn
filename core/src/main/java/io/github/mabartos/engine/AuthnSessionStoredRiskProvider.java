@@ -85,13 +85,14 @@ public class AuthnSessionStoredRiskProvider implements StoredRiskProvider {
 
     @Override
     public void storeAdditionalData(String key, String value) {
-        var authnSession = getAuthnSession().orElseThrow();
-        authnSession.setAuthNote(key, value);
+        getAuthnSession().ifPresentOrElse(
+                authnSession -> authnSession.setAuthNote(key, value),
+                () -> logger.debugf("Skipping store of '%s': no authentication session available", key));
     }
 
     @Override
     public Optional<String> getAdditionalData(String key) {
-        return Optional.ofNullable(getAuthnSession().orElseThrow(() -> new IllegalStateException("Authentication session is null")).getAuthNote(key));
+        return getAuthnSession().map(authnSession -> authnSession.getAuthNote(key));
     }
 
     protected Optional<AuthenticationSessionModel> getAuthnSession() {
