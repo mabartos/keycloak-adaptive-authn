@@ -70,6 +70,9 @@ public abstract class AbstractRiskEngine implements RiskEngine {
             return ResultRisk.invalid("Cannot execute risk score evaluation, because the user needs to be known");
         }
 
+        // Route attribute reads/writes to federated storage for non-imported users (e.g. READ_ONLY LDAP)
+        knownUser = FederatedStorageUserModelDelegate.wrapIfNeeded(knownUser, session, realm);
+
         final var storedRisk = storedRiskProvider.getStoredRisk(phase);
         if (storedRisk.isValid()) {
             logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
