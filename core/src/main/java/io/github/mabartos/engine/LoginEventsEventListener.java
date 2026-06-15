@@ -10,6 +10,7 @@ import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.timer.ScheduledTask;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.utils.StringUtil;
@@ -48,22 +49,23 @@ public class LoginEventsEventListener implements EventListenerProvider {
             return;
         }
 
-        switch (event.getType()) {
-            case LOGIN -> handleLogin(event, realm);
-            case LOGOUT -> handleLogout(event, realm);
-        }
-    }
-
-    protected void handleLogin(Event event, RealmModel realm) {
         var userId = event.getUserId();
         if (StringUtil.isBlank(userId)) return;
 
-        var user = session.users().getUserById(realm, userId);
+        // Route attribute reads/writes to federated storage for non-imported users (e.g. READ_ONLY LDAP)
+        var user = FederatedStorageUserModelDelegate.wrapIfNeeded(session.users().getUserById(realm, userId), session, realm);
         if (user == null) {
-            log.warnf("User with user ID '%s' does not exist, so no timer cannot be created.", userId);
+            log.warnf("User with user ID '%s' does not exist.", userId);
             return;
         }
 
+        switch (event.getType()) {
+            case LOGIN -> handleLogin(user, realm);
+            case LOGOUT -> handleLogout(user, realm);
+        }
+    }
+
+    protected void handleLogin(UserModel user, RealmModel realm) {
         session.getAllProviders(UserContext.class)
                 .stream()
                 .filter(context -> context instanceof OnSuccessfulLoginCallback)
@@ -71,11 +73,11 @@ public class LoginEventsEventListener implements EventListenerProvider {
 
         var timerScheduled = user.getFirstAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
         if (!Boolean.parseBoolean(timerScheduled)) {
-            timerProvider.scheduleTask(new ScheduledContinuousRiskEvaluation(realm.getId(), userId),
+            timerProvider.scheduleTask(new ScheduledContinuousRiskEvaluation(realm.getId(), user.getId()),
                     Duration.ofMinutes(DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES).toMillis(),
-                    getUserTimerName(userId));
+                    getUserTimerName(user.getId()));
             user.setAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET, List.of("true"));
-            log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", userId, DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
+            log.debugf("Scheduled task for continuous risk evaluation was set. (User ID: '%s', period in minutes: '%d'", user.getId(), DEFAULT_CONTINUOUS_RISK_EVALUATION_PERIOD_MINUTES);
         }
     }
 
@@ -93,21 +95,15 @@ public class LoginEventsEventListener implements EventListenerProvider {
             var riskEngine = session.getProvider(RiskEngine.class);
             var realm = session.realms().getRealm(realmId);
             session.getContext().setRealm(realm);
-            var user = session.users().getUserById(realm, userId);
+
+            // Route attribute reads/writes to federated storage for non-imported users (e.g. READ_ONLY LDAP)
+            var user = FederatedStorageUserModelDelegate.wrapIfNeeded(session.users().getUserById(realm, userId), session, realm);
             riskEngine.evaluateRisk(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, user);
         }
     }
 
-    protected void handleLogout(Event event, RealmModel realm) {
-        var userId = event.getUserId();
-        if (StringUtil.isBlank(userId)) return;
-
-        var user = session.users().getUserById(realm, userId);
-        if (user == null) {
-            log.warnf("User with user ID '%s' does not exist, so no timer cannot be cancelled.", userId);
-            return;
-        }
-        timerProvider.cancelTask(getUserTimerName(userId));
+    protected void handleLogout(UserModel user, RealmModel realm) {
+        timerProvider.cancelTask(getUserTimerName(user.getId()));
         user.removeAttribute(USER_ATTRIBUTE_CONTINUOUS_EVALUATIONS_TIMER_SET);
     }
 
