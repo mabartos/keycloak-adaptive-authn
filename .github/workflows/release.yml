@@ -55,7 +55,6 @@ jobs:
           echo "Publishing to https://maven.pkg.github.com/${GITHUB_REPOSITORY}"
           ./mvnw -B -ntp -U clean deploy -pl core -am \
             -Dmaven.test.skip=true \
-            -Pbuild-distribution \
             -Dgithub.packages.repository="${GITHUB_REPOSITORY}"
 
       - name: Prepare release assets
@@ -68,9 +67,9 @@ jobs:
           test -f "${CORE_JAR}"
           test -f "${THEME_JAR}"
           test -f "${REALM_JSON}"
-          cp "${CORE_JAR}" dist/keycloak-adaptive-authn.jar
-          cp "${THEME_JAR}" dist/
-          cp "${REALM_JSON}" dist/
+          cp "${CORE_JAR}" dist/
+          cp "${THEME_JAR}" dist/adaptive-authn-theme-${VERSION}.jar
+          cp "${REALM_JSON}" dist/adaptive-realm-${VERSION}.json
           (cd dist && for f in *.jar *.json; do sha256sum "${f}" > "${f}.sha256"; done)
           ls -la dist/
           (cd dist && cat *.sha256)
@@ -97,9 +96,9 @@ jobs:
       - name: Verify release assets
         run: |
           set -euo pipefail
-          test -f dist/adaptive-authn-theme.jar
-          test -f dist/adaptive-realm.json
-          test -f dist/keycloak-adaptive-authn.jar
+          test -f dist/adaptive-authn-theme-${VERSION}.jar
+          test -f dist/adaptive-realm-${VERSION}.json
+          test -f dist/keycloak-adaptive-authn-${VERSION}.jar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
