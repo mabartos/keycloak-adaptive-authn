@@ -58,11 +58,7 @@ jobs:
           SETTINGS_EOF
 
       - name: Set release version
-        run: |
-          ./set-version.sh "${VERSION}"
-          git config user.name "${BOT_NAME}"
-          git config user.email "${BOT_EMAIL}"
-          git commit -s -m "Set version to ${VERSION}"
+        run: ./set-version.sh "${VERSION}"
 
       - name: Deploy to GitHub Packages
         run: |
@@ -111,6 +107,7 @@ jobs:
           ./set-version.sh "${VERSION}"
           git config user.name "${BOT_NAME}"
           git config user.email "${BOT_EMAIL}"
+          git add -u
           git commit -s -m "Set version to ${VERSION}"
           git tag -f "${VERSION}"
           git push origin "${VERSION}" --force
