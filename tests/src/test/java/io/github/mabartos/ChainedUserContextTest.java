@@ -245,6 +245,7 @@ public class ChainedUserContextTest {
         public KeycloakServerConfigBuilder configure(KeycloakServerConfigBuilder builder) {
             builder.log().categoryLevel("io.github.mabartos", "debug");
             return builder.dependency("io.github.mabartos", "keycloak-adaptive-authn")
+                    .dependency("io.github.mabartos", "keycloak-adaptive-ext-ip-api")
                     .option("features", "declarative-ui");
         }
     }

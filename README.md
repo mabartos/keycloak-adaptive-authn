@@ -82,7 +82,8 @@ Build and try it out locally:
 
 ```shell
 ./mvnw -f core clean install -DskipTests -Pbuild-distribution
-./mvnw exec:exec@start-server
+./mvnw -f extensions clean install -DskipTests
+./mvnw exec:exec@copy-extensions exec:exec@start-server
 ```
 
 The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to the [`/providers`](https://www.keycloak.org/server/configuration-provider#_installing_and_uninstalling_a_provider) folder of your Keycloak distribution. It is also available as a Maven package:

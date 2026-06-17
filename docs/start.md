@@ -19,9 +19,16 @@ If you want to try it out, follow this:
 ```shell
 ./mvnw -f core clean install -DskipTests -Pbuild-distribution
 ```
-2. Prepare your `.env` file with necessary configuration (see `.env.example` for more info)
+2. Build extensions and copy them to the distribution:
 
-3. Start the server with deployed extension
+```shell
+./mvnw -f extensions clean install -DskipTests
+./mvnw exec:exec@copy-extensions
+```
+
+3. Prepare your `.env` file with necessary configuration (see `.env.example` for more info)
+
+4. Start the server with deployed extension
 
 ```shell
 ./mvnw exec:exec@start-server
@@ -98,6 +105,7 @@ You can build a custom Keycloak container image with the extension by adding the
 FROM quay.io/keycloak/keycloak:latest AS builder
 
 COPY core/target/keycloak-adaptive-authn-*.jar /opt/keycloak/providers/
+COPY extensions/*/target/*.jar /opt/keycloak/providers/
 
 ENV KC_HEALTH_ENABLED=true
 ENV KC_TRACING_ENABLED=true
