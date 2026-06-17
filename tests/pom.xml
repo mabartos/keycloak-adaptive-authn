@@ -26,6 +26,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.mabartos</groupId>
+            <artifactId>keycloak-adaptive-ext-ip-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- TESTING -->
         <dependency>
