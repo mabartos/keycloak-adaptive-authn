@@ -43,15 +43,11 @@ public class IpApiLocationContext extends LocationContext {
 
     private final HttpClientProvider httpClientProvider;
     private final IpAddressContext ipAddressContext;
-    private final AuthnSessionLocationContext authnSessionLocationContext;
-    private final GlobalCacheLocationContext globalCacheLocationContext;
 
     public IpApiLocationContext(KeycloakSession session) {
         super(session);
         this.httpClientProvider = session.getProvider(HttpClientProvider.class);
         this.ipAddressContext = UserContexts.getContext(session, IpAddressContext.class);
-        this.authnSessionLocationContext = UserContexts.getContext(session, AuthnSessionLocationContextFactory.PROVIDER_ID);
-        this.globalCacheLocationContext = UserContexts.getContext(session, GlobalCacheLocationContextFactory.PROVIDER_ID);
     }
 
     @Override
@@ -93,10 +89,7 @@ public class IpApiLocationContext extends LocationContext {
                                 response.getEntity().getContent(),
                                 IpApiLocationData.class));
 
-                data.ifPresent(location -> {
-                    log.tracef("Location obtained: %s", location);
-                    updateCaches(ipAddress, location);
-                });
+                data.ifPresent(location -> log.tracef("Location obtained: %s", location));
 
                 return data;
             }
@@ -107,13 +100,4 @@ public class IpApiLocationContext extends LocationContext {
         return Optional.empty();
     }
 
-    private void updateCaches(IPAddress effectiveIpAddress, LocationData location) {
-        if (authnSessionLocationContext != null) {
-            authnSessionLocationContext.updateCache(effectiveIpAddress, location);
-        }
-
-        if (globalCacheLocationContext != null) {
-            globalCacheLocationContext.updateCache(effectiveIpAddress, location);
-        }
-    }
 }

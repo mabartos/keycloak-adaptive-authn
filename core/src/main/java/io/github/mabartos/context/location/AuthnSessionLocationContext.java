@@ -19,6 +19,7 @@ package io.github.mabartos.context.location;
 import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.IpAddressContext;
+import io.github.mabartos.spi.context.CacheableUserContext;
 import jakarta.annotation.Nonnull;
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
@@ -32,7 +33,7 @@ import java.util.Optional;
  * LocationContext that caches location data in the authentication session.
  * Avoids calling external location services when the IP address hasn't changed.
  */
-public class AuthnSessionLocationContext extends LocationContext {
+public class AuthnSessionLocationContext extends LocationContext implements CacheableUserContext<LocationData> {
     private static final Logger log = Logger.getLogger(AuthnSessionLocationContext.class);
 
     private static final String LAST_IP_KEY = "adaptive-location-lastIp";
@@ -72,19 +73,25 @@ public class AuthnSessionLocationContext extends LocationContext {
         return Optional.empty();
     }
 
-    public void updateCache(IPAddress ip, LocationData location) {
+    private Optional<LocationData> parseCachedLocation(String cached) {
+        return Optional.ofNullable(LocationDataUtils.parseFromAttribute(cached));
+    }
+
+    @Override
+    public void updateCache(RealmModel realm, LocationData data) {
         AuthenticationSessionModel authSession = session.getContext().getAuthenticationSession();
-        if (authSession == null || ip == null || location == null) {
+        if (authSession == null || data == null) {
             return;
         }
 
-        authSession.setAuthNote(LAST_IP_KEY, ip.toString());
-        String locationString = LocationDataUtils.formatToAttribute(location);
-        authSession.setAuthNote(LAST_LOCATION_KEY, locationString);
-        log.tracef("Updated location cache: IP=%s, Location=%s", ip, locationString);
-    }
+        IPAddress currentIp = ipAddressContext.getData(realm).orElse(null);
+        if (currentIp == null) {
+            return;
+        }
 
-    private Optional<LocationData> parseCachedLocation(String cached) {
-        return Optional.ofNullable(LocationDataUtils.parseFromAttribute(cached));
+        authSession.setAuthNote(LAST_IP_KEY, currentIp.toString());
+        String locationString = LocationDataUtils.formatToAttribute(data);
+        authSession.setAuthNote(LAST_LOCATION_KEY, locationString);
+        log.tracef("Updated location cache: IP=%s, Location=%s", currentIp, locationString);
     }
 }

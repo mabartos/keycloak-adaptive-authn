@@ -91,6 +91,10 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
                     if (this.data != null && this.data.isPresent()) {
                         return this.data;
                     }
+
+                    if (localData.isPresent() && this instanceof CacheableUserContext<?>) {
+                        ((CacheableUserContext<T>) this).updateCache(realm, localData.get());
+                    }
                 }
 
                 // Store and return the result
