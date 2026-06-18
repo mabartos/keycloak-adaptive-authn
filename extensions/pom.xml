@@ -23,4 +23,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <profiles>
+        <!-- SSF extension requires keycloak-ssf-core, only available in upstream Keycloak (not in released versions like 26.x).
+             Active by default; deactivated when -Dkeycloak.version is set to a released version. -->
+        <profile>
+            <id>ssf</id>
+            <activation>
+                <property>
+                    <name>!ssf.skip</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ssf</module>
+            </modules>
+        </profile>
+    </profiles>
+
 </project>
