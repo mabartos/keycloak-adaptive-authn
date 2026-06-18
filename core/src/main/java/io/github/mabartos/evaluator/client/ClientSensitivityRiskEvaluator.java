@@ -1,6 +1,9 @@
 package io.github.mabartos.evaluator.client;
 
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -11,7 +14,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Risk evaluator based on which client the user is authenticating to.
@@ -24,6 +26,7 @@ import java.util.Set;
  * Custom clients can override via the {@value #RISK_SENSITIVITY_ATTRIBUTE} client attribute
  * using any {@link Risk.Score} value (e.g. {@code HIGH}, {@code NEGATIVE_LOW}).
  */
+@EvaluationPhase(BEFORE_AUTHN)
 public class ClientSensitivityRiskEvaluator extends AbstractRiskEvaluator {
 
     public static final String RISK_SENSITIVITY_ATTRIBUTE = "adaptive-client-riskSensitivity";
@@ -41,11 +44,6 @@ public class ClientSensitivityRiskEvaluator extends AbstractRiskEvaluator {
 
     public ClientSensitivityRiskEvaluator(KeycloakSession session) {
         this.session = session;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     @Override

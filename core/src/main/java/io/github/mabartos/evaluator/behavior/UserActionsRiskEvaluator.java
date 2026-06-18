@@ -2,7 +2,10 @@ package io.github.mabartos.evaluator.behavior;
 
 import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.engine.RiskEngine;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.CONTINUOUS;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.common.util.Time;
@@ -32,6 +35,7 @@ import static org.keycloak.events.EventType.UPDATE_CREDENTIAL_ERROR;
 import static org.keycloak.events.EventType.UPDATE_EMAIL;
 import static org.keycloak.events.EventType.UPDATE_EMAIL_ERROR;
 
+@EvaluationPhase(CONTINUOUS)
 public class UserActionsRiskEvaluator extends ContinuousRiskEvaluator {
     protected static final EventType[] SENSITIVE_EVENTS = {
             UPDATE_EMAIL,

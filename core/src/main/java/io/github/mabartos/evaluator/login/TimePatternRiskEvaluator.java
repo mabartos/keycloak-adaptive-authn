@@ -5,7 +5,10 @@ import io.github.mabartos.context.user.TypicalAccessTimeContext;
 import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
 import io.github.mabartos.context.user.TypicalAccessTimeData;
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -17,7 +20,6 @@ import org.keycloak.models.UserModel;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 import static io.github.mabartos.spi.level.Risk.Score.*;
 
@@ -70,6 +72,7 @@ import static io.github.mabartos.spi.level.Risk.Score.*;
  * @see TypicalAccessTimeContext
  * @see TypicalAccessTimeData
  */
+@EvaluationPhase(USER_KNOWN)
 public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(TimePatternRiskEvaluator.class);
 
@@ -91,11 +94,6 @@ public class TimePatternRiskEvaluator extends AbstractRiskEvaluator {
     @Override
     public boolean allowRetries() {
         return false;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

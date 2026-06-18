@@ -6,7 +6,10 @@ import io.github.mabartos.context.location.KnownLocationContextFactory;
 import io.github.mabartos.context.location.LocationContext;
 import io.github.mabartos.context.location.LocationData;
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -23,6 +26,7 @@ import static io.github.mabartos.spi.level.Risk.Score.VERY_SMALL;
 /**
  * Risk evaluator for location properties
  */
+@EvaluationPhase(USER_KNOWN)
 public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(KnownLocationRiskEvaluator.class);
 
@@ -32,11 +36,6 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
     public KnownLocationRiskEvaluator(KeycloakSession session) {
         this.locationContext = UserContexts.getContext(session, LocationContext.class);
         this.knownLocationContext = UserContexts.getContext(session, KnownLocationContext.class);
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

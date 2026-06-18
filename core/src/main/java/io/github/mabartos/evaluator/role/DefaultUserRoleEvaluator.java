@@ -19,7 +19,10 @@ package io.github.mabartos.evaluator.role;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.UserRoleContext;
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.models.AdminRoles;
@@ -38,6 +41,7 @@ import java.util.Set;
  * <p>
  * Users with no sensitive realm roles receive a trust signal ({@link Risk.Score#NEGATIVE_LOW}).
  */
+@EvaluationPhase(USER_KNOWN)
 public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
     private static final String MANAGE_PREFIX = "manage-";
     private static final String CREATE_PREFIX = "create-";
@@ -55,11 +59,6 @@ public class DefaultUserRoleEvaluator extends AbstractRiskEvaluator {
 
     public DefaultUserRoleEvaluator(KeycloakSession session) {
         this.context = UserContexts.getContext(session, UserRoleContext.class);
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

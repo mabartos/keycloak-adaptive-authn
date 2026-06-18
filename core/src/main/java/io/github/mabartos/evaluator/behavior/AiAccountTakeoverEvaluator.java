@@ -11,7 +11,10 @@ import io.github.mabartos.context.user.TypicalAccessTimeContextFactory;
 import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.ai.AiEngine;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -74,6 +77,7 @@ import java.util.stream.Collectors;
  *
  * @see UserActionsRiskEvaluator for rule-based action counting
  */
+@EvaluationPhase(USER_KNOWN)
 public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(AiAccountTakeoverEvaluator.class);
 
@@ -108,11 +112,6 @@ public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
     @Override
     public boolean allowRetries() {
         return false;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override
