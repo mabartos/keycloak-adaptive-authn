@@ -81,12 +81,11 @@ For more information and setup, see the <a href="docs/ai-engine-integration.md">
 Build and try it out locally:
 
 ```shell
-./mvnw -f core clean install -DskipTests -Pbuild-distribution
-./mvnw -f extensions clean install -DskipTests
+./mvnw clean install -DskipTests -Pbuild-distribution
 ./mvnw exec:exec@copy-extensions exec:exec@start-server
 ```
 
-The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to the [`/providers`](https://www.keycloak.org/server/configuration-provider#_installing_and_uninstalling_a_provider) folder of your Keycloak distribution. It is also available as a Maven package:
+The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to the [`/providers`](https://www.keycloak.org/server/configuration-provider#_installing_and_uninstalling_a_provider) folder of your Keycloak distribution with additional JARs as extensions from the `/extensions` module. The core JAR is also available as a Maven package:
 
 ```xml
 <dependency>

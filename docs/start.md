@@ -17,12 +17,11 @@ If you want to try it out, follow this:
 1. Build it with profile `-Pbuild-distribution` as:
 
 ```shell
-./mvnw -f core clean install -DskipTests -Pbuild-distribution
+./mvnw clean install -DskipTests -Pbuild-distribution
 ```
-2. Build extensions and copy them to the distribution:
+2. Copy extensions to the distribution:
 
 ```shell
-./mvnw -f extensions clean install -DskipTests
 ./mvnw exec:exec@copy-extensions
 ```
 
