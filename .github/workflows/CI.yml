@@ -17,7 +17,7 @@ jobs:
             build-args: ""
             test-args: -Dkeycloak.version=999.0.0-SNAPSHOT
           - keycloak-version: 26.6.3
-            build-args: -Pdist-maven -Dkeycloak.version=26.6.3 -Dkeycloak.test.realm.source=released
+            build-args: -Pdist-maven -Dkeycloak.version=26.6.3 -Dkeycloak.test.realm.source=released -Dssf.skip
             test-args: -Dkeycloak.version=26.6.3 -Dkeycloak.test.realm.source=released
 
     name: Keycloak ${{ matrix.keycloak-version }}
