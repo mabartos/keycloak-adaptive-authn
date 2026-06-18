@@ -1,2 +1,2 @@
-io.github.mabartos.engine.DefaultRiskEngineFactory
-io.github.mabartos.engine.DefaultVTRiskEngineFactory
+io.github.mabartos.engine.core.DefaultRiskEngineFactory
+io.github.mabartos.engine.core.DefaultVTRiskEngineFactory

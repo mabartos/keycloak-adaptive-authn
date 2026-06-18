@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
@@ -40,10 +40,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static io.github.mabartos.engine.DefaultVTRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
-import static io.github.mabartos.engine.DefaultVTRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
-import static io.github.mabartos.engine.DefaultVTRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
-import static io.github.mabartos.engine.DefaultVTRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static io.github.mabartos.engine.core.DefaultVTRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static io.github.mabartos.engine.core.DefaultVTRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static io.github.mabartos.engine.core.DefaultVTRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static io.github.mabartos.engine.core.DefaultVTRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 
 /**
  * Risk engine implementation using virtual threads for parallel evaluation with timeout support

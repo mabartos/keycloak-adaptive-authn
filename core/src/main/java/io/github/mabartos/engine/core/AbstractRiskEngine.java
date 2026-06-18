@@ -1,5 +1,6 @@
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
+import io.github.mabartos.engine.FederatedStorageUserModelDelegate;
 import io.github.mabartos.spi.level.ResultRisk;
 import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.spi.context.UserContext;

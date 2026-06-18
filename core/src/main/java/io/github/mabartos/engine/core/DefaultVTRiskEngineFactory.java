@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
 import org.keycloak.Config;
 import io.github.mabartos.spi.engine.RiskEngine;
