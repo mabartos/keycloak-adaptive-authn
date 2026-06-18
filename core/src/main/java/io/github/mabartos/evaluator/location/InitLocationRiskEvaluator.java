@@ -19,15 +19,16 @@ package io.github.mabartos.evaluator.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.location.LocationContext;
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-
-import java.util.Set;
 
 import static io.github.mabartos.spi.level.Risk.Score.NONE;
 
@@ -36,6 +37,7 @@ import static io.github.mabartos.spi.level.Risk.Score.NONE;
  * This triggers location fetching and caching early in the authentication flow,
  * avoiding redundant API calls in later phases.
  */
+@EvaluationPhase(BEFORE_AUTHN)
 public class InitLocationRiskEvaluator extends AbstractRiskEvaluator {
     private static final Logger logger = Logger.getLogger(InitLocationRiskEvaluator.class);
 
@@ -43,11 +45,6 @@ public class InitLocationRiskEvaluator extends AbstractRiskEvaluator {
 
     public InitLocationRiskEvaluator(KeycloakSession session) {
         this.locationContext = UserContexts.getContext(session, LocationContext.class);
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
     }
 
     @Override

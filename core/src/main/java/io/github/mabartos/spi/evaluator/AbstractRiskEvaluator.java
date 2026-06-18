@@ -8,16 +8,11 @@ import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import java.util.Set;
-
 /**
  * Abstraction over the {@link RiskEvaluator} to simplify risk evaluators
  */
 public abstract class AbstractRiskEvaluator implements RiskEvaluator {
     protected Risk risk = Risk.invalid("Abstract risk evaluator");
-
-    @Override
-    public abstract Set<EvaluationPhase> evaluationPhases();
 
     @Override
     public Risk getRisk() {

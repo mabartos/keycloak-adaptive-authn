@@ -1,6 +1,9 @@
 package io.github.mabartos.evaluator.client;
 
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -21,6 +24,7 @@ import java.util.Set;
  * <p>
  * Users with no client roles on the target client receive a trust signal ({@link Risk.Score#NEGATIVE_LOW}).
  */
+@EvaluationPhase(USER_KNOWN)
 public class ClientRoleRiskEvaluator extends AbstractRiskEvaluator {
 
     private static final String MANAGE_PREFIX = "manage-";
@@ -34,11 +38,6 @@ public class ClientRoleRiskEvaluator extends AbstractRiskEvaluator {
 
     public ClientRoleRiskEvaluator(KeycloakSession session) {
         this.session = session;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

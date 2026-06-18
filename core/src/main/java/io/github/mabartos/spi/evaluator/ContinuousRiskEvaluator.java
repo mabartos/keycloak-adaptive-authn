@@ -1,11 +1,8 @@
 package io.github.mabartos.spi.evaluator;
 
-import java.util.Set;
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.CONTINUOUS;
 
+@EvaluationPhase(CONTINUOUS)
 public abstract class ContinuousRiskEvaluator extends AbstractRiskEvaluator {
 
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.CONTINUOUS);
-    }
 }

@@ -39,6 +39,21 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
      */
     String getName();
 
+    /**
+     * Evaluation phase in which the risk score evaluation will be executed.
+     * By default, reads the {@link EvaluationPhase} annotation from {@link #evaluatorClass()}.
+     */
+    default RiskEvaluator.EvaluationPhase evaluationPhase() {
+        var annotation = evaluatorClass().getAnnotation(EvaluationPhase.class);
+        if (annotation == null) {
+            throw new IllegalStateException("Missing @EvaluationPhase annotation on " + evaluatorClass().getSimpleName());
+        }
+        return annotation.value();
+    }
+
+    /**
+     * Evaluator class used for generating unique config keys (enabled/trust attributes)
+     */
     Class<? extends RiskEvaluator> evaluatorClass();
 
     @Override

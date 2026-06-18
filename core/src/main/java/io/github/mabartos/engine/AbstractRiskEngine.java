@@ -7,6 +7,7 @@ import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
+import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -139,8 +140,15 @@ public abstract class AbstractRiskEngine implements RiskEngine {
             riskEvaluators.put(phase, new LinkedHashSet<>());
         }
 
-        session.getAllProviders(RiskEvaluator.class)
-                .forEach(f -> f.evaluationPhases().forEach(phase -> riskEvaluators.get(phase).add(f)));
+        session.getKeycloakSessionFactory()
+                .getProviderFactoriesStream(RiskEvaluator.class)
+                .map(RiskEvaluatorFactory.class::cast)
+                .forEach(factory -> {
+                    var evaluator = session.getProvider(RiskEvaluator.class, factory.getId());
+                    if (evaluator != null) {
+                        riskEvaluators.get(factory.evaluationPhase()).add(evaluator);
+                    }
+                });
 
         return riskEvaluators;
     }

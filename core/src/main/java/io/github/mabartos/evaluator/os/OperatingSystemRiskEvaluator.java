@@ -19,7 +19,10 @@ package io.github.mabartos.evaluator.os;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.os.OperatingSystemCondition;
 import io.github.mabartos.context.os.OperatingSystemConditionFactory;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
@@ -32,6 +35,7 @@ import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
  * Risk evaluator for OS properties
  * Known OS = trust signal, unknown OS = moderate risk
  */
+@EvaluationPhase(BEFORE_AUTHN)
 public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
     private final OperatingSystemCondition condition;
 
