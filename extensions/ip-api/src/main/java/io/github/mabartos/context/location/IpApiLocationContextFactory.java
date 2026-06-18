@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 public class IpApiLocationContextFactory implements UserContextFactory<LocationContext> {
     public static final String PROVIDER_ID = "ip-api-location-context";
-    private static final String API_TOKEN_PROPERTY = "location.ipapi.token";
+    private static final String API_TOKEN_PROPERTY = "kc.adaptive.ipapi.token";
 
     public static final Function<IPAddress, String> SERVICE_URL = ip -> {
         String tokenPart = getApiToken()
