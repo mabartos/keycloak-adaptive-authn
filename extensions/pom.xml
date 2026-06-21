@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>ip-api</module>
+        <module>openrouter</module>
     </modules>
 
     <artifactId>keycloak-adaptive-authn-extensions</artifactId>
