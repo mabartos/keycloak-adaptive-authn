@@ -419,6 +419,7 @@
     "email" : "user@user",
     "emailVerified" : true,
     "attributes" : {
+      "adaptive-engine-continuousTimerSet" : [ "true" ],
       "adaptive-time-pattern-meanCos" : [ "-0.07500000000000007" ],
       "adaptive-time-pattern-meanSin" : [ "-0.12990381056766576" ],
       "adaptive-location-known" : [ "Czechia:Prague" ]
@@ -1353,7 +1354,7 @@
       "subComponents" : { },
       "config" : {
         "adaptive-algorithm-log-odds-bias" : [ "-0.5" ],
-        "adaptive-evaluator-enabled-AiAccountTakeoverEvaluator" : [ "false" ],
+        "adaptive-evaluator-enabled-AiAccountTakeoverEvaluator" : [ "true" ],
         "adaptive-evaluator-enabled-BrowserRiskEvaluator" : [ "true" ],
         "adaptive-evaluator-enabled-InitLocationRiskEvaluator" : [ "true" ],
         "adaptive-evaluator-enabled-LoginEventIpAddressRiskEvaluator" : [ "true" ],
