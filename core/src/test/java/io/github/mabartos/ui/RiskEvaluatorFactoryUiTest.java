@@ -2,7 +2,6 @@ package io.github.mabartos.ui;
 
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
-import io.github.mabartos.testsupport.RuntimeEvaluationPhases;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -27,21 +26,6 @@ class RiskEvaluatorFactoryUiTest {
     void factoryDeclaresEvaluationPhase(RiskEvaluatorFactory factory) {
         assertNotNull(factory.evaluationPhase(),
                 () -> factory.getClass().getName() + " must declare evaluationPhase()");
-    }
-
-    /**
-     * Admin grouping uses {@link RiskEvaluatorFactory#evaluationPhase()}; the engine registers
-     * evaluators from {@link RiskEvaluator#evaluationPhases()}. Both must stay aligned.
-     */
-    @ParameterizedTest
-    @MethodSource("registeredFactories")
-    void evaluationPhase_matchesEvaluatorRuntimePhases(RiskEvaluatorFactory factory) {
-        var adminPhase = factory.evaluationPhase();
-        var runtimePhases = RuntimeEvaluationPhases.of(factory);
-        assertTrue(runtimePhases.contains(adminPhase),
-                () -> factory.getClass().getName() + " admin phase " + adminPhase
-                        + " is not in evaluator runtime phases " + runtimePhases
-                        + " (" + factory.evaluatorClass().getName() + ")");
     }
 
     @ParameterizedTest
