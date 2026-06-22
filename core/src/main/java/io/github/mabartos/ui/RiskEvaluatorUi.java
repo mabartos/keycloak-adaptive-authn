@@ -1,6 +1,5 @@
 package io.github.mabartos.ui;
 
-import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 
 /**
@@ -17,16 +16,8 @@ final class RiskEvaluatorUi {
     private RiskEvaluatorUi() {
     }
 
-    static String phaseLabelPrefix(RiskEvaluator.EvaluationPhase phase) {
-        return switch (phase) {
-            case BEFORE_AUTHN -> "BEFORE_AUTHN";
-            case USER_KNOWN -> "USER_KNOWN";
-            case CONTINUOUS -> "CONTINUOUS";
-        };
-    }
-
     static String enabledLabel(RiskEvaluatorFactory factory) {
-        return "[" + phaseLabelPrefix(factory.evaluationPhase()) + "] " + factory.getName();
+        return "[" + factory.evaluationPhase().name() + "] " + factory.getName();
     }
 
     static String trustLabel(RiskEvaluatorFactory factory) {
