@@ -25,12 +25,11 @@ public class ClientRoleRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Scores OAuth client roles for the user. Per-client role weights can be set under Client → Risk-based settings. "
-                + "Falls back to built-in heuristics when no client role mapping is configured.";
+        return "Scores risk from the user's roles on the requesting OAuth client using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).";
     }
 
     @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
-        return ClientRoleRiskEvaluator.class;
+        return ClientRoleRiskEvaluator.class;   
     }
 }

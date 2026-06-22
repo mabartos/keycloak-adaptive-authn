@@ -31,8 +31,7 @@ public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Compares the current login location (GeoIP) to the user's known locations after identification. "
-                + "Requires location context; enable Init location if this evaluator is active.";
+        return "Compares the current login location (GeoIP) to the user's known locations after identification. Requires location context, enable Init location if this evaluator is active.";
     }
 
     @Override

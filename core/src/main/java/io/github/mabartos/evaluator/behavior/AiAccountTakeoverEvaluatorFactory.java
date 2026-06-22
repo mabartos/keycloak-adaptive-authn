@@ -25,8 +25,7 @@ public class AiAccountTakeoverEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "LLM behavioral analysis for account takeover after the user is known (experimental). "
-                + "Higher CPU/latency than rule-based evaluators; tune trust down while evaluating in non-production.";
+        return "LLM behavioral analysis for account takeover (anonymized).";
     }
 
     @Override

@@ -15,8 +15,7 @@ public class ConcurrentSessionRiskEvaluatorFactory implements RiskEvaluatorFacto
 
     @Override
     public String getDescription() {
-        return "Detects many concurrent sessions or spread across IPs for the same user during the session. "
-                + "Useful for session hijacking or shared-credential abuse after login.";
+        return "Detects many concurrent sessions or spread across IPs for the same user during the session. Useful for session hijacking or shared-credential abuse after login.";
     }
 
     @Override

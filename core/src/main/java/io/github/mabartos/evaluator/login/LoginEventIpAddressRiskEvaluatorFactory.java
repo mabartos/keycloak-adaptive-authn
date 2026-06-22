@@ -20,8 +20,7 @@ public class LoginEventIpAddressRiskEvaluatorFactory implements RiskEvaluatorFac
 
     @Override
     public String getDescription() {
-        return "Scores whether the current IP was seen in the user's successful login history. "
-                + "New or rare IPs increase risk; familiar IPs can reduce it.";
+        return "Scores whether the current IP was seen in the user's successful login history. New or rare IPs increase risk, familiar IPs can reduce it.";
     }
 
     @Override

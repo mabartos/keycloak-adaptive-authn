@@ -15,8 +15,7 @@ public class RecaptchaRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Uses Google reCAPTCHA Enterprise risk scores for the login attempt (requires reCAPTCHA integration). "
-                + "Typically runs as part of the authentication flow; disable only if reCAPTCHA is not configured.";
+        return "Uses Google reCAPTCHA Enterprise risk scores for the login attempt.";
     }
 
     @Override

@@ -41,8 +41,7 @@ public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Scores realm-level roles assigned to the user after identification. "
-                + "Useful for privileged realm roles; pair with client role mapping for per-application roles.";
+        return "Scores realm roles assigned to the user using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).";
     }
 
     @Override

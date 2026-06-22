@@ -31,8 +31,7 @@ public class FailedLoginPatternRiskEvaluatorFactory implements RiskEvaluatorFact
 
     @Override
     public String getDescription() {
-        return "Detects abnormal failed-login patterns for the user (velocity, distribution) from login failure events. "
-                + "Helps spot credential stuffing or brute force against a specific account.";
+        return "Detects abnormal failed-login patterns for the user from login failure events.";
     }
 
     @Override

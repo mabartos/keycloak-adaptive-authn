@@ -41,8 +41,7 @@ public class InitLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Prepares GeoIP/location context for later evaluators. Runs before authentication; does not score risk by itself. "
-                + "Keep enabled when using location-based evaluators so IP geolocation data is available early in the flow.";
+        return "Prepares GeoIP/location context for later evaluators.";
     }
 
     @Override

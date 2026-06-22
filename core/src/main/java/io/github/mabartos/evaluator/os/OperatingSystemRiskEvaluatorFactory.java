@@ -41,8 +41,7 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
 
     @Override
     public String getDescription() {
-        return "Scores unknown or unusual operating systems from the user agent before login. "
-                + "Complements browser and device signals in the BEFORE_AUTHN phase.";
+        return "Scores the operating system from the login request user agent.";
     }
 
     @Override

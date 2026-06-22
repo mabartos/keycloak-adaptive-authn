@@ -15,8 +15,7 @@ public class UserActionsRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Re-evaluates risk during the session when user actions occur (continuous phase, event-driven). "
-                + "Works with the adaptive event listener; not part of the initial login risk calculation only.";
+        return "Scores bursts of sensitive account events (email change, password reset, credential changes, etc) in the continuous evaluation phase.";
     }
 
     @Override

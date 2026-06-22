@@ -42,8 +42,7 @@ public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Scores unknown or unusual browsers before login. Known browsers can reduce risk (negative evidence). "
-                + "Uses the browser fingerprint context collected from the login request.";
+        return "Scores the browser from the login request user agent. Chrome, Firefox, and Safari reduce risk, other browsers score moderate risk.";
     }
 
     @Override
