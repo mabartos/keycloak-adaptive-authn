@@ -34,11 +34,6 @@ public class ConcurrentSessionRiskEvaluatorFactory implements RiskEvaluatorFacto
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.CONTINUOUS;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Detects many concurrent sessions or spread across IPs for the same user during the session.";
     }

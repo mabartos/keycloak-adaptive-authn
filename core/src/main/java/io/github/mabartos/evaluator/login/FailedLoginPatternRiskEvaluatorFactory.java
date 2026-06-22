@@ -50,11 +50,6 @@ public class FailedLoginPatternRiskEvaluatorFactory implements RiskEvaluatorFact
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Detects abnormal failed-login patterns for the user (velocity, distribution) from login failure events.";
     }

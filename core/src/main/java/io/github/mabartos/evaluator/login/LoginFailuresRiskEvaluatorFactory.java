@@ -50,11 +50,6 @@ public class LoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Increases risk when recent login failures exist for the user.";
     }

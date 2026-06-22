@@ -57,12 +57,6 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
     Class<? extends RiskEvaluator> evaluatorClass();
 
     /**
-     * Primary evaluation phase for admin console grouping.
-     * Must match {@link RiskEvaluator#evaluationPhases()} on the evaluator implementation.
-     */
-    RiskEvaluator.EvaluationPhase evaluationPhase();
-
-    /**
      * Short label for the realm admin Risk-based policies tab.
      */
     default String adminDisplayName() {

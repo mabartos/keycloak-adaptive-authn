@@ -34,11 +34,6 @@ public class UserActionsRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.CONTINUOUS;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Re-evaluates risk during the session when user actions occur (continuous phase, event-driven).";
     }

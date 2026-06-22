@@ -34,11 +34,6 @@ public class LoginEventIpAddressRiskEvaluatorFactory implements RiskEvaluatorFac
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Scores whether the current IP was seen in the user's successful login history.";
     }

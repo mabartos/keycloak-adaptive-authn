@@ -34,11 +34,6 @@ public class ClientRoleRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Scores OAuth client roles for the user. Per-client role weights can be set under Client → Risk-based settings.";
     }

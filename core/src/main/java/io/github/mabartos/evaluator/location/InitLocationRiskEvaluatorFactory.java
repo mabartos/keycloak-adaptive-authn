@@ -49,11 +49,6 @@ public class InitLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Prepares GeoIP/location context for later evaluators. Runs before authentication; does not score risk by itself.";
     }

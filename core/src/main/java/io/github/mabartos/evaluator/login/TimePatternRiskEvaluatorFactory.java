@@ -38,11 +38,6 @@ public class TimePatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Flags logins outside the user's typical time-of-day/weekday pattern (learned from history).";
     }

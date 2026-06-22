@@ -44,11 +44,6 @@ public class AiAccountTakeoverEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.USER_KNOWN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "LLM behavioral analysis for account takeover after the user is known (experimental).";
     }

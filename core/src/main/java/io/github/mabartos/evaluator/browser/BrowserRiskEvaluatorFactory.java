@@ -52,11 +52,6 @@ public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Scores unknown or unusual browsers before login. Known browsers can reduce risk (negative evidence).";
     }

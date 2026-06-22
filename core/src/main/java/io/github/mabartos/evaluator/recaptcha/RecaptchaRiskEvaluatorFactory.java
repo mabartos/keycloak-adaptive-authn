@@ -34,11 +34,6 @@ public class RecaptchaRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
-    public RiskEvaluator.EvaluationPhase evaluationPhase() {
-        return RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
-    }
-
-    @Override
     public String adminEnabledHelpText() {
         return "Uses Google reCAPTCHA Enterprise risk scores for the login attempt (requires reCAPTCHA integration).";
     }
