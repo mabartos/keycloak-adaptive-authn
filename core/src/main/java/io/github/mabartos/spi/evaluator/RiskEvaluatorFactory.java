@@ -30,14 +30,18 @@ import java.util.List;
  * Generic factory for the risk evaluators with the predefined attributes
  */
 public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, EnvironmentDependentProviderFactory, ConfiguredProvider {
-    String NAME_PREFIX = "Risk Evaluator - ";
     String TRUST_CONFIG = "adaptive-evaluator-trust";
     String ENABLED_CONFIG = "adaptive-evaluator-enabled";
 
     /**
-     * Get display name of the risk evaluator
+     * Short display name of the risk evaluator (realm admin labels, provider listing).
      */
     String getName();
+
+    /**
+     * Detailed description of what the evaluator does (realm admin enabled-toggle help text).
+     */
+    String getDescription();
 
     /**
      * Evaluation phase in which the risk score evaluation will be executed.
@@ -58,23 +62,28 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
 
     @Override
     default String getHelpText() {
-        return getName().toLowerCase().contains("risk evaluator") ? getName() : NAME_PREFIX + getName();
+        return getDescription();
     }
 
+    /**
+     * Default {@link ConfiguredProvider} schema for enabled/trust realm attributes.
+     * Realm admin UI is built by {@code RiskBasedPoliciesUiTab}; this default keeps
+     * {@link ConfiguredProvider} consumers aligned with {@link #getName()} and {@link #getDescription()}.
+     */
     @Override
     default List<ProviderConfigProperty> getConfigProperties() {
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(isEnabledConfig(evaluatorClass()))
-                .label(getName() + " Enabled")
-                .helpText(ENABLED_CONFIG + ".tooltip")
+                .label(getName())
+                .helpText(getDescription())
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
                 .add()
                 .property()
                 .name(getTrustConfig(evaluatorClass()))
-                .label(getName() + " Trust Level")
-                .helpText(TRUST_CONFIG + ".tooltip")
+                .label(getName() + " trust")
+                .helpText("Adjust how strongly this evaluator influences the combined risk score.")
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
                 .build();

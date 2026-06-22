@@ -6,11 +6,16 @@ import org.keycloak.models.KeycloakSession;
 
 public class UserActionsRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "user-actions-continuous";
-    protected static final String NAME = "User actions continuous evaluator";
+    protected static final String NAME = "User actions";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Scores bursts of sensitive account events (email change, password reset, credential changes, etc) in the continuous evaluation phase.";
     }
 
     @Override

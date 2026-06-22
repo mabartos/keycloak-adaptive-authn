@@ -9,11 +9,16 @@ import org.keycloak.models.KeycloakSession;
 public class SsfSignalRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     public static final String PROVIDER_ID = "ssf-signal-risk-evaluator";
-    private static final String NAME = "SSF Signal Risk Evaluator";
+    private static final String NAME = "SSF signal";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Scores risk from Shared Signals Framework (SSF) events when the SSF extension is available.";
     }
 
     @Override

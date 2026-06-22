@@ -35,10 +35,14 @@ public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
         return PROVIDER_ID;
     }
 
-
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Scores the browser from the login request user agent. Chrome, Firefox, and Safari reduce risk, other browsers score moderate risk.";
     }
 
     @Override

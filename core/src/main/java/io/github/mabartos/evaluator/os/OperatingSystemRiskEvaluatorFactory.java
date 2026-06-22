@@ -22,7 +22,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-operating-system-risk-evaluator-factory";
-    public static final String NAME = "Operating System";
+    public static final String NAME = "Operating system";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
@@ -37,6 +37,11 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Scores the operating system from the login request user agent.";
     }
 
     @Override

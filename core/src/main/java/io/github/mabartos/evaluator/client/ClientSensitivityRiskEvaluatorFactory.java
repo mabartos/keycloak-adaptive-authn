@@ -6,7 +6,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class ClientSensitivityRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-client-sensitivity-risk-factor";
-    public static final String NAME = "Client Sensitivity";
+    public static final String NAME = "Client sensitivity";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
@@ -21,6 +21,11 @@ public class ClientSensitivityRiskEvaluatorFactory implements RiskEvaluatorFacto
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Scores risk from the requesting OAuth client's sensitivity. Configure per client under Client → Risk-based settings.";
     }
 
     @Override

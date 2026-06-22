@@ -6,7 +6,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class ClientRoleRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-client-role-risk-factor";
-    public static final String NAME = "Client Role";
+    public static final String NAME = "Client role";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
@@ -24,7 +24,12 @@ public class ClientRoleRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
+    public String getDescription() {
+        return "Scores risk from the user's roles on the requesting OAuth client using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
-        return ClientRoleRiskEvaluator.class;
+        return ClientRoleRiskEvaluator.class;   
     }
 }

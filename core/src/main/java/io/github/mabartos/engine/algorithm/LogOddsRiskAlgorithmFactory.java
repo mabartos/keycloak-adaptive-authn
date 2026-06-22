@@ -71,7 +71,7 @@ public class LogOddsRiskAlgorithmFactory implements RiskScoreAlgorithmFactory {
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(BIAS_CONFIG)
-                .label("Log-Odds: Algorithm bias")
+                .label("Log odds bias")
                 .helpText("Prior log-odds bias before any evidence is considered. " +
                         "Negative values lower baseline risk (e.g. -6.9 for ~0.1% fraud rate), " +
                         "positive values raise it (e.g. -2.2 for ~10% fraud rate). " +
