@@ -1,6 +1,6 @@
 package io.github.mabartos;
 
-import io.github.mabartos.engine.RiskEvaluationAuditConfig;
+import io.github.mabartos.engine.core.RiskEvaluationAuditConfig;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.RealmModel;
 import org.keycloak.testframework.annotations.InjectRealm;
@@ -15,7 +15,7 @@ import org.keycloak.testframework.server.KeycloakServerConfigBuilder;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.github.mabartos.engine.RiskEvaluationAuditConfig.AUDIT_EVENT_TYPE_NAME;
+import static io.github.mabartos.engine.core.RiskEvaluationAuditConfig.AUDIT_EVENT_TYPE_NAME;
 import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.AUDIT_EVENTS_ENABLED_CONFIG;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

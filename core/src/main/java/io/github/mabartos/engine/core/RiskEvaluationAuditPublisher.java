@@ -1,4 +1,4 @@
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
 import io.github.mabartos.spi.audit.RiskAuditPublisher;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;

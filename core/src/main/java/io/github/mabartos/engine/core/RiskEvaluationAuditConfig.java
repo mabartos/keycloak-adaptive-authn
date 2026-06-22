@@ -1,4 +1,4 @@
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
 import org.keycloak.events.EventType;
 import org.keycloak.models.RealmModel;

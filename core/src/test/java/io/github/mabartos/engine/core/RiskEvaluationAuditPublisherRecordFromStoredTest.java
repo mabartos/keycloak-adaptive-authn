@@ -1,4 +1,4 @@
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.engine.StoredRiskProvider;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.github.mabartos.engine.RiskEvaluationAuditPublisher.AUTH_NOTE_BEFORE_AUTHN_EVALUATORS;
+import static io.github.mabartos.engine.core.RiskEvaluationAuditPublisher.AUTH_NOTE_BEFORE_AUTHN_EVALUATORS;
 import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.AUDIT_EVENTS_ENABLED_CONFIG;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
