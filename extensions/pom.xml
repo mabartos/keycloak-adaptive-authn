@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.mabartos</groupId>
+        <artifactId>keycloak-adaptive-authn-parent</artifactId>
+        <version>999.0.0-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>ip-api</module>
+        <module>openrouter</module>
+    </modules>
+
+    <artifactId>keycloak-adaptive-authn-extensions</artifactId>
+    <name>Keycloak Adaptive Authentication Extensions</name>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <profiles>
+        <!-- SSF extension requires keycloak-ssf-core, only available in upstream Keycloak (not in released versions like 26.x).
+             Active by default; deactivated when -Dkeycloak.version is set to a released version. -->
+        <profile>
+            <id>ssf</id>
+            <activation>
+                <property>
+                    <name>!ssf.skip</name>
+                </property>
+            </activation>
+            <modules>
+                <module>ssf</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

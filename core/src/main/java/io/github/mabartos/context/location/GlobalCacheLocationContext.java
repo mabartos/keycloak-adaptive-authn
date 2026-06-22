@@ -3,6 +3,7 @@ package io.github.mabartos.context.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.ip.client.IpAddressContext;
+import io.github.mabartos.spi.context.CacheableUserContext;
 import jakarta.annotation.Nonnull;
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
@@ -13,7 +14,7 @@ import java.util.Optional;
 /**
  * LocationContext backed by the JVM-wide location cache.
  */
-public class GlobalCacheLocationContext extends LocationContext {
+public class GlobalCacheLocationContext extends LocationContext implements CacheableUserContext<LocationData> {
     private static final Logger log = Logger.getLogger(GlobalCacheLocationContext.class);
 
     private final IpAddressContext ipAddressContext;
@@ -34,11 +35,17 @@ public class GlobalCacheLocationContext extends LocationContext {
         return GlobalLocationCache.get(currentIp);
     }
 
-    public void updateCache(IPAddress ip, LocationData location) {
-        if (ip == null || location == null) {
+    @Override
+    public void updateCache(RealmModel realm, LocationData data) {
+        if (data == null) {
             return;
         }
 
-        GlobalLocationCache.put(ip, location);
+        IPAddress currentIp = ipAddressContext.getData(realm).orElse(null);
+        if (currentIp == null) {
+            return;
+        }
+
+        GlobalLocationCache.put(currentIp, data);
     }
 }

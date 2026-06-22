@@ -16,6 +16,7 @@
  */
 package io.github.mabartos;
 
+import io.github.mabartos.context.DeviceContext;
 import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.DeviceIpAddressContext;
@@ -26,6 +27,8 @@ import io.github.mabartos.context.location.AuthnSessionLocationContext;
 import io.github.mabartos.context.location.GlobalCacheLocationContext;
 import io.github.mabartos.context.location.IpApiLocationContext;
 import io.github.mabartos.context.location.LocationContext;
+import io.github.mabartos.spi.context.CacheableUserContext;
+import jakarta.annotation.Nonnull;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.KeycloakSession;
@@ -155,6 +158,76 @@ public class ChainedUserContextTest {
         });
     }
 
+    @Test
+    @Order(5)
+    public void cacheableContextUpdatedFromDelegate() {
+        runOnServer.run(session -> {
+            var cacheable = new CacheableStringContext(session);
+            var source = new SourceStringContext(session, "test-data");
+            cacheable.setDelegate(source);
+
+            Optional<String> data = cacheable.getData(null);
+
+            assertTrue(data.isPresent());
+            assertEquals("test-data", data.get());
+            assertTrue(cacheable.cacheUpdated);
+            assertEquals("test-data", cacheable.cachedData);
+        });
+    }
+
+    @Test
+    @Order(6)
+    public void multipleCacheableContextsUpdatedFromDelegate() {
+        runOnServer.run(session -> {
+            var first = new CacheableStringContext(session);
+            var second = new CacheableStringContext(session);
+            var source = new SourceStringContext(session, "test-data");
+            first.setDelegate(second);
+            second.setDelegate(source);
+
+            Optional<String> data = first.getData(null);
+
+            assertTrue(data.isPresent());
+            assertEquals("test-data", data.get());
+            assertTrue(first.cacheUpdated);
+            assertTrue(second.cacheUpdated);
+        });
+    }
+
+    private static class CacheableStringContext extends DeviceContext<String> implements CacheableUserContext<String> {
+        boolean cacheUpdated = false;
+        String cachedData = null;
+
+        CacheableStringContext(KeycloakSession session) {
+            super(session);
+        }
+
+        @Override
+        public Optional<String> initData(@Nonnull RealmModel realm) {
+            return Optional.empty();
+        }
+
+        @Override
+        public void updateCache(RealmModel realm, String data) {
+            this.cacheUpdated = true;
+            this.cachedData = data;
+        }
+    }
+
+    private static class SourceStringContext extends DeviceContext<String> {
+        private final String value;
+
+        SourceStringContext(KeycloakSession session, String value) {
+            super(session);
+            this.value = value;
+        }
+
+        @Override
+        public Optional<String> initData(@Nonnull RealmModel realm) {
+            return Optional.of(value);
+        }
+    }
+
     // Dummy context class for testing error case
     private static class NonExistentContext extends IpAddressContext {
         public NonExistentContext(KeycloakSession session) {
@@ -172,6 +245,7 @@ public class ChainedUserContextTest {
         public KeycloakServerConfigBuilder configure(KeycloakServerConfigBuilder builder) {
             builder.log().categoryLevel("io.github.mabartos", "debug");
             return builder.dependency("io.github.mabartos", "keycloak-adaptive-authn")
+                    .dependency("io.github.mabartos", "keycloak-adaptive-ext-ip-api")
                     .option("features", "declarative-ui");
         }
     }

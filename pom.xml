@@ -21,6 +21,7 @@
 
     <modules>
         <module>core</module>
+        <module>extensions</module>
         <module>tests</module>
     </modules>
 
@@ -195,6 +196,22 @@
                                 <arguments>
                                     <argument>${keycloak.exec.distribution.path}/bin/kc.sh</argument>
                                     <argument>build</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>copy-extensions</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>bash</executable>
+                                <arguments>
+                                    <argument>-c</argument>
+                                    <argument>
+                                        cp extensions/*/target/*.jar ${keycloak.exec.distribution.path}/providers/
+                                    </argument>
                                 </arguments>
                             </configuration>
                         </execution>

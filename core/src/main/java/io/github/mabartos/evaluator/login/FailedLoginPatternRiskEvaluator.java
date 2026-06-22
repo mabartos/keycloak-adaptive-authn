@@ -20,7 +20,10 @@ import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.KcLoginFailuresEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import io.github.mabartos.spi.level.Risk;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -48,6 +51,7 @@ import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
  * Risk evaluator for analyzing the distribution and pattern of failed logins over time
  * Detects suspicious patterns like credential stuffing, spray attacks, or systematic attempts
  */
+@EvaluationPhase(USER_KNOWN)
 public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
     private final LoginEventsContext loginEventsContext;
     private final LoginEventsContext loginFailuresEventsContext;
@@ -61,11 +65,6 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
     FailedLoginPatternRiskEvaluator(LoginEventsContext loginEventsContext, LoginEventsContext loginFailuresEventsContext) {
         this.loginEventsContext = loginEventsContext;
         this.loginFailuresEventsContext = loginFailuresEventsContext;
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

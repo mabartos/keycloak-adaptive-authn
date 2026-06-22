@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractUserContext<T> implements UserContext<T> {
-    protected static int COUNT_OF_INIT_RETRIES = 2;
+    protected static int COUNT_OF_INIT_RETRIES_REMOTE = 2;
 
     protected final KeycloakSession session;
     private final ReentrantLock lock = new ReentrantLock();
@@ -91,6 +91,10 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
                     if (this.data != null && this.data.isPresent()) {
                         return this.data;
                     }
+
+                    if (localData.isPresent() && this instanceof CacheableUserContext<?>) {
+                        ((CacheableUserContext<T>) this).updateCache(realm, localData.get());
+                    }
                 }
 
                 // Store and return the result
@@ -122,8 +126,16 @@ public abstract class AbstractUserContext<T> implements UserContext<T> {
         this.delegate = (UserContext<T>) delegate;
     }
 
+    /**
+     * How many times {@link #initData} may run when it returns empty before delegating / giving up.
+     * Remote contexts keep {@value #COUNT_OF_INIT_RETRIES_REMOTE} for transient failures, local ones stick to 1.
+     */
+    protected int maxInitDataAttempts() {
+        return isRemote() ? COUNT_OF_INIT_RETRIES_REMOTE : 1;
+    }
+
     protected Optional<T> tryInitDataMultipleTimes(RealmModel realm, UserModel knownUser, TracingProvider tracing) {
-        for (int i = 0; i < COUNT_OF_INIT_RETRIES; i++) {
+        for (int i = 0; i < maxInitDataAttempts(); i++) {
             Optional<T> data = tracing.trace(this.getClass(), "initData", (span) -> {
                 return initData(realm, knownUser);
             });

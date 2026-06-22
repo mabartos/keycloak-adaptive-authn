@@ -1,7 +1,10 @@
 package io.github.mabartos.evaluator.behavior;
 
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.ContinuousRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.CONTINUOUS;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -52,6 +55,7 @@ import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
  * <p>
  * The final risk is the maximum of both signals.
  */
+@EvaluationPhase(CONTINUOUS)
 public class ConcurrentSessionRiskEvaluator extends ContinuousRiskEvaluator {
     private static final Logger logger = Logger.getLogger(ConcurrentSessionRiskEvaluator.class);
 

@@ -6,15 +6,16 @@ import io.github.mabartos.context.device.DeviceRepresentationContextFactory;
 import io.github.mabartos.context.user.KcLoginEventsContextFactory;
 import io.github.mabartos.context.user.LoginEventsContext;
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.events.Event;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-
-import java.util.Set;
 
 import static io.github.mabartos.spi.level.Risk.Score.HIGH;
 import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
@@ -24,6 +25,7 @@ import static io.github.mabartos.spi.level.Risk.Score.VERY_SMALL;
  * Evaluates risk based on IP address history.
  * Known IPs = trust signal, unknown IPs = risk signal
  */
+@EvaluationPhase(USER_KNOWN)
 public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     private final LoginEventsContext loginEventsContext;
     private final DeviceRepresentationContext deviceContext;
@@ -31,11 +33,6 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     public LoginEventIpAddressRiskEvaluator(KeycloakSession session) {
         this.loginEventsContext = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
         this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     @Override

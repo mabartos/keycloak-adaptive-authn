@@ -25,8 +25,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.Provider;
 
-import java.util.Set;
-
 /**
  * Risk evaluator for calculating risk that the authentication user is fraud
  * All risk scores retrieved from evaluators are aggregated in the {@link RiskEngine}
@@ -41,11 +39,6 @@ public interface RiskEvaluator extends Provider {
      * @return risk score in range (0,1> with additional parameters
      */
     Risk getRisk();
-
-    /**
-     * Evaluation phases in which the risk score evaluation will be executed
-     */
-    Set<EvaluationPhase> evaluationPhases();
 
     /**
      * Get trust level of the evaluator - how much the administrator trusts this evaluator's assessment

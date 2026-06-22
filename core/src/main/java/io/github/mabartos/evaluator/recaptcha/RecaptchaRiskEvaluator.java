@@ -2,7 +2,10 @@ package io.github.mabartos.evaluator.recaptcha;
 
 import io.github.mabartos.spi.level.Risk;
 import io.github.mabartos.level.Trust;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.DeviceRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 import jakarta.annotation.Nonnull;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
@@ -39,6 +42,7 @@ import static io.github.mabartos.spi.level.Risk.Score.SMALL;
 import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
 import static io.github.mabartos.spi.level.Risk.Score.VERY_SMALL;
 
+@EvaluationPhase(BEFORE_AUTHN)
 public class RecaptchaRiskEvaluator extends DeviceRiskEvaluator implements Authenticator {
     private static final Logger log = Logger.getLogger(RecaptchaRiskEvaluator.class);
 

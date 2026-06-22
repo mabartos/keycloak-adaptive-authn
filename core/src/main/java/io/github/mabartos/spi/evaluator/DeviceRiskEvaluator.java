@@ -6,16 +6,12 @@ import jakarta.annotation.Nullable;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import java.util.Set;
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 
+@EvaluationPhase(BEFORE_AUTHN)
 public abstract class DeviceRiskEvaluator extends AbstractRiskEvaluator {
 
     public abstract Risk evaluate(@Nonnull RealmModel realm);
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.BEFORE_AUTHN);
-    }
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {

@@ -53,6 +53,17 @@
   </tr>
   <tr>
     <td align="center">
+      <a href="https://openrouter.ai/">
+        <img src="docs/img/openrouter-logo.png" width="80" alt="OpenRouter logo"/>
+      </a>
+    </td>
+    <td>
+      <b><a href="https://openrouter.ai/">OpenRouter</a></b> (<a href="extensions/openrouter/README.md">extension</a>)<br/>
+      Model: set via <code>OPENROUTER_API_MODEL</code><br/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
       <a href="https://www.ibm.com/granite">
         <img src="docs/img/ibm-granite.png" width="90" alt="IBM Granite logo"/>
       </a>
@@ -81,11 +92,11 @@ For more information and setup, see the <a href="docs/ai-engine-integration.md">
 Build and try it out locally:
 
 ```shell
-./mvnw -f core clean install -DskipTests -Pbuild-distribution
-./mvnw exec:exec@start-server
+./mvnw clean install -DskipTests -Pbuild-distribution
+./mvnw exec:exec@copy-extensions exec:exec@start-server
 ```
 
-The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to the [`/providers`](https://www.keycloak.org/server/configuration-provider#_installing_and_uninstalling_a_provider) folder of your Keycloak distribution. It is also available as a Maven package:
+The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to the [`/providers`](https://www.keycloak.org/server/configuration-provider#_installing_and_uninstalling_a_provider) folder of your Keycloak distribution with additional JARs as extensions from the `/extensions` module. The core JAR is also available as a Maven package:
 
 ```xml
 <dependency>

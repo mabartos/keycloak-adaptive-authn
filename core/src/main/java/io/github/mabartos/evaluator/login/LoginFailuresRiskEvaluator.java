@@ -20,7 +20,10 @@ import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.client.IpAddressContext;
 import io.github.mabartos.spi.level.Risk;
+import io.github.mabartos.spi.evaluator.EvaluationPhase;
 import io.github.mabartos.spi.evaluator.AbstractRiskEvaluator;
+
+import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.USER_KNOWN;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.keycloak.common.util.Time;
@@ -48,6 +51,7 @@ import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
  * Risk evaluator for checking login failures to detect brute-force attacks.
  * Uses LOGIN_ERROR events from the event store instead of the brute force subsystem.
  */
+@EvaluationPhase(USER_KNOWN)
 public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     private static final int MAX_EVENTS = 90;
     private static final int MAX_SUCCESSFUL_LOGINS = 30;
@@ -59,11 +63,6 @@ public class LoginFailuresRiskEvaluator extends AbstractRiskEvaluator {
     public LoginFailuresRiskEvaluator(KeycloakSession session) {
         this.eventStore = session.getProvider(EventStoreProvider.class);
         this.ipAddressContext = UserContexts.getContext(session, IpAddressContext.class);
-    }
-
-    @Override
-    public Set<EvaluationPhase> evaluationPhases() {
-        return Set.of(EvaluationPhase.USER_KNOWN);
     }
 
     protected Risk getRiskLoginFailures(int failuresCount) {
