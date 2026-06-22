@@ -22,7 +22,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-user-role-risk-factor";
-    public static final String NAME = "Role";
+    public static final String NAME = "Realm role";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
@@ -37,6 +37,11 @@ public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Scores realm roles assigned to the user using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).";
     }
 
     @Override

@@ -16,11 +16,16 @@ import org.keycloak.models.KeycloakSession;
  */
 public class AiAccountTakeoverEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "ai-account-takeover";
-    public static final String NAME = "AI-based Account Takeover Detection (analyzes complex behavioral patterns)";
+    public static final String NAME = "AI account takeover";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "LLM behavioral analysis for account takeover (anonymized).";
     }
 
     @Override

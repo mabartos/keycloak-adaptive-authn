@@ -101,6 +101,20 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-evaluators-doc</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>io.github.mabartos.docs.EvaluatorDocGenerator</mainClass>
+                            <classpathScope>compile</classpathScope>
+                            <arguments>
+                                <argument>${project.basedir}/..</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <!-- <plugin>

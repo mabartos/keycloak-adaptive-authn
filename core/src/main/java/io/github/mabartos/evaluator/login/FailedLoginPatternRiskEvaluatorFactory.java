@@ -22,11 +22,16 @@ import org.keycloak.models.KeycloakSession;
 
 public class FailedLoginPatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "failed-login-pattern";
-    protected static final String NAME = "Failed Login Pattern";
+    protected static final String NAME = "Failed login pattern";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Detects abnormal failed-login patterns for the user from login failure events.";
     }
 
     @Override

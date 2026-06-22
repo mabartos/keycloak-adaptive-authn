@@ -6,11 +6,16 @@ import org.keycloak.models.KeycloakSession;
 
 public class ConcurrentSessionRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "concurrent-session-continuous";
-    protected static final String NAME = "Concurrent session continuous evaluator";
+    protected static final String NAME = "Concurrent sessions";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Detects many concurrent sessions or spread across IPs for the same user during the session. Useful for session hijacking or shared-credential abuse after login.";
     }
 
     @Override

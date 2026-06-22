@@ -6,11 +6,16 @@ import org.keycloak.models.KeycloakSession;
 
 public class RecaptchaRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "recaptcha-enterprise";
-    public static final String NAME = "reCAPTCHA Enterprise";
+    public static final String NAME = "reCAPTCHA";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Uses Google reCAPTCHA Enterprise risk scores for the login attempt.";
     }
 
     @Override

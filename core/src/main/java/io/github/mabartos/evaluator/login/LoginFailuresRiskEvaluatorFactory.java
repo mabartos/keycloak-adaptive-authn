@@ -40,6 +40,11 @@ public class LoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
+    public String getDescription() {
+        return "Increases risk from recent LOGIN_ERROR events for the user (failure count, recency, and IP mismatch). Uses the Keycloak event store, not the brute-force counter.";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return LoginFailuresRiskEvaluator.class;
     }
