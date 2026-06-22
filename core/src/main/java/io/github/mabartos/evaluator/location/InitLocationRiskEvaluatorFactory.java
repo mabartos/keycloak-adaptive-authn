@@ -22,6 +22,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class InitLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "init-location-risk-evaluator";
+    public static final String NAME = "Init location";
 
     @Override
     public InitLocationRiskEvaluator create(KeycloakSession session) {
@@ -35,26 +36,17 @@ public class InitLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getName() {
-        return "Initialize Location context before authentication starts";
+        return NAME;
     }
 
     @Override
-    public String adminDisplayName() {
-        return "Init location";
+    public String getDescription() {
+        return "Prepares GeoIP/location context for later evaluators. Runs before authentication; does not score risk by itself. "
+                + "Keep enabled when using location-based evaluators so IP geolocation data is available early in the flow.";
     }
 
     @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return InitLocationRiskEvaluator.class;
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Prepares GeoIP/location context for later evaluators. Runs before authentication; does not score risk by itself.";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Keep enabled when using location-based evaluators so IP geolocation data is available early in the flow.";
     }
 }

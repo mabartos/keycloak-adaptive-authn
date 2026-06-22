@@ -30,14 +30,18 @@ import java.util.List;
  * Generic factory for the risk evaluators with the predefined attributes
  */
 public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, EnvironmentDependentProviderFactory, ConfiguredProvider {
-    String NAME_PREFIX = "Risk Evaluator - ";
     String TRUST_CONFIG = "adaptive-evaluator-trust";
     String ENABLED_CONFIG = "adaptive-evaluator-enabled";
 
     /**
-     * Get display name of the risk evaluator
+     * Short display name of the risk evaluator (realm admin labels, provider listing).
      */
     String getName();
+
+    /**
+     * Detailed description of what the evaluator does (realm admin enabled-toggle help text).
+     */
+    String getDescription();
 
     /**
      * Evaluation phase in which the risk score evaluation will be executed.
@@ -56,52 +60,30 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
      */
     Class<? extends RiskEvaluator> evaluatorClass();
 
-    /**
-     * Short label for the realm admin Risk-based policies tab.
-     */
-    default String adminDisplayName() {
-        return getName();
-    }
-
-    /**
-     * Tooltip for the enabled toggle in the realm admin Risk-based policies tab.
-     */
-    default String adminEnabledHelpText() {
-        return "Runs during the " + evaluationPhase().name().toLowerCase().replace('_', ' ')
-                + " evaluation phase of adaptive authentication.";
-    }
-
-    /**
-     * Tooltip for the trust weight field in the realm admin Risk-based policies tab.
-     */
-    default String adminTrustHelpText() {
-        return "Adjust how strongly this evaluator influences the combined risk score.";
-    }
-
     @Override
     default String getHelpText() {
-        return getName().toLowerCase().contains("risk evaluator") ? getName() : NAME_PREFIX + getName();
+        return getDescription();
     }
 
     /**
      * Default {@link ConfiguredProvider} schema for enabled/trust realm attributes.
      * Realm admin UI is built by {@code RiskBasedPoliciesUiTab}; this default keeps
-     * {@link ConfiguredProvider} consumers aligned with {@link #adminDisplayName()} and admin help text.
+     * {@link ConfiguredProvider} consumers aligned with {@link #getName()} and {@link #getDescription()}.
      */
     @Override
     default List<ProviderConfigProperty> getConfigProperties() {
         return ProviderConfigurationBuilder.create()
                 .property()
                 .name(isEnabledConfig(evaluatorClass()))
-                .label(adminDisplayName())
-                .helpText(adminEnabledHelpText())
+                .label(getName())
+                .helpText(getDescription())
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
                 .add()
                 .property()
                 .name(getTrustConfig(evaluatorClass()))
-                .label(adminDisplayName() + " trust")
-                .helpText(adminTrustHelpText())
+                .label(getName() + " trust")
+                .helpText("Adjust how strongly this evaluator influences the combined risk score.")
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
                 .build();

@@ -16,11 +16,17 @@ import org.keycloak.models.KeycloakSession;
  */
 public class AiAccountTakeoverEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "ai-account-takeover";
-    public static final String NAME = "AI-based Account Takeover Detection (analyzes complex behavioral patterns)";
+    public static final String NAME = "AI account takeover";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "LLM behavioral analysis for account takeover after the user is known (experimental). "
+                + "Higher CPU/latency than rule-based evaluators; tune trust down while evaluating in non-production.";
     }
 
     @Override
@@ -36,20 +42,5 @@ public class AiAccountTakeoverEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public String getId() {
         return PROVIDER_ID;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "AI account takeover";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "LLM behavioral analysis for account takeover after the user is known (experimental).";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Higher CPU/latency than rule-based evaluators; tune trust down while evaluating in non-production.";
     }
 }

@@ -40,22 +40,13 @@ public class LoginFailuresRiskEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
+    public String getDescription() {
+        return "Increases risk when recent login failures exist for the user. "
+                + "Uses Keycloak login failure records for the account.";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return LoginFailuresRiskEvaluator.class;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return NAME;
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Increases risk when recent login failures exist for the user.";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Uses Keycloak login failure records for the account.";
     }
 }

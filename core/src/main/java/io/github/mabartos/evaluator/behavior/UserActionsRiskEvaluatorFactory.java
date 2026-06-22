@@ -6,11 +6,17 @@ import org.keycloak.models.KeycloakSession;
 
 public class UserActionsRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "user-actions-continuous";
-    protected static final String NAME = "User actions continuous evaluator";
+    protected static final String NAME = "User actions";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Re-evaluates risk during the session when user actions occur (continuous phase, event-driven). "
+                + "Works with the adaptive event listener; not part of the initial login risk calculation only.";
     }
 
     @Override
@@ -26,20 +32,5 @@ public class UserActionsRiskEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public String getId() {
         return PROVIDER_ID;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "User actions";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Re-evaluates risk during the session when user actions occur (continuous phase, event-driven).";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Works with the adaptive event listener; not part of the initial login risk calculation only.";
     }
 }

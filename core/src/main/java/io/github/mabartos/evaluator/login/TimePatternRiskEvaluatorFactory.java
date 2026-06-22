@@ -10,11 +10,17 @@ import org.keycloak.models.KeycloakSession;
  */
 public class TimePatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "time-pattern";
-    public static final String NAME = "Detect unusual login times based on user's typical pattern";
+    public static final String NAME = "Unusual login time";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Flags logins outside the user's typical time-of-day/weekday pattern (learned from history). "
+                + "Needs sufficient login history; new users may produce neutral scores until the profile stabilizes.";
     }
 
     @Override
@@ -30,20 +36,5 @@ public class TimePatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public String getId() {
         return PROVIDER_ID;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "Unusual login time";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Flags logins outside the user's typical time-of-day/weekday pattern (learned from history).";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Needs sufficient login history; new users may produce neutral scores until the profile stabilizes.";
     }
 }

@@ -323,7 +323,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             RiskEvaluator.EvaluationPhase phase) {
         factories.stream()
                 .filter(f -> f.evaluationPhase() == phase)
-                .sorted(Comparator.comparing(RiskEvaluatorFactory::adminDisplayName))
+                .sorted(Comparator.comparing(RiskEvaluatorFactory::getName))
                 .flatMap(f -> evaluatorAdminProperties(f).stream())
                 .forEach(list::add);
     }
@@ -344,7 +344,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .property()
                 .name(getTrustConfig(evaluatorClass))
                 .label(RiskEvaluatorUi.trustLabel(factory))
-                .helpText(RiskEvaluatorUi.trustTooltip(factory) + " " + TRUST_FIELD_HELP)
+                .helpText(RiskEvaluatorUi.trustTooltip() + " " + TRUST_FIELD_HELP)
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
                 .build()

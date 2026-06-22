@@ -35,7 +35,7 @@ class RiskBasedPoliciesUiTabTest {
     }
 
     @Test
-    void buildConfigProperties_sortsWithinPhaseByAdminDisplayName() {
+    void buildConfigProperties_sortsWithinPhaseByName() {
         var factories = List.<RiskEvaluatorFactory>of(
                 new ClientSensitivityRiskEvaluatorFactory(),
                 new BrowserRiskEvaluatorFactory());

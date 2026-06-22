@@ -31,16 +31,15 @@ class RiskEvaluatorFactoryUiTest {
     @ParameterizedTest
     @MethodSource("registeredFactories")
     void factoryProvidesAdminMetadata(RiskEvaluatorFactory factory) {
-        assertFalse(factory.adminDisplayName().isBlank());
-        assertFalse(factory.adminEnabledHelpText().isBlank());
-        assertFalse(factory.adminTrustHelpText().isBlank());
+        assertFalse(factory.getName().isBlank());
+        assertFalse(factory.getDescription().isBlank());
         assertFalse(RiskEvaluatorUi.enabledLabel(factory).isBlank());
-        assertFalse(RiskEvaluatorUi.trustTooltip(factory).isBlank());
+        assertFalse(RiskEvaluatorUi.trustTooltip().isBlank());
     }
 
     @ParameterizedTest
     @MethodSource("registeredFactories")
-    void getConfigProperties_usesAdminHelpText(RiskEvaluatorFactory factory) {
+    void getConfigProperties_usesDescription(RiskEvaluatorFactory factory) {
         factory.getConfigProperties().forEach(prop -> {
             assertFalse(prop.getHelpText().contains(".tooltip"),
                     () -> prop.getName() + " must not use unresolved i18n placeholder");
@@ -49,7 +48,7 @@ class RiskEvaluatorFactoryUiTest {
     }
 
     @Test
-    void getConfigProperties_enabledFieldUsesAdminMetadata() {
+    void getConfigProperties_enabledFieldUsesFactoryMetadata() {
         var factory = new BrowserRiskEvaluatorFactory();
         var enabled = factory.getConfigProperties().stream()
                 .filter(p -> p.getName().startsWith("adaptive-evaluator-enabled-"))

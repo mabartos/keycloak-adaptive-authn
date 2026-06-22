@@ -22,7 +22,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-user-role-risk-factor";
-    public static final String NAME = "Role";
+    public static final String NAME = "Realm role";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
@@ -40,22 +40,13 @@ public class DefaultUserRoleEvaluatorFactory implements RiskEvaluatorFactory {
     }
 
     @Override
+    public String getDescription() {
+        return "Scores realm-level roles assigned to the user after identification. "
+                + "Useful for privileged realm roles; pair with client role mapping for per-application roles.";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return DefaultUserRoleEvaluator.class;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "Realm role";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Scores realm-level roles assigned to the user after identification.";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Useful for privileged realm roles; pair with client role mapping for per-application roles.";
     }
 }

@@ -22,7 +22,7 @@ import org.keycloak.models.KeycloakSession;
 
 public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-operating-system-risk-evaluator-factory";
-    public static final String NAME = "Operating System";
+    public static final String NAME = "Operating system";
 
     @Override
     public RiskEvaluator create(KeycloakSession session) {
@@ -40,22 +40,13 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
     }
 
     @Override
+    public String getDescription() {
+        return "Scores unknown or unusual operating systems from the user agent before login. "
+                + "Complements browser and device signals in the BEFORE_AUTHN phase.";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return OperatingSystemRiskEvaluator.class;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "Operating system";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Scores unknown or unusual operating systems from the user agent before login.";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Complements browser and device signals in the BEFORE_AUTHN phase.";
     }
 }

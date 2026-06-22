@@ -22,11 +22,17 @@ import org.keycloak.models.KeycloakSession;
 
 public class FailedLoginPatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "failed-login-pattern";
-    protected static final String NAME = "Failed Login Pattern";
+    protected static final String NAME = "Failed login pattern";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Detects abnormal failed-login patterns for the user (velocity, distribution) from login failure events. "
+                + "Helps spot credential stuffing or brute force against a specific account.";
     }
 
     @Override
@@ -42,20 +48,5 @@ public class FailedLoginPatternRiskEvaluatorFactory implements RiskEvaluatorFact
     @Override
     public String getId() {
         return PROVIDER_ID;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "Failed login pattern";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Detects abnormal failed-login patterns for the user (velocity, distribution) from login failure events.";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Helps spot credential stuffing or brute force against a specific account.";
     }
 }

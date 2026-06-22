@@ -35,29 +35,19 @@ public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
         return PROVIDER_ID;
     }
 
-
     @Override
     public String getName() {
         return NAME;
     }
 
     @Override
+    public String getDescription() {
+        return "Scores unknown or unusual browsers before login. Known browsers can reduce risk (negative evidence). "
+                + "Uses the browser fingerprint context collected from the login request.";
+    }
+
+    @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return BrowserRiskEvaluator.class;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return NAME;
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Scores unknown or unusual browsers before login. Known browsers can reduce risk (negative evidence).";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Uses the browser fingerprint context collected from the login request.";
     }
 }

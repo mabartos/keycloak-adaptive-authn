@@ -22,12 +22,17 @@ import org.keycloak.models.KeycloakSession;
 
 public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "known-location-risk-evaluator";
-
-    public static final String NAME = "Location IP API";
+    public static final String NAME = "Known location";
 
     @Override
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Compares the current login location (GeoIP) to the user's known locations after identification. "
+                + "Requires location context; enable Init location if this evaluator is active.";
     }
 
     @Override
@@ -43,20 +48,5 @@ public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public String getId() {
         return PROVIDER_ID;
-    }
-
-    @Override
-    public String adminDisplayName() {
-        return "Known location";
-    }
-
-    @Override
-    public String adminEnabledHelpText() {
-        return "Compares the current login location (GeoIP) to the user's known locations after identification.";
-    }
-
-    @Override
-    public String adminTrustHelpText() {
-        return "Requires location context; enable Init Location if this evaluator is active.";
     }
 }

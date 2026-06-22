@@ -11,8 +11,8 @@ final class RiskEvaluatorUi {
     private static final String ENABLED_SUFFIX =
             " When disabled, this evaluator is skipped and does not contribute evidence to the risk score.";
 
-    private static final String TRUST_SUFFIX =
-            " Adjust how strongly this evaluator influences the combined score (log-odds algorithm).";
+    private static final String TRUST_HELP =
+            "Adjust how strongly this evaluator influences the combined score (log-odds algorithm).";
 
     private RiskEvaluatorUi() {
     }
@@ -26,7 +26,7 @@ final class RiskEvaluatorUi {
     }
 
     static String enabledLabel(RiskEvaluatorFactory factory) {
-        return "[" + phaseLabelPrefix(factory.evaluationPhase()) + "] " + factory.adminDisplayName();
+        return "[" + phaseLabelPrefix(factory.evaluationPhase()) + "] " + factory.getName();
     }
 
     static String trustLabel(RiskEvaluatorFactory factory) {
@@ -34,10 +34,10 @@ final class RiskEvaluatorUi {
     }
 
     static String enabledTooltip(RiskEvaluatorFactory factory) {
-        return factory.adminEnabledHelpText() + ENABLED_SUFFIX;
+        return factory.getDescription() + ENABLED_SUFFIX;
     }
 
-    static String trustTooltip(RiskEvaluatorFactory factory) {
-        return factory.adminTrustHelpText() + TRUST_SUFFIX;
+    static String trustTooltip() {
+        return TRUST_HELP;
     }
 }
