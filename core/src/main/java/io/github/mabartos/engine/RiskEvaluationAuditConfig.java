@@ -3,11 +3,14 @@ package io.github.mabartos.engine;
 import org.keycloak.events.EventType;
 import org.keycloak.models.RealmModel;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.AUDIT_EVENTS_ENABLED_CONFIG;
+
 /**
- * Whether risk evaluation audit events are persisted uses the same mechanism as other user events:
- * realm events enabled and the event type listed under saved event types in Realm settings → Events.
+ * Whether risk evaluation audit events are persisted uses the adaptive toggle in Risk-based policies
+ * plus realm user events configuration (saved event types).
  *
  * <p>Keycloak does not allow extensions to register new {@link EventType} enum values. Until an upstream
  * {@code ADAPTIVE_RISK_EVALUATION} type exists, events use {@link EventType#CUSTOM_REQUIRED_ACTION} with
@@ -29,17 +32,21 @@ public final class RiskEvaluationAuditConfig {
   /**
    * Whether risk evaluation audit events should be persisted for this realm.
    *
-   * <p>Returns {@code true} only when realm user events are enabled and
-   * {@link #AUDIT_EVENT_TYPE_NAME} is explicitly listed under saved event types
-   * (Realm settings → Events → Saved event types). An empty saved-types list
-   * does not enable audit: operators must opt in by adding
-   * {@code Custom required action}, regardless of Keycloak's
-   * {@link EventType#isSaveByDefault()} for that type.
+   * <p>Returns {@code true} only when:
+   * <ol>
+   *   <li>{@link AUDIT_EVENTS_ENABLED_CONFIG} is {@code true} on the realm (Risk-based policies tab),</li>
+   *   <li>realm user events are enabled, and</li>
+   *   <li>{@link #AUDIT_EVENT_TYPE_NAME} is explicitly listed under saved event types.</li>
+   * </ol>
+   * An empty saved-types list does not enable audit.
    *
    * @param realm realm configuration
    * @return {@code true} if audit events should be emitted
    */
   public static boolean isAuditEnabled(RealmModel realm) {
+    if (!isAdaptiveAuditEnabled(realm)) {
+      return false;
+    }
     if (!realm.isEventsEnabled()) {
       return false;
     }
@@ -48,5 +55,11 @@ public final class RiskEvaluationAuditConfig {
       return false;
     }
     return enabledTypes.contains(AUDIT_EVENT_TYPE_NAME);
+  }
+
+  static boolean isAdaptiveAuditEnabled(RealmModel realm) {
+    return Optional.ofNullable(realm.getAttribute(AUDIT_EVENTS_ENABLED_CONFIG))
+        .map(Boolean::parseBoolean)
+        .orElse(false);
   }
 }
