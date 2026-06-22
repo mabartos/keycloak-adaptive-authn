@@ -58,11 +58,6 @@ import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledCon
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private static final Logger logger = Logger.getLogger(RiskBasedPoliciesUiTab.class);
 
-    private static final List<RiskEvaluator.EvaluationPhase> EVALUATOR_PHASE_ORDER = List.of(
-            RiskEvaluator.EvaluationPhase.BEFORE_AUTHN,
-            RiskEvaluator.EvaluationPhase.USER_KNOWN,
-            RiskEvaluator.EvaluationPhase.CONTINUOUS);
-
     private static final String TRUST_FIELD_HELP =
             "Weight from 0 to 1 (e.g. 0.75). 1 = full influence on the combined risk score.";
 
@@ -310,7 +305,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .flatMap(f -> f.getConfigProperties().stream())
                 .forEach(list::add);
 
-        for (var phase : EVALUATOR_PHASE_ORDER) {
+        for (var phase : RiskEvaluator.EvaluationPhase.values()) {
             appendEvaluatorPhase(list, riskEvaluatorFactories, phase);
         }
 
