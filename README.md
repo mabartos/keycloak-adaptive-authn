@@ -53,6 +53,17 @@
   </tr>
   <tr>
     <td align="center">
+      <a href="https://openrouter.ai/">
+        <img src="docs/img/openrouter-logo.png" width="80" alt="OpenRouter logo"/>
+      </a>
+    </td>
+    <td>
+      <b><a href="https://openrouter.ai/">OpenRouter</a></b> (<a href="extensions/openrouter/README.md">extension</a>)<br/>
+      Model: set via <code>OPENROUTER_API_MODEL</code><br/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
       <a href="https://www.ibm.com/granite">
         <img src="docs/img/ibm-granite.png" width="90" alt="IBM Granite logo"/>
       </a>

@@ -143,4 +143,4 @@ In order to see the execution of the authentication flow from the example realm 
 
 ## AI Engine Integration
 
-For configuring AI engines (OpenAI, Claude, Gemini, IBM Granite), see the [AI Engine Integration Guide](ai-engine-integration.md).
+For configuring AI engines (OpenAI, Claude, Gemini, IBM Granite, OpenRouter), see the [AI Engine Integration Guide](ai-engine-integration.md).

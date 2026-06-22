@@ -8,7 +8,9 @@ The AI engine provider is configured via the Keycloak SPI option:
 KC_SPI_AI_ENGINE__PROVIDER=claude
 ```
 
-Available providers: `gpt`, `claude`, `gemini`, `granite` (deprecated).
+Available core providers: `gpt`, `claude`, `gemini`, `granite` (deprecated).
+
+Additional providers are available as extensions under [`extensions/`](../extensions/). See each extension README for installation.
 
 ## OpenAI ChatGPT
 
@@ -73,3 +75,9 @@ A free tier is available (15 requests/minute for Flash).
 | `GEMINI_API_KEY` | Yes | - |
 | `GEMINI_API_URL` | No | `https://generativelanguage.googleapis.com/v1beta` |
 | `GEMINI_API_MODEL` | No | `gemini-2.5-flash-lite` |
+
+## OpenRouter (extension)
+
+[OpenRouter](https://openrouter.ai/) is provided as a separate extension module. Install the JAR from `extensions/openrouter/` alongside the core module, then set `KC_SPI_AI_ENGINE__PROVIDER=openrouter`.
+
+See the [OpenRouter extension README](../extensions/openrouter/README.md) for installation, API key setup, and environment variables (`OPENROUTER_API_KEY`, `OPENROUTER_API_URL`, `OPENROUTER_API_MODEL`).
