@@ -17,6 +17,7 @@ import org.keycloak.models.UserModel;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.github.mabartos.engine.RiskEvaluationAuditPublisher.AUTH_NOTE_BEFORE_AUTHN_EVALUATORS;
+import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.AUDIT_EVENTS_ENABLED_CONFIG;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -42,10 +44,10 @@ class RiskEvaluationAuditPublisherRecordFromStoredTest {
         var stored = storedRiskProvider();
         stored.storeRisk(ResultRisk.of(0.55), RiskEvaluator.EvaluationPhase.USER_KNOWN);
 
-        var publisher = publisher(RealmModelTestStub.realm(false, "CUSTOM_REQUIRED_ACTION"), stored);
+        var publisher = publisher(auditDisabledRealm(), stored);
 
         publisher.recordLoginEvaluationFromStored(
-                RealmModelTestStub.realm(false, "CUSTOM_REQUIRED_ACTION"),
+                auditDisabledRealm(),
                 user("user-1"));
 
         assertThat(pendingEvents(publisher), is(empty()));
@@ -54,7 +56,7 @@ class RiskEvaluationAuditPublisherRecordFromStoredTest {
     @Test
     void recordLoginEvaluationFromStored_skipsWhenStoredRisksInvalid() throws Exception {
         var stored = storedRiskProvider();
-        var realm = RealmModelTestStub.realm(true, "CUSTOM_REQUIRED_ACTION");
+        var realm = auditEnabledRealm();
         var publisher = publisher(realm, stored);
 
         publisher.recordLoginEvaluationFromStored(realm, user("user-1"));
@@ -70,7 +72,7 @@ class RiskEvaluationAuditPublisherRecordFromStoredTest {
         stored.storeOverallRisk(ResultRisk.of(0.15));
         stored.storeAdditionalData(AUTH_NOTE_BEFORE_AUTHN_EVALUATORS, "BrowserRiskEvaluator=NONE");
 
-        var realm = RealmModelTestStub.realm(true, "CUSTOM_REQUIRED_ACTION");
+        var realm = auditEnabledRealm();
         var publisher = publisher(realm, stored);
 
         publisher.recordLoginEvaluationFromStored(realm, user("user-1"));
@@ -94,7 +96,7 @@ class RiskEvaluationAuditPublisherRecordFromStoredTest {
         var stored = storedRiskProvider();
         stored.storeOverallRisk(ResultRisk.of(0.72));
 
-        var realm = RealmModelTestStub.realm(true, "CUSTOM_REQUIRED_ACTION");
+        var realm = auditEnabledRealm();
         var publisher = publisher(realm, stored);
 
         publisher.recordLoginEvaluationFromStored(realm, user("user-1"));
@@ -104,6 +106,52 @@ class RiskEvaluationAuditPublisherRecordFromStoredTest {
         assertThat(invokeOptionalString(login, "overallScore"), is("0.7200"));
         assertThat(invokeOptionalString(login, "overallLevel"), is("HIGH"));
         assertThat(invokeOptional(login, "userKnownScore", Optional.class), is(Optional.empty()));
+    }
+
+    private static RealmModel auditEnabledRealm() {
+        return realmStub(true, true, RiskEvaluationAuditConfig.AUDIT_EVENT_TYPE_NAME);
+    }
+
+    private static RealmModel auditDisabledRealm() {
+        return realmStub(true, false, RiskEvaluationAuditConfig.AUDIT_EVENT_TYPE_NAME);
+    }
+
+    private static RealmModel realmStub(boolean eventsEnabled, boolean auditEnabled, String... savedEventTypes) {
+        return (RealmModel) Proxy.newProxyInstance(
+                RiskEvaluationAuditPublisherRecordFromStoredTest.class.getClassLoader(),
+                new Class[] {RealmModel.class},
+                new RealmInvocationHandler(eventsEnabled, auditEnabled, savedEventTypes));
+    }
+
+    private static final class RealmInvocationHandler implements InvocationHandler {
+        private final boolean eventsEnabled;
+        private final boolean auditEnabled;
+        private final String[] savedEventTypes;
+
+        private RealmInvocationHandler(boolean eventsEnabled, boolean auditEnabled, String[] savedEventTypes) {
+            this.eventsEnabled = eventsEnabled;
+            this.auditEnabled = auditEnabled;
+            this.savedEventTypes = savedEventTypes;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.isDefault()) {
+                return InvocationHandler.invokeDefault(proxy, method, args);
+            }
+            return switch (method.getName()) {
+                case "isEventsEnabled" -> eventsEnabled;
+                case "getEnabledEventTypesStream" -> Arrays.stream(savedEventTypes);
+                case "getAttribute" -> AUDIT_EVENTS_ENABLED_CONFIG.equals(args[0])
+                        ? Boolean.toString(auditEnabled)
+                        : null;
+                case "getName" -> "test-realm";
+                case "equals" -> proxy == args[0];
+                case "hashCode" -> System.identityHashCode(proxy);
+                case "toString" -> "RealmModelStub";
+                default -> null;
+            };
+        }
     }
 
     private static RiskEvaluationAuditPublisher publisher(RealmModel realm, StoredRiskProvider stored) {
@@ -134,12 +182,6 @@ class RiskEvaluationAuditPublisherRecordFromStoredTest {
 
     private static RiskScoreAlgorithm testAlgorithm() {
         return new RiskScoreAlgorithm() {
-            @Override
-            @Nonnull
-            public String getId() {
-                return "test-algorithm";
-            }
-
             @Override
             @Nonnull
             public SimpleRiskLevels getSimpleRiskLevels() {
