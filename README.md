@@ -109,6 +109,10 @@ The generated JAR (`core/target/keycloak-adaptive-authn-*.jar`) can be added to 
 
 For full build instructions, installation options, and configuration, see the [Start Guide](docs/start.md).
 
+## [Risk Evaluators](EVALUATORS.md)
+
+See [EVALUATORS.md](EVALUATORS.md) for a complete list of all built-in risk evaluators grouped by evaluation phase.
+
 ## Resources with more info
 
 1. **Unlocking Adaptive Authentication (most recent)**
