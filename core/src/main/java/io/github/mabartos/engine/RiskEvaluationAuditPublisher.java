@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.RISK_SCORE_ALGORITHM_CONFIG;
+import static io.github.mabartos.engine.algorithm.LogOddsRiskAlgorithmFactory.PROVIDER_ID;
 
 /**
  * Publishes optional user events for login risk evaluation (after {@code USER_KNOWN}) and for
@@ -152,7 +153,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
         pending.add(new RemediationAuditEvent(
                 realm,
                 user.getId(),
-                resolveAlgorithmId(realm, algorithm),
+                resolveAlgorithmId(realm),
                 formatScore(continuousRisk.getScore()),
                 resolveSimpleLevelName(continuousRisk.getScore(), algorithm),
                 continuousRisk.getSummary().filter(StringUtil::isNotBlank),
@@ -283,7 +284,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
         return new LoginAuditEvent(
                 realm,
                 user.getId(),
-                resolveAlgorithmId(realm, algorithm),
+                resolveAlgorithmId(realm),
                 Optional.ofNullable(clientId).filter(StringUtil::isNotBlank),
                 scoreAndLevel(beforeAuthnRisk, algorithm),
                 scoreAndLevel(userKnownRisk, algorithm),
@@ -361,12 +362,12 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
     ) implements PendingAuditEvent {
     }
 
-    static String resolveAlgorithmId(RealmModel realm, RiskScoreAlgorithm algorithm) {
+    static String resolveAlgorithmId(RealmModel realm) {
         var configured = realm.getAttribute(RISK_SCORE_ALGORITHM_CONFIG);
         if (StringUtil.isNotBlank(configured)) {
             return configured;
         }
-        return algorithm.getId();
+        return PROVIDER_ID;
     }
 
     static String formatScore(double score) {

@@ -33,7 +33,6 @@ import static java.util.Optional.of;
 public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
     private static final Logger logger = Logger.getLogger(LogOddsRiskAlgorithm.class);
 
-    private final String id;
     private final ValuesMapper valuesMapper;
     private final SimpleRiskLevels simpleRiskLevels;
     private final AdvancedRiskLevels advancedRiskLevels;
@@ -60,23 +59,15 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
 
     public LogOddsRiskAlgorithm(
             KeycloakSession session,
-            @Nonnull String id,
             double defaultBias,
             SimpleRiskLevels simpleRiskLevels,
             AdvancedRiskLevels advancedRiskLevels
     ) {
-        this.id = id;
         this.defaultBias = defaultBias;
         this.simpleRiskLevels = simpleRiskLevels;
         this.advancedRiskLevels = advancedRiskLevels;
         this.valuesMapper = new ValuesMapper();
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
-    }
-
-    @Override
-    @Nonnull
-    public String getId() {
-        return id;
     }
 
     private double getBias(@Nonnull RealmModel realm) {

@@ -58,7 +58,7 @@ public class LogOddsRiskAlgorithmFactory implements RiskScoreAlgorithmFactory {
 
     @Override
     public RiskScoreAlgorithm create(KeycloakSession session) {
-        return new LogOddsRiskAlgorithm(session, PROVIDER_ID, DEFAULT_BIAS, SIMPLE_RISK_LEVELS, ADVANCED_RISK_LEVELS);
+        return new LogOddsRiskAlgorithm(session, DEFAULT_BIAS, SIMPLE_RISK_LEVELS, ADVANCED_RISK_LEVELS);
     }
 
     @Override

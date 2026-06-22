@@ -47,7 +47,7 @@ public class WeightedAvgRiskAlgorithmFactory implements RiskScoreAlgorithmFactor
 
     @Override
     public RiskScoreAlgorithm create(KeycloakSession session) {
-        return new WeightedAvgRiskAlgorithm(session, PROVIDER_ID, SIMPLE_RISK_LEVELS, ADVANCED_RISK_LEVELS);
+        return new WeightedAvgRiskAlgorithm(session, SIMPLE_RISK_LEVELS, ADVANCED_RISK_LEVELS);
     }
 
     @Override
