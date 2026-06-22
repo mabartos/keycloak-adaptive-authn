@@ -72,3 +72,6 @@ OpenRouterAiEngineFactory (SPI entry point)
         ├── Calls OpenRouter chat completions API
         └── Maps JSON response to Risk via AiEngineUtils
 ```
+
+## Community maintainer
+- [Thomas DELORGE](https://github.com/thomasdelorge)
