@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.mabartos.engine;
+package io.github.mabartos.engine.core;
 
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.level.ResultRisk;
@@ -33,10 +33,10 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
-import static io.github.mabartos.engine.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static io.github.mabartos.engine.core.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_RETRIES;
+import static io.github.mabartos.engine.core.DefaultRiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
+import static io.github.mabartos.engine.core.DefaultRiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
+import static io.github.mabartos.engine.core.DefaultRiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 
 /**
  * Default risk engine for the overall risk score evaluation leveraging asynchronous and parallel processing
