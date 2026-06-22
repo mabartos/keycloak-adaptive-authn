@@ -25,7 +25,7 @@ public class ClientSensitivityRiskEvaluatorFactory implements RiskEvaluatorFacto
 
     @Override
     public String getDescription() {
-        return "Scores risk from the requesting OAuth client's sensitivity (built-in defaults for Keycloak clients or the adaptive-client-riskSensitivity attribute). Configure per client under Client → Risk-based settings.";
+        return "Scores risk from the requesting OAuth client's sensitivity. Configure per client under Client → Risk-based settings.";
     }
 
     @Override

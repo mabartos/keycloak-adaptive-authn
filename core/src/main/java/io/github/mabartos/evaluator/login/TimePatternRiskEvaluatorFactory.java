@@ -19,7 +19,7 @@ public class TimePatternRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Flags logins outside the user's typical time-of-day/weekday pattern (learned from history).";
+        return "Scores login attempts outside the user's typical time-of-day/weekday pattern (learned from history).";
     }
 
     @Override
