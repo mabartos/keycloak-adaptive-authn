@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getTrustConfig;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +34,7 @@ class RiskBasedPoliciesUiTabPersistenceTest {
     @BeforeEach
     void setUp() throws Exception {
         realmAttributes.clear();
-        realm = realmBackedBy(realmAttributes);
+        realm = realmBackedBy(realmAttributes, Map.of(), List.of());
         tab = new RiskBasedPoliciesUiTab();
         browserFactory = new BrowserRiskEvaluatorFactory();
         injectFactories(tab, List.of(browserFactory));
@@ -102,9 +103,218 @@ class RiskBasedPoliciesUiTabPersistenceTest {
         tab.validateConfiguration(null, realm, model);
     }
 
+    @Test
+    void validateConfiguration_hydratesTrustFromRealmAttributeWhenModelEmpty() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(trustKey, "0.5");
+
+        var model = new ComponentModel();
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("0.5", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_hydratesEngineSettingFromRealmAttributeWhenModelEmpty() {
+        realmAttributes.put(EVALUATOR_TIMEOUT_CONFIG, "5000");
+
+        var model = new ComponentModel();
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("5000", model.get(EVALUATOR_TIMEOUT_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_prefersRealmTrustOverExistingModelValue() {
+        realmAttributes.put(getTrustConfig(BrowserRiskEvaluator.class), "0.5");
+
+        var model = componentModel(Map.of(getTrustConfig(BrowserRiskEvaluator.class), "0.75"));
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("0.5", model.get(getTrustConfig(BrowserRiskEvaluator.class)));
+    }
+
+    @Test
+    void validateConfiguration_appliesTrustDefaultWhenModelAndRealmEmpty() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var model = new ComponentModel();
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1.0", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_hydratesEnabledFalseFromRealmWhenModelEmpty() {
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(enabledKey, "false");
+
+        var model = new ComponentModel();
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("false", model.get(enabledKey));
+    }
+
+    @Test
+    void validateConfiguration_overridesStaleModelEnabledWithRealmAttribute() {
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(enabledKey, "false");
+
+        var model = componentModel(Map.of(enabledKey, "true"));
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("false", model.get(enabledKey));
+    }
+
+    @Test
+    void validateConfiguration_appliesEnabledDefaultWhenModelAndRealmEmpty() {
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        var model = new ComponentModel();
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("true", model.get(enabledKey));
+    }
+
+    @Test
+    void validateConfiguration_appliesEnabledDefaultWhenRealmAttributeBlank() {
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(enabledKey, "");
+
+        var model = new ComponentModel();
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("true", model.get(enabledKey));
+    }
+
+    @Test
+    void validateConfiguration_appliesTrustDefaultWhenRealmAttributeBlank() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(trustKey, "");
+
+        var model = new ComponentModel();
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1.0", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_discardsStaleModelTrustWhenNoRealmAttribute() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var persisted = tabComponent(Map.of(trustKey, "0.75"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(trustKey, "0.75"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1.0", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_discardsStaleModelEnabledWhenNoRealmAttribute() {
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        var persisted = tabComponent(Map.of(enabledKey, "false"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(enabledKey, "false"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("true", model.get(enabledKey));
+    }
+
+    @Test
+    void validateConfiguration_clearsStaleTrustWhenPersistedComponentUnknown() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var model = componentModel(Map.of(trustKey, "0.2"));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1.0", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_clearsStaleTrustWhenModelHasNoComponentId() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var persisted = tabComponent(Map.of(trustKey, "0.2"));
+        var model = componentModel(Map.of(trustKey, "0.2"));
+        realm = realmBackedBy(realmAttributes, Map.of(), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1.0", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_preservesFirstSaveTrustWhenModelHasNoComponentId() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var persisted = tabComponent(Map.of(RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG, "true"));
+        var model = componentModel(Map.of(trustKey, "0.5"));
+        realm = realmBackedBy(realmAttributes, Map.of(), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("0.5", model.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_preservesSubmittedTrustOnVirginRealmFirstSave() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        var persisted = tabComponent(Map.of(
+                RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG, "true"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(
+                trustKey, "0.5",
+                enabledKey, "true",
+                RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG, "true"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("0.5", model.get(trustKey));
+
+        tab.onUpdate(null, realm, persisted, model);
+
+        assertEquals("0.5", realmAttributes.get(trustKey));
+    }
+
+    @Test
+    void onUpdate_persistsTrustToRealmEvenWhenUnchanged() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var model = componentModel(Map.of(trustKey, "0.5"));
+
+        tab.onUpdate(null, realm, model, model);
+
+        assertEquals("0.5", realmAttributes.get(trustKey));
+    }
+
+    @Test
+    void onUpdate_persistsEvaluatorSettingsFromFormAfterStaleComponentCleared() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        var oldModel = componentModel(Map.of(trustKey, "0.75", enabledKey, "false"));
+        var newModel = componentModel(Map.of(trustKey, "1.0", enabledKey, "true"));
+
+        tab.onUpdate(null, realm, oldModel, newModel);
+
+        assertEquals("1.0", realmAttributes.get(trustKey));
+        assertEquals("true", realmAttributes.get(enabledKey));
+    }
+
     private static ComponentModel componentModel(Map<String, String> entries) {
         var model = new ComponentModel();
         entries.forEach((key, value) -> model.getConfig().putSingle(key, value));
+        return model;
+    }
+
+    private static ComponentModel tabComponent(Map<String, String> entries) {
+        var model = componentModel(entries);
+        model.setProviderId("Risk-based policies");
         return model;
     }
 
@@ -120,7 +330,10 @@ class RiskBasedPoliciesUiTabPersistenceTest {
         field.set(target, value);
     }
 
-    private static RealmModel realmBackedBy(Map<String, String> attributes) {
+    private static RealmModel realmBackedBy(
+            Map<String, String> attributes,
+            Map<String, ComponentModel> componentsById,
+            List<ComponentModel> uiTabComponents) {
         return (RealmModel) java.lang.reflect.Proxy.newProxyInstance(
                 RealmModel.class.getClassLoader(),
                 new Class<?>[] {RealmModel.class},
@@ -130,6 +343,19 @@ class RiskBasedPoliciesUiTabPersistenceTest {
                         yield null;
                     }
                     case "getAttribute" -> attributes.get((String) args[0]);
+                    case "getComponent" -> componentsById.get((String) args[0]);
+                    case "getComponentsStream" -> {
+                        if (args != null && args.length == 2
+                                && "test-realm".equals(args[0])
+                                && "org.keycloak.services.ui.extend.UiTabProvider".equals(args[1])) {
+                            yield uiTabComponents.stream();
+                        }
+                        if (args != null && args.length == 1
+                                && "org.keycloak.services.ui.extend.UiTabProvider".equals(args[0])) {
+                            yield uiTabComponents.stream();
+                        }
+                        yield java.util.stream.Stream.<ComponentModel>empty();
+                    }
                     case "getId" -> "test-realm";
                     default -> defaultValue(method.getReturnType());
                 });

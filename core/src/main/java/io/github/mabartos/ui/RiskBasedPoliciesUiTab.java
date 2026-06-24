@@ -49,6 +49,8 @@ import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_
 import static io.github.mabartos.spi.engine.RiskEngineFactory.DEFAULT_EVALUATOR_TIMEOUT;
 import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_RETRIES_CONFIG;
 import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
+import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.ENABLED_CONFIG;
+import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.TRUST_CONFIG;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getTrustConfig;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
 
@@ -57,6 +59,8 @@ import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledCon
  */
 public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFactory<ComponentModel> {
     private static final Logger logger = Logger.getLogger(RiskBasedPoliciesUiTab.class);
+
+    private static final String UI_TAB_PROVIDER_TYPE = "org.keycloak.services.ui.extend.UiTabProvider";
 
     private static final String TRUST_FIELD_HELP =
             "Weight from 0 to 1 (e.g. 0.75). 1 = full influence on the combined risk score.";
@@ -153,23 +157,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                     }
                 }));
 
-        riskEvaluatorFactories.forEach(f -> {
-            var enabledKey = isEnabledConfig(f.evaluatorClass());
-            if (!Objects.equals(oldModel.get(enabledKey), newModel.get(enabledKey)) && newModel.contains(enabledKey)) {
-                var value = newModel.get(enabledKey);
-                var enabled = value == null || Boolean.parseBoolean(value);
-                logger.debugf("onUpdate storing evaluator enabled '%s' = '%s'", enabledKey, enabled);
-                EvaluatorUtils.setEvaluatorEnabled(realm, f.evaluatorClass(), enabled);
-            }
-
-            var trustKey = getTrustConfig(f.evaluatorClass());
-            var oldTrust = oldModel.get(trustKey);
-            var newTrust = newModel.get(trustKey);
-            if (!Objects.equals(oldTrust, newTrust) && newModel.contains(trustKey) && StringUtil.isNotBlank(newTrust)) {
-                logger.debugf("onUpdate storing evaluator trust '%s' = '%s' (was '%s')", trustKey, newTrust, oldTrust);
-                EvaluatorUtils.storeEvaluatorTrust(realm, f.evaluatorClass(), Double.parseDouble(newTrust));
-            }
-        });
+        riskEvaluatorFactories.forEach(f -> persistEvaluatorSettings(newModel, realm, f, "onUpdate"));
     }
 
     private void persistEvaluatorSettings(ComponentModel model, RealmModel realm, RiskEvaluatorFactory evalFactory, String context) {
@@ -193,6 +181,10 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
         logger.tracef("validateConfiguration execution");
 
+        validateEvaluatorTrustValues(model);
+
+        var persisted = resolvePersistedTabComponent(realm, model);
+        hydrateModelFromRealmAttributes(realm, model, persisted);
         populateMissingDefaults(model);
 
         validateInteger(model.get(EVALUATOR_TIMEOUT_CONFIG), "Timeout");
@@ -200,7 +192,9 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         validateFallbackLevel(model.get(SIMPLE_FALLBACK_LEVEL_CONFIG), SimpleRiskLevels.getSimpleLevelNames(), "Simple fallback risk level");
         validateFallbackLevel(model.get(ADVANCED_FALLBACK_LEVEL_CONFIG), AdvancedRiskLevels.getAdvancedLevelNames(), "Advanced fallback risk level");
+    }
 
+    private void validateEvaluatorTrustValues(ComponentModel model) {
         riskEvaluatorFactories.forEach(f -> {
             var value = model.get(getTrustConfig(f.evaluatorClass()));
             if (StringUtil.isBlank(value)) {
@@ -224,6 +218,86 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 model.getConfig().putSingle(prop.getName(), prop.getDefaultValue().toString());
             }
         });
+    }
+
+    /**
+     * Aligns the component model with realm attributes before the form is rendered.
+     * Evaluator enabled/trust keys use non-blank realm attributes as source of truth; when absent,
+     * stale component config is cleared so schema defaults apply, matching runtime fallbacks.
+     * Other properties keep the component value when set, otherwise fall back to realm attributes.
+     */
+    void hydrateModelFromRealmAttributes(RealmModel realm, ComponentModel model, ComponentModel persisted) {
+        if (realm == null) {
+            return;
+        }
+        getConfigProperties().forEach(prop -> {
+            var key = prop.getName();
+            var realmValue = realm.getAttribute(key);
+            if (isRealmSourcedEvaluatorSetting(key)) {
+                if (StringUtil.isNotBlank(realmValue)) {
+                    logger.tracef("Hydrating '%s' from realm attribute (evaluator setting)", key);
+                    model.getConfig().putSingle(key, realmValue);
+                } else if (isUnchangedStaleComponentValue(persisted, key, model.get(key))) {
+                    logger.tracef("Clearing stale component config for '%s' (no realm attribute)", key);
+                    model.getConfig().remove(key);
+                } else if (isAdminSubmittedEvaluatorChange(persisted, key, model.get(key))) {
+                    logger.tracef("Keeping submitted evaluator setting '%s' = '%s' (no realm attribute yet)", key, model.get(key));
+                } else if (model.contains(key)) {
+                    logger.tracef("Clearing evaluator setting '%s' (no realm attribute, not an admin change)", key);
+                    model.getConfig().remove(key);
+                }
+                return;
+            }
+            if (StringUtil.isNotBlank(model.get(key))) {
+                return;
+            }
+            if (StringUtil.isNotBlank(realmValue)) {
+                logger.tracef("Hydrating '%s' from realm attribute", key);
+                model.getConfig().putSingle(key, realmValue);
+            }
+        });
+    }
+
+    private static boolean isRealmSourcedEvaluatorSetting(String key) {
+        return key.startsWith(ENABLED_CONFIG) || key.startsWith(TRUST_CONFIG);
+    }
+
+    private ComponentModel resolvePersistedTabComponent(RealmModel realm, ComponentModel model) {
+        if (realm == null) {
+            return null;
+        }
+        if (StringUtil.isNotBlank(model.getId())) {
+            var byId = realm.getComponent(model.getId());
+            if (byId != null) {
+                return byId;
+            }
+        }
+        return realm.getComponentsStream(realm.getId(), UI_TAB_PROVIDER_TYPE)
+                .filter(component -> getId().equals(component.getProviderId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Stale component config matches persisted storage and was not changed in the submitted model.
+     */
+    private static boolean isUnchangedStaleComponentValue(ComponentModel persisted, String key, String submitted) {
+        return persisted != null
+                && persisted.getConfig().containsKey(key)
+                && Objects.equals(submitted, persisted.get(key));
+    }
+
+    /**
+     * Admin changed a value or set one that is not stored on the tab component yet (first save).
+     */
+    private static boolean isAdminSubmittedEvaluatorChange(ComponentModel persisted, String key, String submitted) {
+        if (StringUtil.isBlank(submitted) || persisted == null) {
+            return false;
+        }
+        if (!persisted.getConfig().containsKey(key)) {
+            return true;
+        }
+        return !Objects.equals(submitted, persisted.get(key));
     }
 
     protected void validateInteger(String value, String attributeDisplayName) {
@@ -341,6 +415,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .label(RiskEvaluatorUi.trustLabel(factory))
                 .helpText(RiskEvaluatorUi.trustTooltip() + " " + TRUST_FIELD_HELP)
                 .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue(Trust.FULL)
                 .add()
                 .build()
                 .getFirst());

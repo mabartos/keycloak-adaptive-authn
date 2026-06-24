@@ -68,6 +68,7 @@ public class EvaluatorUtils {
     public static boolean isEvaluatorEnabled(RealmModel realm, Class<? extends RiskEvaluator> evaluator, boolean defaultValue) {
         return Optional.ofNullable(realm)
                 .map(f -> f.getAttribute(RiskEvaluatorFactory.isEnabledConfig(evaluator)))
+                .filter(StringUtils::isNotBlank)
                 .map(Boolean::parseBoolean)
                 .orElse(defaultValue);
     }
