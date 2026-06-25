@@ -181,7 +181,8 @@
                                     <argument>--feature-declarative-ui=enabled</argument>
                                 </arguments>
                                 <environmentVariables>
-                                    <KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED>true</KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED>
+                                    <!-- Useful for experimenting with evaluators dealing with IP address itself and location -->
+                                    <KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED>false</KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED>
                                 </environmentVariables>
                             </configuration>
                         </execution>
