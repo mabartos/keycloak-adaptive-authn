@@ -207,9 +207,11 @@
                                     <url>${keycloak.github.url}</url>
                                     <outputDirectory>${project.build.directory}/downloads</outputDirectory>
                                     <outputFileName>keycloak-dist.zip</outputFileName>
-                                    <!-- Cache in local Maven repository -->
+                                    <!-- Cache in local Maven repository.
+                                         For nightly builds the URL never changes, so the cache can serve
+                                         a stale zip indefinitely. To force a fresh download run:
+                                         rm -rf ~/.m2/repository/.cache/keycloak/nightly -->
                                     <cacheDirectory>${settings.localRepository}/.cache/keycloak/${keycloak.github.tag}</cacheDirectory>
-                                    <!-- Skip if already downloaded (cached) -->
                                     <skipCache>false</skipCache>
                                     <!-- Follow redirects -->
                                     <followRedirects>true</followRedirects>
