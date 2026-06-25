@@ -294,6 +294,62 @@ class RiskBasedPoliciesUiTabPersistenceTest {
     }
 
     @Test
+    void validateConfiguration_preservesSubmittedTrustWhenRealmAttributeStillStale() {
+        var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(trustKey, "0.75");
+        var persisted = tabComponent(Map.of(trustKey, "0.75"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(trustKey, "1.0"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1.0", model.get(trustKey));
+
+        tab.onUpdate(null, realm, persisted, model);
+
+        assertEquals("1.0", realmAttributes.get(trustKey));
+    }
+
+    @Test
+    void validateConfiguration_preservesSubmittedEnabledWhenRealmAttributeStillStale() {
+        var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
+        realmAttributes.put(enabledKey, "false");
+        var persisted = tabComponent(Map.of(enabledKey, "false"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(enabledKey, "true"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("true", model.get(enabledKey));
+
+        tab.onUpdate(null, realm, persisted, model);
+
+        assertEquals("true", realmAttributes.get(enabledKey));
+    }
+
+    @Test
+    void validateConfiguration_preservesSubmittedTimeoutWhenRealmAttributeStillStale() {
+        realmAttributes.put(EVALUATOR_TIMEOUT_CONFIG, "2500");
+        var persisted = tabComponent(Map.of(EVALUATOR_TIMEOUT_CONFIG, "2500"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(EVALUATOR_TIMEOUT_CONFIG, "5000"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("5000", model.get(EVALUATOR_TIMEOUT_CONFIG));
+
+        tab.onUpdate(null, realm, persisted, model);
+
+        assertEquals("5000", realmAttributes.get(EVALUATOR_TIMEOUT_CONFIG));
+    }
+
+    @Test
     void onUpdate_persistsEvaluatorSettingsFromFormAfterStaleComponentCleared() {
         var trustKey = getTrustConfig(BrowserRiskEvaluator.class);
         var enabledKey = isEnabledConfig(BrowserRiskEvaluator.class);
