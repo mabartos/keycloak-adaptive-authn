@@ -2,6 +2,7 @@ package io.github.mabartos.context.location;
 
 import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.ip.client.IpAddressContext;
+import io.github.mabartos.context.location.geoip.GeoIpResolver;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;

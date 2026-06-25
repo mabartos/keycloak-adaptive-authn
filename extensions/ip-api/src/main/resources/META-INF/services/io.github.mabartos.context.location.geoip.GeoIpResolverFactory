@@ -1,0 +1,4 @@
+io.github.mabartos.context.location.IpApiCoGeoIpResolverFreeFactory
+io.github.mabartos.context.location.IpApiCoGeoIpResolverProFactory
+io.github.mabartos.context.location.IpApiComGeoIpResolverFreeFactory
+io.github.mabartos.context.location.IpApiComGeoIpResolverProFactory

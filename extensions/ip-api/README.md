@@ -27,7 +27,7 @@ The resolved location data is then available to risk evaluators for adaptive aut
     ${KEYCLOAK_HOME}/bin/kc.sh build
     ```
 
-The extension is auto-discovered via Java's `ServiceLoader` mechanism (registered in `META-INF/services`).
+The extension is auto-discovered via Java's `ServiceLoader` mechanism (`META-INF/services` for `UserContextFactory`, `GeoIpResolverFactory`, and `GeoIpResolverSpi`).
 
 ## Configuration
 
@@ -100,12 +100,13 @@ The extension resolves the following fields from providers :
 ## Architecture
 
 ```
-IpApiLocationContextFactory (SPI entry point)
+IpApiLocationContextFactory (UserContext SPI)
   └── IpApiLocationContext (remote context)
         ├── Uses IpAddressContext to get client IP
-        └── GeoIpResolver chain (from KC_ADAPTIVE_LOCATION_PROVIDERS)
-              ├── IpApiCoGeoIpResolver   → ipapi.co
-              └── IpApiComGeoIpResolver  → ip-api.com
+        └── GeoIpResolverChain (order from KC_ADAPTIVE_LOCATION_PROVIDERS)
+              └── GeoIpResolver SPI providers (enable/disable via EnvironmentDependentProviderFactory)
+                    ├── ipapi-co-free / ipapi-co-pro   → IpApiCoGeoIpResolver
+                    └── ip-api-com-free / ip-api-com-pro → IpApiComGeoIpResolver
 ```
 
-The extension integrates into the location context chain — when multiple `LocationContext` implementations are present (e.g. cache layers), they delegate to each other based on priority.
+Each backend is a separate `GeoIpResolverFactory` in this extension JAR (`io.github.mabartos.context.location.geoip`). Pro tiers are only enabled when their credential env var is set. Future backends (e.g. MaxMind) can ship as additional extension JARs registering the same SPI.

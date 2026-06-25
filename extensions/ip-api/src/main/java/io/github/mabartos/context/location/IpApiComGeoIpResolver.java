@@ -1,6 +1,8 @@
 package io.github.mabartos.context.location;
 
 import io.github.mabartos.context.ip.IPAddress;
+import io.github.mabartos.context.location.geoip.GeoIpResolver;
+import io.github.mabartos.context.location.geoip.GeoIpResolverIds;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.http.client.utils.URIBuilder;
@@ -17,16 +19,14 @@ import java.util.Optional;
 /**
  * GeoIP via <a href="https://ip-api.com">ip-api.com</a>.
  * <ul>
- *   <li><strong>Free</strong> ({@value #RESOLVER_ID_FREE}, no key): {@code http://ip-api.com/json/{ip}} — non-commercial,
+ *   <li><strong>Free</strong> ({@value GeoIpResolverIds#IP_API_COM_FREE}, no key): {@code http://ip-api.com/json/{ip}} — non-commercial,
  *       ~45 req/min per client IP. Uses plain HTTP; user IP addresses are transmitted unencrypted and responses can be
- *       tampered with in transit. Not suitable for production; prefer {@value #RESOLVER_ID_PRO} (HTTPS) or another resolver.
+ *       tampered with in transit. Not suitable for production; prefer {@value GeoIpResolverIds#IP_API_COM_PRO} (HTTPS) or another resolver.
  *       Each lookup logs WARN with realm and IP.</li>
- *   <li><strong>Pro</strong> ({@value #RESOLVER_ID_PRO}, API key): {@code https://pro.ip-api.com/json/{ip}?key=...} — SSL, commercial use.</li>
+ *   <li><strong>Pro</strong> ({@value GeoIpResolverIds#IP_API_COM_PRO}, API key): {@code https://pro.ip-api.com/json/{ip}?key=...} — SSL, commercial use.</li>
  * </ul>
  */
 final class IpApiComGeoIpResolver implements GeoIpResolver {
-    static final String RESOLVER_ID_FREE = "ip-api-com-free";
-    static final String RESOLVER_ID_PRO = "ip-api-com-pro";
 
     private static final String FREE_ORIGIN = "http://ip-api.com";
     private static final String PRO_ORIGIN = "https://pro.ip-api.com";
@@ -55,7 +55,7 @@ final class IpApiComGeoIpResolver implements GeoIpResolver {
             log.warnf(
                     "GeoIP resolver %s uses plain HTTP for lookup (realm=%s, ip=%s); "
                             + "user IP addresses are transmitted unencrypted — not suitable for production",
-                    RESOLVER_ID_FREE,
+                    resolverId,
                     realmName,
                     ip);
         }

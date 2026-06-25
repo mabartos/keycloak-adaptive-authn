@@ -19,6 +19,7 @@ package io.github.mabartos.context.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.ip.client.IpAddressContext;
+import io.github.mabartos.context.location.geoip.GeoIpResolver;
 import jakarta.annotation.Nonnull;
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;

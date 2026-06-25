@@ -1,6 +1,8 @@
 package io.github.mabartos.context.location;
 
 import io.github.mabartos.context.ip.IPAddress;
+import io.github.mabartos.context.location.geoip.GeoIpResolver;
+import io.github.mabartos.context.location.geoip.GeoIpResolverIds;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.http.client.utils.URIBuilder;
@@ -16,11 +18,10 @@ import java.util.Optional;
 
 /**
  * GeoIP via <a href="https://ipapi.co">ipapi.co</a> ({@code GET https://ipapi.co/{ip}/json/?token=...}).
- * <p>Resolver id (see {@link #id()}) distinguishes {@value #RESOLVER_ID_FREE} (no token) from {@value #RESOLVER_ID_PRO} (token required when building the chain).</p>
+ * <p>Resolver id (see {@link #id()}) distinguishes {@value GeoIpResolverIds#IPAPI_CO_FREE} (no token)
+ * from {@value GeoIpResolverIds#IPAPI_CO_PRO} (token required when building the chain).</p>
  */
 final class IpApiCoGeoIpResolver implements GeoIpResolver {
-    static final String RESOLVER_ID_FREE = "ipapi-co-free";
-    static final String RESOLVER_ID_PRO = "ipapi-co-pro";
 
     private static final String ORIGIN = "https://ipapi.co";
 
