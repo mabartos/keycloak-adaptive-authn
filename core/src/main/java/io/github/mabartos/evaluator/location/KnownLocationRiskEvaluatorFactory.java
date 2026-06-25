@@ -16,9 +16,14 @@
  */
 package io.github.mabartos.evaluator.location;
 
+import io.github.mabartos.context.location.KnownLocationContext;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
+
+import java.util.List;
 
 public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "known-location-risk-evaluator";
@@ -47,5 +52,19 @@ public class KnownLocationRiskEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public String getId() {
         return PROVIDER_ID;
+    }
+
+    @Override
+    public List<ProviderConfigProperty> getAdditionalAdminConfigProperties() {
+        return ProviderConfigurationBuilder.create()
+                .property()
+                .name(KnownLocationContext.TTL_DAYS_CONFIG)
+                .label("TTL (days)")
+                .helpText("Number of days before a known location stops providing a trust signal. "
+                        + "Expired entries are removed on successful login. Set to 0 to disable expiration.")
+                .type(ProviderConfigProperty.INTEGER_TYPE)
+                .defaultValue(KnownLocationContext.DEFAULT_TTL_DAYS)
+                .add()
+                .build();
     }
 }

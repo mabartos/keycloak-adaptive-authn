@@ -115,7 +115,10 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                     }
                 }));
 
-        riskEvaluatorFactories.forEach(evalFactory -> persistEvaluatorSettings(model, realm, evalFactory, "onCreate"));
+        riskEvaluatorFactories.forEach(evalFactory -> {
+            persistEvaluatorSettings(model, realm, evalFactory, "onCreate");
+            persistAdditionalEvaluatorSettings(model, realm, evalFactory, "onCreate");
+        });
     }
 
     /**
@@ -160,7 +163,10 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                     }
                 }));
 
-        riskEvaluatorFactories.forEach(f -> persistEvaluatorSettings(newModel, realm, f, "onUpdate"));
+        riskEvaluatorFactories.forEach(f -> {
+            persistEvaluatorSettings(newModel, realm, f, "onUpdate");
+            persistAdditionalEvaluatorSettings(newModel, realm, f, "onUpdate");
+        });
     }
 
     private void persistEvaluatorSettings(ComponentModel model, RealmModel realm, RiskEvaluatorFactory evalFactory, String context) {
@@ -180,11 +186,25 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         }
     }
 
+    private void persistAdditionalEvaluatorSettings(
+            ComponentModel model, RealmModel realm, RiskEvaluatorFactory evalFactory, String context) {
+        evalFactory.getAdditionalAdminConfigProperties().forEach(prop -> {
+            var key = prop.getName();
+            if (model.contains(key)) {
+                storeRealmAttributeFromModel(model, realm, key, context);
+            } else if (realm.getAttribute(key) == null && prop.getDefaultValue() != null) {
+                logger.debugf("%s setting evaluator default '%s' = '%s'", context, key, prop.getDefaultValue());
+                realm.setAttribute(key, prop.getDefaultValue().toString());
+            }
+        });
+    }
+
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel model) throws ComponentValidationException {
         logger.tracef("validateConfiguration execution");
 
         validateEvaluatorTrustValues(model);
+        validateSubmittedAdditionalEvaluatorSettings(model);
 
         var persisted = resolvePersistedTabComponent(realm, model);
         hydrateModelFromRealmAttributes(realm, model, persisted);
@@ -195,6 +215,11 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         validateFallbackLevel(model.get(SIMPLE_FALLBACK_LEVEL_CONFIG), SimpleRiskLevels.getSimpleLevelNames(), "Simple fallback risk level");
         validateFallbackLevel(model.get(ADVANCED_FALLBACK_LEVEL_CONFIG), AdvancedRiskLevels.getAdvancedLevelNames(), "Advanced fallback risk level");
+
+        riskEvaluatorFactories.stream()
+                .flatMap(f -> f.getAdditionalAdminConfigProperties().stream())
+                .filter(prop -> ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType()))
+                .forEach(prop -> validateInteger(model.get(prop.getName()), prop.getLabel()));
     }
 
     private void validateEvaluatorTrustValues(ComponentModel model) {
@@ -215,6 +240,18 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         });
     }
 
+    private void validateSubmittedAdditionalEvaluatorSettings(ComponentModel model) {
+        riskEvaluatorFactories.stream()
+                .flatMap(factory -> factory.getAdditionalAdminConfigProperties().stream())
+                .filter(prop -> ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType()))
+                .forEach(prop -> {
+                    var value = model.get(prop.getName());
+                    if (StringUtil.isNotBlank(value)) {
+                        validateInteger(value, prop.getLabel());
+                    }
+                });
+    }
+
     private void populateMissingDefaults(ComponentModel model) {
         getConfigProperties().forEach(prop -> {
             if (model.get(prop.getName()) == null && prop.getDefaultValue() != null) {
@@ -225,9 +262,10 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     /**
      * Aligns the component model with realm attributes before the form is rendered.
-     * Evaluator enabled/trust keys use non-blank realm attributes as source of truth when loading the form.
-     * On save, an admin change to those keys is kept even if the realm attribute still holds the previous value.
-     * Other properties keep the submitted component value when set, otherwise fall back to realm attributes.
+     * Evaluator enabled/trust and additional evaluator settings (e.g. TTL) use non-blank realm
+     * attributes as source of truth when loading the form. On save, an admin change is kept even if
+     * the realm attribute still holds the previous value. Other properties keep the submitted
+     * component value when set, otherwise fall back to realm attributes.
      */
     void hydrateModelFromRealmAttributes(RealmModel realm, ComponentModel model, ComponentModel persisted) {
         if (realm == null) {
@@ -236,20 +274,8 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         getConfigProperties().forEach(prop -> {
             var key = prop.getName();
             var realmValue = realm.getAttribute(key);
-            if (isRealmSourcedEvaluatorSetting(key)) {
-                var submitted = model.get(key);
-                if (isAdminSubmittedEvaluatorChange(persisted, key, submitted)) {
-                    logger.tracef("Keeping submitted evaluator setting '%s' = '%s' (admin change)", key, submitted);
-                } else if (StringUtil.isNotBlank(realmValue)) {
-                    logger.tracef("Hydrating '%s' from realm attribute (evaluator setting)", key);
-                    model.getConfig().putSingle(key, realmValue);
-                } else if (isUnchangedStaleComponentValue(persisted, key, submitted)) {
-                    logger.tracef("Clearing stale component config for '%s' (no realm attribute)", key);
-                    model.getConfig().remove(key);
-                } else if (model.contains(key)) {
-                    logger.tracef("Clearing evaluator setting '%s' (no realm attribute, not an admin change)", key);
-                    model.getConfig().remove(key);
-                }
+            if (isRealmSourcedEvaluatorSetting(key) || isAdditionalAdminConfigKey(key)) {
+                applyRealmSourcedEvaluatorSettingHydration(model, persisted, key, realmValue);
                 return;
             }
             if (StringUtil.isNotBlank(model.get(key))) {
@@ -262,8 +288,36 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         });
     }
 
+    /**
+     * Hydration for evaluator settings stored as realm attributes (enabled, trust, TTL, etc.).
+     * Admin-submitted changes take precedence over the current realm attribute during save.
+     */
+    private static void applyRealmSourcedEvaluatorSettingHydration(
+            ComponentModel model, ComponentModel persisted, String key, String realmValue) {
+        var submitted = model.get(key);
+        if (isAdminSubmittedEvaluatorChange(persisted, key, submitted)) {
+            logger.tracef("Keeping submitted evaluator setting '%s' = '%s' (admin change)", key, submitted);
+        } else if (StringUtil.isNotBlank(realmValue)) {
+            logger.tracef("Hydrating '%s' from realm attribute (evaluator setting)", key);
+            model.getConfig().putSingle(key, realmValue);
+        } else if (isUnchangedStaleComponentValue(persisted, key, submitted)) {
+            logger.tracef("Clearing stale component config for '%s' (no realm attribute)", key);
+            model.getConfig().remove(key);
+        } else if (model.contains(key)) {
+            logger.tracef("Clearing evaluator setting '%s' (no realm attribute, not an admin change)", key);
+            model.getConfig().remove(key);
+        }
+    }
+
     private static boolean isRealmSourcedEvaluatorSetting(String key) {
         return key.startsWith(ENABLED_CONFIG) || key.startsWith(TRUST_CONFIG);
+    }
+
+    private boolean isAdditionalAdminConfigKey(String key) {
+        return riskEvaluatorFactories.stream()
+                .flatMap(factory -> factory.getAdditionalAdminConfigProperties().stream())
+                .map(ProviderConfigProperty::getName)
+                .anyMatch(key::equals);
     }
 
     private ComponentModel resolvePersistedTabComponent(RealmModel realm, ComponentModel model) {
@@ -432,7 +486,23 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .add()
                 .build()
                 .getFirst());
+        factory.getAdditionalAdminConfigProperties().stream()
+                .map(prop -> withEvaluatorSettingLabel(factory, prop))
+                .forEach(properties::add);
         return properties;
+    }
+
+    private static ProviderConfigProperty withEvaluatorSettingLabel(
+            RiskEvaluatorFactory factory, ProviderConfigProperty prop) {
+        var labeled = new ProviderConfigProperty();
+        labeled.setName(prop.getName());
+        labeled.setLabel(RiskEvaluatorUi.additionalSettingLabel(factory, prop.getLabel()));
+        labeled.setHelpText(prop.getHelpText());
+        labeled.setType(prop.getType());
+        labeled.setDefaultValue(prop.getDefaultValue());
+        labeled.setOptions(prop.getOptions());
+        labeled.setSecret(prop.isSecret());
+        return labeled;
     }
 
     @Override

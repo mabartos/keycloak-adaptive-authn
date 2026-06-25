@@ -24,6 +24,10 @@ final class RiskEvaluatorUi {
         return enabledLabel(factory) + " trust";
     }
 
+    static String additionalSettingLabel(RiskEvaluatorFactory factory, String settingName) {
+        return enabledLabel(factory) + " " + settingName;
+    }
+
     static String enabledTooltip(RiskEvaluatorFactory factory) {
         return factory.getDescription() + ENABLED_SUFFIX;
     }
