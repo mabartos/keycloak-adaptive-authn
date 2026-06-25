@@ -225,9 +225,9 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     /**
      * Aligns the component model with realm attributes before the form is rendered.
-     * Evaluator enabled/trust keys use non-blank realm attributes as source of truth; when absent,
-     * stale component config is cleared so schema defaults apply, matching runtime fallbacks.
-     * Other properties keep the component value when set, otherwise fall back to realm attributes.
+     * Evaluator enabled/trust keys use non-blank realm attributes as source of truth when loading the form.
+     * On save, an admin change to those keys is kept even if the realm attribute still holds the previous value.
+     * Other properties keep the submitted component value when set, otherwise fall back to realm attributes.
      */
     void hydrateModelFromRealmAttributes(RealmModel realm, ComponentModel model, ComponentModel persisted) {
         if (realm == null) {
@@ -237,14 +237,15 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             var key = prop.getName();
             var realmValue = realm.getAttribute(key);
             if (isRealmSourcedEvaluatorSetting(key)) {
-                if (StringUtil.isNotBlank(realmValue)) {
+                var submitted = model.get(key);
+                if (isAdminSubmittedEvaluatorChange(persisted, key, submitted)) {
+                    logger.tracef("Keeping submitted evaluator setting '%s' = '%s' (admin change)", key, submitted);
+                } else if (StringUtil.isNotBlank(realmValue)) {
                     logger.tracef("Hydrating '%s' from realm attribute (evaluator setting)", key);
                     model.getConfig().putSingle(key, realmValue);
-                } else if (isUnchangedStaleComponentValue(persisted, key, model.get(key))) {
+                } else if (isUnchangedStaleComponentValue(persisted, key, submitted)) {
                     logger.tracef("Clearing stale component config for '%s' (no realm attribute)", key);
                     model.getConfig().remove(key);
-                } else if (isAdminSubmittedEvaluatorChange(persisted, key, model.get(key))) {
-                    logger.tracef("Keeping submitted evaluator setting '%s' = '%s' (no realm attribute yet)", key, model.get(key));
                 } else if (model.contains(key)) {
                     logger.tracef("Clearing evaluator setting '%s' (no realm attribute, not an admin change)", key);
                     model.getConfig().remove(key);
