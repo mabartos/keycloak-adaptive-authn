@@ -22,8 +22,8 @@ Executed after identifying the user during authentication (e.g. after username +
 | Evaluator | Description |
 |-----------|-------------|
 | AI account takeover | LLM behavioral analysis for account takeover (anonymized). |
-| Client role | Scores risk from the user's roles on the requesting OAuth client using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles). |
-| Failed login pattern | Detects abnormal failed-login patterns for the user from login failure events. |
+| Client role | Scores risk from the user's assigned roles on the requesting OAuth client using the adaptive-client-role-riskScore attribute on each client role. Configure per role under Clients → Roles → Attributes. |
+| Failed login pattern | Detects distributed attack patterns and bot-like timing in login failure events. |
 | Known IP address | Scores whether the current IP was seen in the user's successful login history. New or rare IPs increase risk, familiar IPs can reduce it. |
 | Known location | Compares the current login location (GeoIP) to the user's known locations after identification. Requires location context, enable Init location if this evaluator is active. |
 | Login failures | Increases risk from recent LOGIN_ERROR events for the user (failure count, recency, and IP mismatch). Uses the Keycloak event store, not the brute-force counter. |

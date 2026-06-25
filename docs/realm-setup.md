@@ -67,3 +67,19 @@ On save, when at least one setting changed, one additional admin event is stored
 - detail value = `old > new` (e.g. `false > true`, `1500 > 2500`)
 
 No event on create, and no event on update when nothing changed.
+
+### 3. Client role scores (`ClientRoleRiskEvaluator`, optional)
+
+Per client role, set attribute `adaptive-client-role-riskScore` (Admin Console: **Clients → {client} → Roles → {role} → Attributes**, or realm import / REST).
+
+| Attribute | Example |
+|-----------|---------|
+| `adaptive-client-role-riskScore` | `HIGH` |
+
+Allowed values match `Risk.Score` (`VERY_SMALL`, `SMALL`, `NONE`, `LOW`, `MEDIUM`, `HIGH`, `VERY_HIGH`, `NEGATIVE_LOW`, etc.). `INVALID` is not allowed.
+
+- **Missing attribute** — role ignored at login (WARN if assigned).
+- **Explicit `NONE`** — intentional neutral; stored on the role as proof of configuration, ignored for scoring.
+- **No scorable assigned role** — `ClientRoleRiskEvaluator` returns `invalid` for that dimension.
+
+Role scoring is evaluated at login only (`ClientRoleRiskEvaluator`, phase `USER_KNOWN`).
