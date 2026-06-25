@@ -62,6 +62,10 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     protected Risk calculateLocationRisk(LocationData currentLocation, Set<LocationData> knownLocations) {
+        if (currentLocation.getCountry() == null) {
+            return Risk.invalid("Cannot determine country from IP address");
+        }
+
         // Check for exact match (same city and country)
         boolean exactMatch = knownLocations.stream()
                 .anyMatch(loc ->
