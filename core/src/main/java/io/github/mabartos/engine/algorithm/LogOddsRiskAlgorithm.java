@@ -57,7 +57,12 @@ public class LogOddsRiskAlgorithm implements RiskScoreAlgorithm {
      */
     private final double defaultBias;
 
-    public LogOddsRiskAlgorithm(KeycloakSession session, double defaultBias, SimpleRiskLevels simpleRiskLevels, AdvancedRiskLevels advancedRiskLevels) {
+    public LogOddsRiskAlgorithm(
+            KeycloakSession session,
+            double defaultBias,
+            SimpleRiskLevels simpleRiskLevels,
+            AdvancedRiskLevels advancedRiskLevels
+    ) {
         this.defaultBias = defaultBias;
         this.simpleRiskLevels = simpleRiskLevels;
         this.advancedRiskLevels = advancedRiskLevels;

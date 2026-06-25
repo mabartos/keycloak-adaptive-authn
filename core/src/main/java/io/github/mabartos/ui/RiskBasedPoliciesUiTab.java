@@ -65,6 +65,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     private List<RiskScoreAlgorithmFactory> algorithmFactories = Collections.emptyList();
 
     public static final String RISK_BASED_AUTHN_ENABLED_CONFIG = "adaptive-engine-enabled";
+    public static final String AUDIT_EVENTS_ENABLED_CONFIG = "adaptive-audit-events-enabled";
     public static final String RISK_SCORE_ALGORITHM_CONFIG = "adaptive-engine-scoreAlgorithm";
     public static final String SIMPLE_FALLBACK_LEVEL_CONFIG = "adaptive-engine-simpleFallbackLevel";
     public static final String ADVANCED_FALLBACK_LEVEL_CONFIG = "adaptive-engine-advancedFallbackLevel";
@@ -96,6 +97,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.debugf("onCreate execution");
 
         storeRealmAttributeFromModel(model, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, AUDIT_EVENTS_ENABLED_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, EVALUATOR_TIMEOUT_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, EVALUATOR_RETRIES_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, RISK_SCORE_ALGORITHM_CONFIG, "onCreate");
@@ -132,6 +134,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.debugf("onUpdate execution");
 
         storeRealmAttributeFromModel(newModel, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, AUDIT_EVENTS_ENABLED_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, EVALUATOR_TIMEOUT_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, EVALUATOR_RETRIES_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, RISK_SCORE_ALGORITHM_CONFIG, "onUpdate");
@@ -260,6 +263,15 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .helpText("Master switch for the adaptive risk engine on this realm. When off, risk evaluators do not run during login.")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(true)
+                .add()
+                .property()
+                .name(AUDIT_EVENTS_ENABLED_CONFIG)
+                .label("Risk evaluation audit events")
+                .helpText("Persist risk evaluation summaries as user events (login and continuous remediation). "
+                        + "Requires Realm settings → Events → User events: Save user events ON and "
+                        + "Custom required action listed under Saved event types.")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(false)
                 .add()
                 .property()
                 .name(EVALUATOR_TIMEOUT_CONFIG)

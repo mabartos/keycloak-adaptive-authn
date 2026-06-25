@@ -26,7 +26,11 @@ public class WeightedAvgRiskAlgorithm implements RiskScoreAlgorithm {
     private final SimpleRiskLevels simpleRiskLevels;
     private final AdvancedRiskLevels advancedRiskLevels;
 
-    public WeightedAvgRiskAlgorithm(KeycloakSession session, SimpleRiskLevels simpleRiskLevels, AdvancedRiskLevels advancedRiskLevels) {
+    public WeightedAvgRiskAlgorithm(
+            KeycloakSession session,
+            SimpleRiskLevels simpleRiskLevels,
+            AdvancedRiskLevels advancedRiskLevels
+    ) {
         this.simpleRiskLevels = simpleRiskLevels;
         this.advancedRiskLevels = advancedRiskLevels;
         this.valuesMapper = new ValuesMapper();
