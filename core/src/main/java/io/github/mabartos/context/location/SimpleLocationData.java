@@ -63,4 +63,9 @@ public class SimpleLocationData implements LocationData {
     public String getCurrency() {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "SimpleLocationData{country='" + getCountry() + "', city='" + getCity() + "'}";
+    }
 }
