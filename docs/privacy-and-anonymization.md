@@ -153,6 +153,16 @@ Use separate geolocation evaluators that don't send data to AI:
 
 These run locally and don't send data to third-party APIs.
 
+### Device fingerprinting
+
+`KnownDeviceRiskEvaluator` (FingerprintJS extension) uses the open-source [FingerprintJS](https://github.com/fingerprintjs/fingerprintjs) library (MIT, v5.2.0) bundled in the extension theme. Fingerprinting runs entirely in the browser; only a hashed visitor identifier is posted back to Keycloak on login.
+
+- The library is loaded from the Keycloak server (`fingerprintjs-v5.min.js`).
+- `monitoring: false` is set when initializing FingerprintJS (no telemetry to FingerprintJS).
+- Known device IDs are stored on the user profile (`adaptive-device-known` attribute) with last-seen timestamp in epoch seconds.
+- Entries past the configured TTL are excluded from the active set, if no active devices remain, the next login is scored like a first tracked device (`VERY_SMALL`) until the device is registered again on successful login.
+- If fingerprinting fails on a user's first login, risk stays low (`VERY_SMALL`), same as first-time location. After devices are tracked, a missing fingerprint is treated as an unknown device and may increase risk.
+
 ## Security Considerations
 
 ### Salt Management
