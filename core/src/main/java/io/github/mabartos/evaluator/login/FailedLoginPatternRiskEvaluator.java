@@ -45,11 +45,11 @@ import java.util.stream.Collectors;
 import static io.github.mabartos.spi.level.Risk.Score.HIGH;
 import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.spi.level.Risk.Score.NONE;
-import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.SMALL;
 
 /**
- * Risk evaluator for analyzing the distribution and pattern of failed logins over time
- * Detects suspicious patterns like credential stuffing, spray attacks, or systematic attempts
+ * Detects attack-signature patterns in failed logins: distributed multi-IP attacks and bot-like timing regularity.
+ * Raw failure counts and recency are handled by {@link LoginFailuresRiskEvaluator}.
  */
 @EvaluationPhase(USER_KNOWN)
 public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
@@ -84,41 +84,26 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
         var analysis24h = analyzePattern(events, currentTime, Duration.ofHours(24).toMillis());
         var analysis1h = analyzePattern(events, currentTime, Duration.ofHours(1).toMillis());
 
-        // Check for suspicious patterns
         Risk risk = Risk.of(NONE);
 
-        // Pattern 1: High failure rate
-        if (analysis1h.totalAttempts >= 5) {
-            double failureRate = (double) analysis1h.failures / analysis1h.totalAttempts;
-            if (failureRate >= 0.8 && analysis1h.failures >= 4) {
-                risk = risk.max(Risk.of(VERY_HIGH,
-                        String.format("%d failures out of %d attempts in 1h", analysis1h.failures, analysis1h.totalAttempts)));
-            } else if (failureRate >= 0.6 && analysis1h.failures >= 3) {
-                risk = risk.max(Risk.of(HIGH,
-                        String.format("High failure rate in 1h: %.0f%%", failureRate * 100)));
-            }
-        }
-
-        // Pattern 2: Systematic attempts from multiple IPs
-        if (analysis1h.uniqueIps >= 3 && analysis1h.failures >= 3) {
-            risk = risk.max(Risk.of(VERY_HIGH,
-                    String.format("Distributed attack: %d IPs, %d failures in 1h", analysis1h.uniqueIps, analysis1h.failures)));
-        } else if (analysis24h.uniqueIps >= 5 && analysis24h.failures >= 5) {
+        // Distributed attack from multiple IPs
+        if (analysis1h.uniqueIps >= 5 && analysis1h.failures >= 5) {
             risk = risk.max(Risk.of(HIGH,
-                    String.format("Multiple IPs: %d IPs in 24h", analysis24h.uniqueIps)));
+                    String.format("Distributed attack: %d IPs, %d failures in 1h", analysis1h.uniqueIps, analysis1h.failures)));
+        } else if (analysis1h.uniqueIps >= 3 && analysis1h.failures >= 3) {
+            risk = risk.max(Risk.of(MEDIUM,
+                    String.format("Multiple source IPs: %d IPs, %d failures in 1h", analysis1h.uniqueIps, analysis1h.failures)));
+        } else if (analysis24h.uniqueIps >= 5 && analysis24h.failures >= 5) {
+            risk = risk.max(Risk.of(SMALL,
+                    String.format("Multiple IPs over 24h: %d IPs", analysis24h.uniqueIps)));
         }
 
-        // Pattern 3: Regular intervals (bot-like behavior)
-        if (analysis1h.failures >= 3) {
+        // Regular intervals (bot-like behavior)
+        if (analysis1h.failures >= 4) {
             var intervals = calculateTimingIntervals(events, currentTime - Duration.ofHours(1).toMillis());
-            if (intervals.size() >= 2 && isRegularPattern(intervals)) {
-                risk = risk.max(Risk.of(HIGH, "Regular timing pattern detected (bot-like)"));
+            if (intervals.size() >= 3 && isRegularPattern(intervals)) {
+                risk = risk.max(Risk.of(MEDIUM, "Regular timing pattern detected (bot-like)"));
             }
-        }
-
-        // Pattern 4: Burst of failures after period of inactivity
-        if (analysis1h.failures >= 3 && analysis24h.totalAttempts == analysis1h.totalAttempts) {
-            risk = risk.max(Risk.of(MEDIUM, "Sudden burst of activity"));
         }
 
         return risk;
@@ -175,21 +160,26 @@ public class FailedLoginPatternRiskEvaluator extends AbstractRiskEvaluator {
         return intervals;
     }
 
+    private static final long MAX_ABSOLUTE_DEVIATION_MS = 50;
+
     private boolean isRegularPattern(List<Long> intervals) {
         if (intervals.size() < 2) {
             return false;
         }
 
-        // Calculate average interval
+        // Check if intervals deviate by at most 50ms from the average (machine-level precision).
+        // Bots produce near-identical intervals regardless of speed; humans deviate by hundreds of ms.
+        //
+        // Fast bot (100ms intervals):  deviations ~10-40ms → 40 <= 50 → bot pattern
+        // Slow bot (5000ms intervals): deviations ~10-15ms → 15 <= 50 → bot pattern
+        // Human (3000ms intervals):    deviations ~200-700ms → 700 > 50 → not a bot pattern
         double avg = intervals.stream().mapToLong(Long::longValue).average().orElse(0);
 
-        // Check if intervals are within 30% of average (indicates regular pattern)
-        double threshold = avg * 0.3;
         long regularCount = intervals.stream()
-                .filter(interval -> Math.abs(interval - avg) <= threshold)
+                .filter(interval -> Math.abs(interval - avg) <= MAX_ABSOLUTE_DEVIATION_MS)
                 .count();
 
-        return regularCount >= intervals.size() * 0.7; // 70% of intervals are regular
+        return regularCount >= intervals.size() * 0.7; // 70% of intervals must match
     }
 
     private record PatternAnalysis(int totalAttempts, int failures, int successes, int uniqueIps) {
