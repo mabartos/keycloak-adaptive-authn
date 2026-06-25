@@ -13,55 +13,114 @@ import org.keycloak.models.UserModel;
 
 import java.lang.reflect.Proxy;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static io.github.mabartos.spi.level.Risk.Score.HIGH;
+import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.spi.level.Risk.Score.NONE;
-import static io.github.mabartos.spi.level.Risk.Score.VERY_HIGH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class FailedLoginPatternRiskEvaluatorTest {
 
     @Test
-    void detectsHighFailureRateWhenLoginErrorsArePresent() {
+    void detectsDistributedAttackFromManyIps() {
         long now = Time.currentTimeMillis();
         List<Event> failures = List.of(
                 loginError(now - Duration.ofMinutes(10).toMillis(), "10.0.0.1"),
-                loginError(now - Duration.ofMinutes(8).toMillis(), "10.0.0.1"),
-                loginError(now - Duration.ofMinutes(6).toMillis(), "10.0.0.1"),
-                loginError(now - Duration.ofMinutes(4).toMillis(), "10.0.0.1")
+                loginError(now - Duration.ofMinutes(8).toMillis(), "10.0.0.2"),
+                loginError(now - Duration.ofMinutes(6).toMillis(), "10.0.0.3"),
+                loginError(now - Duration.ofMinutes(4).toMillis(), "10.0.0.4"),
+                loginError(now - Duration.ofMinutes(2).toMillis(), "10.0.0.5")
         );
         List<Event> successes = List.of(
-                login(now - Duration.ofMinutes(2).toMillis(), "10.0.0.1")
+                login(now - Duration.ofMinutes(30).toMillis(), "10.0.0.1")
         );
 
         FailedLoginPatternRiskEvaluator evaluator = evaluator(successes, failures);
         Risk risk = evaluator.evaluate(null, anyUser());
 
-        assertThat(risk.getScore(), is(VERY_HIGH));
+        assertThat(risk.getScore(), is(HIGH));
     }
 
     @Test
-    void detectsFailuresEvenWhenManySuccessfulLoginsAreLoaded() {
+    void detectsModerateMultiIpPattern() {
         long now = Time.currentTimeMillis();
-        List<Event> successes = new ArrayList<>();
-        for (int i = 0; i < 60; i++) {
-            successes.add(login(now - Duration.ofHours(2 + i).toMillis(), "10.0.0.1"));
-        }
-        successes.add(login(now - Duration.ofMinutes(2).toMillis(), "10.0.0.1"));
+        List<Event> failures = List.of(
+                loginError(now - Duration.ofMinutes(10).toMillis(), "10.0.0.1"),
+                loginError(now - Duration.ofMinutes(6).toMillis(), "10.0.0.2"),
+                loginError(now - Duration.ofMinutes(2).toMillis(), "10.0.0.3")
+        );
+        List<Event> successes = List.of(
+                login(now - Duration.ofMinutes(30).toMillis(), "10.0.0.1")
+        );
+
+        FailedLoginPatternRiskEvaluator evaluator = evaluator(successes, failures);
+        Risk risk = evaluator.evaluate(null, anyUser());
+
+        assertThat(risk.getScore(), is(MEDIUM));
+    }
+
+    @Test
+    void singleIpFailuresReturnNone() {
+        long now = Time.currentTimeMillis();
         List<Event> failures = List.of(
                 loginError(now - Duration.ofMinutes(10).toMillis(), "10.0.0.1"),
                 loginError(now - Duration.ofMinutes(7).toMillis(), "10.0.0.1"),
                 loginError(now - Duration.ofMinutes(3).toMillis(), "10.0.0.1"),
+                loginError(now - Duration.ofMinutes(2).toMillis(), "10.0.0.1"),
                 loginError(now - Duration.ofMinutes(1).toMillis(), "10.0.0.1")
+        );
+        List<Event> successes = List.of(
+                login(now - Duration.ofMinutes(30).toMillis(), "10.0.0.1")
         );
 
         FailedLoginPatternRiskEvaluator evaluator = evaluator(successes, failures);
         Risk risk = evaluator.evaluate(null, anyUser());
 
-        assertThat(risk.getScore(), is(VERY_HIGH));
+        assertThat(risk.getScore(), is(NONE));
+    }
+
+    @Test
+    void detectsBotLikeTimingPattern() {
+        long now = Time.currentTimeMillis();
+        long interval = 5000;
+        List<Event> failures = List.of(
+                loginError(now - interval * 5 + 10, "10.0.0.1"),
+                loginError(now - interval * 4 + 20, "10.0.0.1"),
+                loginError(now - interval * 3 + 5, "10.0.0.1"),
+                loginError(now - interval * 2 + 15, "10.0.0.1"),
+                loginError(now - interval, "10.0.0.1")
+        );
+        List<Event> successes = List.of(
+                login(now - Duration.ofMinutes(30).toMillis(), "10.0.0.1")
+        );
+
+        FailedLoginPatternRiskEvaluator evaluator = evaluator(successes, failures);
+        Risk risk = evaluator.evaluate(null, anyUser());
+
+        assertThat(risk.getScore(), is(MEDIUM));
+    }
+
+    @Test
+    void irregularTimingDoesNotTrigger() {
+        long now = Time.currentTimeMillis();
+        List<Event> failures = List.of(
+                loginError(now - Duration.ofMinutes(50).toMillis(), "10.0.0.1"),
+                loginError(now - Duration.ofMinutes(30).toMillis(), "10.0.0.1"),
+                loginError(now - Duration.ofMinutes(28).toMillis(), "10.0.0.1"),
+                loginError(now - Duration.ofMinutes(5).toMillis(), "10.0.0.1"),
+                loginError(now - Duration.ofMinutes(1).toMillis(), "10.0.0.1")
+        );
+        List<Event> successes = List.of(
+                login(now - Duration.ofMinutes(55).toMillis(), "10.0.0.1")
+        );
+
+        FailedLoginPatternRiskEvaluator evaluator = evaluator(successes, failures);
+        Risk risk = evaluator.evaluate(null, anyUser());
+
+        assertThat(risk.getScore(), is(NONE));
     }
 
     @Test
