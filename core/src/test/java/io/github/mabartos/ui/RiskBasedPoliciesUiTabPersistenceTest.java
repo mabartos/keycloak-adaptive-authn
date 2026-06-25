@@ -3,6 +3,8 @@ package io.github.mabartos.ui;
 import io.github.mabartos.evaluator.EvaluatorUtils;
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluator;
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory;
+import io.github.mabartos.context.location.KnownLocationContext;
+import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluatorFactory;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -360,6 +362,144 @@ class RiskBasedPoliciesUiTabPersistenceTest {
 
         assertEquals("1.0", realmAttributes.get(trustKey));
         assertEquals("true", realmAttributes.get(enabledKey));
+    }
+
+    @Test
+    void onCreate_persistsKnownLocationTtl() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+
+        var model = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "120"));
+
+        tab.onCreate(null, realm, model);
+
+        assertEquals("120", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void onUpdate_persistsKnownLocationTtlChange() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+
+        var oldModel = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "90"));
+        var newModel = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "180"));
+
+        tab.onUpdate(null, realm, oldModel, newModel);
+
+        assertEquals("180", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_rejectsNegativeKnownLocationTtl() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+
+        var model = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "-1"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_hydratesKnownLocationTtlFromRealmAttributeWhenModelEmpty() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        realmAttributes.put(KnownLocationContext.TTL_DAYS_CONFIG, "120");
+
+        var model = new ComponentModel();
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("120", model.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_prefersRealmTtlOverExistingModelValue() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        realmAttributes.put(KnownLocationContext.TTL_DAYS_CONFIG, "120");
+
+        var model = componentModel(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "90"));
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("120", model.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_hydratesKnownLocationTtlFromRealmOverStaleComponent() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        realmAttributes.put(KnownLocationContext.TTL_DAYS_CONFIG, "120");
+        var persisted = tabComponent(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "90"));
+        persisted.setId("risk-tab");
+        var model = new ComponentModel();
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("120", model.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_preservesFirstSaveTtlWhenComponentHasNoKeyYet() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        realmAttributes.put(KnownLocationContext.TTL_DAYS_CONFIG, "120");
+        var persisted = tabComponent(Map.of(
+                RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG, "true"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "1",
+                RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG, "true"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1", model.get(KnownLocationContext.TTL_DAYS_CONFIG));
+
+        tab.onUpdate(null, realm, persisted, model);
+
+        assertEquals("1", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_preservesSubmittedTtlWhenRealmAttributeExists() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        realmAttributes.put(KnownLocationContext.TTL_DAYS_CONFIG, "120");
+        var persisted = tabComponent(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "120"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "1"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals("1", model.get(KnownLocationContext.TTL_DAYS_CONFIG));
+
+        tab.onUpdate(null, realm, persisted, model);
+
+        assertEquals("1", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void validateConfiguration_discardsStaleModelTtlWhenNoRealmAttribute() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var persisted = tabComponent(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "180"));
+        persisted.setId("risk-tab");
+        var model = componentModel(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "180"));
+        model.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.validateConfiguration(null, realm, model);
+
+        assertEquals(String.valueOf(KnownLocationContext.DEFAULT_TTL_DAYS), model.get(KnownLocationContext.TTL_DAYS_CONFIG));
     }
 
     private static ComponentModel componentModel(Map<String, String> entries) {

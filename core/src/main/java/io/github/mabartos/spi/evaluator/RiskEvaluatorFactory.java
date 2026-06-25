@@ -60,6 +60,14 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
      */
     Class<? extends RiskEvaluator> evaluatorClass();
 
+    /**
+     * Extra realm admin fields shown after the standard enabled/trust controls.
+     * Persisted as realm attributes (not evaluator enabled/trust keys).
+     */
+    default List<ProviderConfigProperty> getAdditionalAdminConfigProperties() {
+        return List.of();
+    }
+
     @Override
     default String getHelpText() {
         return getDescription();
@@ -114,5 +122,13 @@ public interface RiskEvaluatorFactory extends ProviderFactory<RiskEvaluator>, En
 
     static String getTrustConfig(Class<? extends RiskEvaluator> evaluator) {
         return TRUST_CONFIG + "-" + evaluator.getSimpleName();
+    }
+
+    static String getAdditionalSettingConfig(Class<? extends RiskEvaluator> evaluator, String settingKey) {
+        return getAdditionalSettingConfig(evaluator.getSimpleName(), settingKey);
+    }
+
+    static String getAdditionalSettingConfig(String evaluatorSimpleName, String settingKey) {
+        return "adaptive-evaluator-" + settingKey + "-" + evaluatorSimpleName;
     }
 }
