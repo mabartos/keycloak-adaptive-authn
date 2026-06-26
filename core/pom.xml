@@ -59,6 +59,12 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.34</version>
+            <optional>true</optional>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>org.keycloak.testframework</groupId>
@@ -109,6 +115,20 @@
                         </goals>
                         <configuration>
                             <mainClass>io.github.mabartos.docs.EvaluatorDocGenerator</mainClass>
+                            <classpathScope>compile</classpathScope>
+                            <arguments>
+                                <argument>${project.basedir}/..</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>algorithm-calculator</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>io.github.mabartos.docs.LogOddsCalculatorGenerator</mainClass>
                             <classpathScope>compile</classpathScope>
                             <arguments>
                                 <argument>${project.basedir}/..</argument>

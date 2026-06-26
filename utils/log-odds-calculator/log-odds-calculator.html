@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log-Odds Calculator - Keycloak Adaptive Authn</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@patternfly/patternfly@5.4.2/patternfly.min.css">
+  <link rel="stylesheet" href="calculator.css">
+</head>
+<body>
+  <div class="kc-page">
+    <header class="kc-masthead">
+      <div class="kc-masthead-brand">
+        <img
+          src="../../docs/img/adaptive-authentication-logo.png"
+          alt="Keycloak Adaptive Authentication"
+          class="kc-logo"
+          width="420"
+          height="48"
+        >
+      </div>
+    </header>
+
+    <main class="kc-main">
+      <div class="kc-banner">
+        Auto-generated - do not edit manually. Regenerate: <code>mvn -pl core compile exec:java@algorithm-calculator</code>
+      </div>
+
+      <div class="kc-page-header">
+        <h1>Log-Odds Calculator</h1>
+        <p>Simulates <code>LogOddsRiskAlgorithm</code> using score mapping and thresholds from this project.</p>
+      </div>
+
+      <section>
+        <h2>Prior (bias)</h2>
+        <div class="bias-row">
+          <div>
+            <label for="bias">Log-odds bias (per phase)</label>
+            <input type="number" id="bias" step="0.1" value="-0.5">
+          </div>
+          <div class="metric">
+            <div class="label">P(fraud) with zero evaluator evidence (one phase)</div>
+            <div class="value" id="bias-prior">-</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="phase-before">
+        <h2>Phase BEFORE_AUTHN</h2>
+        <p class="phase-note">Evaluators run before user identification (device, client, GeoIP bootstrap, etc.).</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Evaluator</th>
+              <th>Active</th>
+              <th>Risk.Score</th>
+              <th class="num">Evidence</th>
+              <th class="num">Trust</th>
+              <th class="num">Contribution</th>
+            </tr>
+          </thead>
+          <tbody data-phase="before">
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Browser</div>
+                <div class="eval-hint">Scores the browser from the login request user agent. Chrome, Firefox, and Safari reduce risk, other browsers score moderate risk.</div>
+                <div class="eval-id">default-browser-risk-factor-evaluator</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Client sensitivity</div>
+                <div class="eval-hint">Scores risk from the requesting OAuth client&#39;s sensitivity. Configure per client under Client → Risk-based settings.</div>
+                <div class="eval-id">default-client-sensitivity-risk-factor</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Init location</div>
+                <div class="eval-hint">Prepares GeoIP/location context for later evaluators.</div>
+                <div class="eval-id">init-location-risk-evaluator</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Operating system</div>
+                <div class="eval-hint">Scores the operating system from the login request user agent.</div>
+                <div class="eval-id">default-operating-system-risk-evaluator-factory</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">reCAPTCHA</div>
+                <div class="eval-hint">Uses Google reCAPTCHA Enterprise risk scores for the login attempt.</div>
+                <div class="eval-id">recaptcha-enterprise</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="totals" data-totals="before"></div>
+      </section>
+      <section id="phase-user">
+        <h2>Phase USER_KNOWN</h2>
+        <p class="phase-note">Evaluators run after the user is identified during authentication.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Evaluator</th>
+              <th>Active</th>
+              <th>Risk.Score</th>
+              <th class="num">Evidence</th>
+              <th class="num">Trust</th>
+              <th class="num">Contribution</th>
+            </tr>
+          </thead>
+          <tbody data-phase="user">
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">AI account takeover</div>
+                <div class="eval-hint">LLM behavioral analysis for account takeover (anonymized).</div>
+                <div class="eval-id">ai-account-takeover</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Client role</div>
+                <div class="eval-hint">Scores risk from the user&#39;s roles on the requesting OAuth client using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).</div>
+                <div class="eval-id">default-client-role-risk-factor</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Failed login pattern</div>
+                <div class="eval-hint">Detects distributed attack patterns and bot-like timing in login failure events.</div>
+                <div class="eval-id">failed-login-pattern</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Known IP address</div>
+                <div class="eval-hint">Scores whether the current IP was seen in the user&#39;s successful login history. New or rare IPs increase risk, familiar IPs can reduce it.</div>
+                <div class="eval-id">login-event-ip-address-risk-evaluator</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Known location</div>
+                <div class="eval-hint">Compares the current login location (GeoIP) to the user&#39;s known locations after identification. Requires location context, enable Init location if this evaluator is active.</div>
+                <div class="eval-id">known-location-risk-evaluator</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Login failures</div>
+                <div class="eval-hint">Increases risk from recent LOGIN_ERROR events for the user (failure count, recency, and IP mismatch). Uses the Keycloak event store, not the brute-force counter.</div>
+                <div class="eval-id">login-failures-risk-evaluator</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Realm role</div>
+                <div class="eval-hint">Scores realm roles assigned to the user using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).</div>
+                <div class="eval-id">default-user-role-risk-factor</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Unusual login time</div>
+                <div class="eval-hint">Scores login attempts outside the user&#39;s typical time-of-day/weekday pattern (learned from history).</div>
+                <div class="eval-id">time-pattern</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="totals" data-totals="user"></div>
+      </section>
+      <section id="phase-continuous">
+        <h2>Phase CONTINUOUS</h2>
+        <p class="phase-note phase-continuous">Runtime re-evaluation when events occur. Not included in login overall risk (LogOddsRiskAlgorithm.getOverallRisk sums BEFORE_AUTHN + USER_KNOWN only).</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Evaluator</th>
+              <th>Active</th>
+              <th>Risk.Score</th>
+              <th class="num">Evidence</th>
+              <th class="num">Trust</th>
+              <th class="num">Contribution</th>
+            </tr>
+          </thead>
+          <tbody data-phase="continuous">
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">Concurrent sessions</div>
+                <div class="eval-hint">Detects many concurrent sessions or spread across IPs for the same user during the session. Useful for session hijacking or shared-credential abuse after login.</div>
+                <div class="eval-id">concurrent-session-continuous</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row">
+              <td>
+                <div class="eval-name">User actions</div>
+                <div class="eval-hint">Scores bursts of sensitive account events (email change, password reset, credential changes, etc) in the continuous evaluation phase.</div>
+                <div class="eval-id">user-actions-continuous</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="totals" data-totals="continuous"></div>
+      </section>
+
+      <section class="global">
+        <h2>Overall risk (after USER_KNOWN)</h2>
+        <p class="phase-note" style="border-left-color:var(--kc-primary);margin-top:-0.25rem">
+          global totalEvidence = totalEvidence<sub>BEFORE</sub> + totalEvidence<sub>USER</sub>
+          (bias is counted twice when both phases have active rows; CONTINUOUS is excluded)
+        </p>
+        <div class="totals">
+          <div class="metric">
+            <div class="label">Global totalEvidence</div>
+            <div class="value" id="global-evidence">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">Global P(fraud)</div>
+            <div class="big" id="global-prob">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">Simple level (3)</div>
+            <div><span class="badge" id="global-level">-</span></div>
+          </div>
+          <div class="metric">
+            <div class="label">Advanced level (5)</div>
+            <div><span class="badge" id="global-level-advanced">-</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Reference</h2>
+        <div class="ref-grid">
+          <div class="ref-block">
+            <h3>Risk.Score → evidence</h3>
+            <table class="ref-table">
+              <thead><tr><th>Score</th><th class="num">Evidence</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td>NEGATIVE_HIGH</td><td class="num">-2.5</td><td>Strong trust signal</td></tr>
+                <tr><td>NEGATIVE_LOW</td><td class="num">-0.3</td><td>Weak trust signal</td></tr>
+                <tr><td>NONE</td><td class="num">0</td><td>Neutral</td></tr>
+                <tr><td>VERY_SMALL</td><td class="num">0.1</td><td>Minimal risk</td></tr>
+                <tr><td>SMALL</td><td class="num">0.4</td><td>Low risk</td></tr>
+                <tr><td>MEDIUM</td><td class="num">0.8</td><td>Moderate risk</td></tr>
+                <tr><td>HIGH</td><td class="num">1.5</td><td>High risk</td></tr>
+                <tr><td>VERY_HIGH</td><td class="num">2</td><td>Very high risk</td></tr>
+                <tr><td>EXTREME</td><td class="num">2.5</td><td>Extreme risk</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="ref-block">
+            <h3>Final P(fraud) → simple (3 levels)</h3>
+            <table class="ref-table" id="ref-simple">
+              <thead><tr><th>Level</th><th class="num">P(fraud) range</th></tr></thead>
+              <tbody>
+                <tr data-level="LOW" data-min="0" data-max="0.5">
+                  <td>LOW</td><td class="num">0 – 0.50</td>
+                </tr>
+                <tr data-level="MEDIUM" data-min="0.5" data-max="0.85">
+                  <td>MEDIUM</td><td class="num">> 0.50 – 0.85</td>
+                </tr>
+                <tr data-level="HIGH" data-min="0.85" data-max="1">
+                  <td>HIGH</td><td class="num">> 0.85 – 1.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="ref-block">
+            <h3>Final P(fraud) → advanced (5 levels)</h3>
+            <table class="ref-table" id="ref-advanced">
+              <thead><tr><th>Level</th><th class="num">P(fraud) range</th></tr></thead>
+              <tbody>
+                <tr data-level="LOW" data-min="0" data-max="0.35">
+                  <td>LOW</td><td class="num">0 – 0.35</td>
+                </tr>
+                <tr data-level="MILD" data-min="0.35" data-max="0.55">
+                  <td>MILD</td><td class="num">> 0.35 – 0.55</td>
+                </tr>
+                <tr data-level="MEDIUM" data-min="0.55" data-max="0.75">
+                  <td>MEDIUM</td><td class="num">> 0.55 – 0.75</td>
+                </tr>
+                <tr data-level="MODERATE" data-min="0.75" data-max="0.9">
+                  <td>MODERATE</td><td class="num">> 0.75 – 0.90</td>
+                </tr>
+                <tr data-level="HIGH" data-min="0.9" data-max="1">
+                  <td>HIGH</td><td class="num">> 0.90 – 1.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="ref-note">
+          Default level thresholds from <code>LogOddsDefaultRiskLevels</code> (used by <code>LogOddsRiskAlgorithmFactory</code>).
+          Range rule matches <code>RiskLevel.matchesRisk()</code>: 0 is LOW; otherwise (min, max].
+          Evaluator list is loaded from <code>RiskEvaluatorFactory</code> via ServiceLoader (core module only).
+        </p>
+      </section>
+    </main>
+
+    <footer class="kc-footer">
+      Additional evaluators are available in the
+      <a href="../../extensions/">extensions</a> directory.
+    </footer>
+  </div>
+
+  <script src="calculator.js"></script>
+</body>
+</html>

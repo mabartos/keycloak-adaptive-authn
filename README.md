@@ -113,6 +113,16 @@ For full build instructions, installation options, and configuration, see the [S
 
 See [EVALUATORS.md](EVALUATORS.md) for a complete list of all built-in risk evaluators grouped by evaluation phase.
 
+## Log-Odds Calculator
+
+Interactive tool to explore how evaluator scores and trust weights combine under `LogOddsRiskAlgorithm`: [utils/log-odds-calculator/log-odds-calculator.html](utils/log-odds-calculator/log-odds-calculator.html) (open locally in a browser).
+
+Regenerate after adding evaluators:
+
+```bash
+mvn -pl core compile exec:java@algorithm-calculator
+```
+
 ## Resources with more info
 
 1. **Unlocking Adaptive Authentication (most recent)**
