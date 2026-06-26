@@ -161,5 +161,15 @@ When implementing or adjusting risk levels, ask:
 3. **What's the cost of false positive?** Blocking legitimate users vs. letting fraud through
 4. **Combined effect?** Will this work well with other evaluators?
 
+## Play with scores
+
+Open [utils/log-odds-calculator/log-odds-calculator.html](../../utils/log-odds-calculator/log-odds-calculator.html) in a browser to simulate phase and overall risk from chosen `Risk.Score` and trust values. The evaluator list is auto-generated from `RiskEvaluatorFactory` registrations.
+
+Regenerate after SPI changes:
+
+```bash
+mvn -pl core compile exec:java@algorithm-calculator
+```
+
 ## Version History
 - Initial version: 2026-03-11

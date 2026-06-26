@@ -1,0 +1,200 @@
+:root {
+  --kc-masthead-bg: #151515;
+  --kc-page-bg: #f0f0f0;
+  --kc-surface: #ffffff;
+  --kc-surface-muted: #fafafa;
+  --kc-border: #d2d2d2;
+  --kc-border-strong: #8b8d8f;
+  --kc-text: #151515;
+  --kc-muted: #6a6e73;
+  --kc-primary: #0066cc;
+  --kc-accent: #00b8d4;
+  --trust: #3e8635;
+  --risk: #c9190b;
+  --low: #3e8635;
+  --medium: #f0ab00;
+  --high: #c9190b;
+  --low-bg: #e9f4e9;
+  --medium-bg: #fdf7e7;
+  --high-bg: #faeae8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Red Hat Text", Overpass, system-ui, sans-serif;
+  background: var(--kc-page-bg);
+  color: var(--kc-text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+code {
+  font-family: "Red Hat Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--kc-surface-muted);
+  border: 1px solid var(--kc-border);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+}
+.kc-page { display: flex; flex-direction: column; min-height: 100vh; }
+.kc-masthead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 1.5rem;
+  background: var(--kc-masthead-bg);
+  border-bottom: 3px solid var(--kc-accent);
+}
+.kc-masthead-brand { display: flex; align-items: center; min-width: 0; }
+.kc-logo {
+  display: block;
+  height: 2.25rem;
+  width: auto;
+  max-width: min(420px, 70vw);
+  object-fit: contain;
+}
+.kc-main {
+  flex: 1;
+  max-width: 1140px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2rem;
+}
+.kc-banner {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.85rem;
+  background: #fff8e6;
+  border: 1px solid #f4d06f;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  color: #5c4a00;
+}
+.kc-page-header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--kc-border);
+}
+.kc-page-header h1 { margin: 0 0 0.35rem; font-size: 1.5rem; font-weight: 600; }
+.kc-page-header p { margin: 0; color: var(--kc-muted); font-size: 0.95rem; max-width: 72ch; }
+section {
+  background: var(--kc-surface);
+  border: 1px solid var(--kc-border);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(3, 3, 3, 0.08);
+  padding: 1rem 1.25rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--kc-border);
+}
+.bias-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: end; }
+label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; }
+input[type="number"], select {
+  background: var(--kc-surface);
+  border: 1px solid var(--kc-border-strong);
+  color: var(--kc-text);
+  border-radius: 3px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--kc-primary);
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.25);
+}
+input[type="number"] { width: 7rem; }
+select { width: 100%; min-width: 9rem; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+th, td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--kc-border);
+  text-align: left;
+  vertical-align: top;
+}
+thead th {
+  background: var(--kc-surface-muted);
+  color: var(--kc-muted);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: none; }
+.totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--kc-border);
+}
+.metric {
+  background: var(--kc-surface-muted);
+  border: 1px solid var(--kc-border);
+  border-radius: 3px;
+  padding: 0.65rem 0.75rem;
+}
+.metric .label { font-size: 0.75rem; color: var(--kc-muted); font-weight: 600; }
+.metric .value { font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.global {
+  border-color: var(--kc-primary);
+  border-left: 4px solid var(--kc-accent);
+  background: linear-gradient(180deg, #f7fbff 0%, var(--kc-surface) 100%);
+}
+.global .big { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--kc-primary); }
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.badge.low { background: var(--low-bg); color: var(--low); border-color: #b8dab8; }
+.badge.medium { background: var(--medium-bg); color: #795600; border-color: #f4d06f; }
+.badge.high { background: var(--high-bg); color: var(--high); border-color: #f4bab5; }
+.evidence-pos { color: var(--risk); }
+.evidence-neg { color: var(--trust); }
+.evidence-zero { color: var(--kc-muted); }
+.ref-table { font-size: 0.85rem; }
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+.ref-block h3 { margin: 0 0 0.5rem; font-size: 0.85rem; font-weight: 600; }
+.ref-note { margin: 1rem 0 0; font-size: 0.8rem; color: var(--kc-muted); }
+.kc-footer {
+  text-align: center;
+  padding: 1rem 1.25rem;
+  color: var(--kc-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--kc-border);
+  background: var(--kc-surface);
+}
+.eval-name { font-weight: 500; }
+.eval-hint { font-size: 0.75rem; color: var(--kc-muted); margin-top: 0.1rem; }
+.eval-id { font-size: 0.7rem; color: var(--kc-muted); font-family: "Red Hat Mono", ui-monospace, monospace; }
+.inactive td { opacity: 0.5; }
+input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: var(--kc-primary); cursor: pointer; }
+.phase-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--kc-muted);
+  padding: 0.55rem 0.75rem;
+  background: var(--kc-surface-muted);
+  border-left: 3px solid var(--kc-accent);
+  border-radius: 0 3px 3px 0;
+}
+.phase-continuous { border-left-color: var(--kc-muted); }
+tbody tr:not(.inactive):hover td { background: #f7fbff; }
+@media (max-width: 768px) {
+  .kc-main { padding: 1rem; }
+  table { display: block; overflow-x: auto; }
+}
