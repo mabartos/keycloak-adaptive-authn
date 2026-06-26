@@ -1,14 +1,13 @@
 # IP API Location Extension
 
-Location context provider for [Keycloak Adaptive Authentication](../../README.md) that resolves geolocation data from client IP addresses using the [ipapi.co](https://ipapi.co/) service.
+Location context provider for [Keycloak Adaptive Authentication](../../README.md) that resolves geolocation data from client IP via configurable providers ([ipapi.co](https://ipapi.co/), [ip-api.com](https://ip-api.com/)).
 
 ## What it does
 
 During authentication, the extension:
 
 1. Retrieves the client's IP address via `IpAddressContext`
-2. Queries `https://ipapi.co/{ip}/json` to resolve geolocation
-3. Returns a `LocationData` object with city, region, country, coordinates, timezone, and more
+2. Tries an ordered chain of GeoIP resolvers until one returns `LocationData`
 
 The resolved location data is then available to risk evaluators for adaptive authentication decisions (e.g. detecting logins from unusual locations).
 
@@ -28,7 +27,7 @@ The resolved location data is then available to risk evaluators for adaptive aut
     ${KEYCLOAK_HOME}/bin/kc.sh build
     ```
 
-The extension is auto-discovered via Java's `ServiceLoader` mechanism (registered in `META-INF/services`).
+The extension is auto-discovered via Java's `ServiceLoader` mechanism (`META-INF/services` for `UserContextFactory`, `GeoIpResolverFactory`, and `GeoIpResolverSpi`).
 
 ## Configuration
 
@@ -38,15 +37,30 @@ Configuration is done exclusively through environment variables. Set them on you
 
 | Environment Variable | Description | Required | Default |
 |---|---|---|---|
-| `KC_ADAPTIVE_IPAPI_TOKEN` | API token for [ipapi.co](https://ipapi.co/) | No | _(none)_ |
+| `KC_ADAPTIVE_LOCATION_PROVIDERS` | Comma-separated GeoIP resolver ids (try order) | No | `ipapi-co-free` |
+| `KC_ADAPTIVE_IPAPI_TOKEN` | API token for [ipapi.co](https://ipapi.co/) | For `ipapi-co-pro` | _(none)_ |
+| `KC_ADAPTIVE_IP_API_COM_API_KEY` | Pro API key for [ip-api.com](https://ip-api.com) | For `ip-api-com-pro` | _(none)_ |
 
-The API token is optional — ipapi.co allows a limited number of unauthenticated requests per day.
-For production usage, obtain an API token from [ipapi.co](https://ipapi.co/pricing/) to increase rate limits.
+**Resolver ids:**
+
+| Id | Backend | Notes |
+|---|---|---|
+| `ipapi-co-free` | ipapi.co | No token |
+| `ipapi-co-pro` | ipapi.co | Requires `KC_ADAPTIVE_IPAPI_TOKEN` |
+| `ip-api-com-free` | ip-api.com | ⚠️ HTTP only — dev/non-prod |
+| `ip-api-com-pro` | ip-api.com | requires `KC_ADAPTIVE_IP_API_COM_API_KEY` |
+
+If every resolver fails, no location is returned (not cached). Location conditions then use `<unknown>` for country/city.
+
+⚠️ **`ip-api-com-free`** uses plain HTTP. Prefer `ip-api-com-pro` or `ipapi-co-*` in production.
 
 **Example (Docker):**
 
 ```shell
-docker run ... -e KC_ADAPTIVE_IPAPI_TOKEN=your_token_here ...
+docker run ... \
+  -e KC_ADAPTIVE_LOCATION_PROVIDERS=ip-api-com-pro,ipapi-co-pro \
+  -e KC_ADAPTIVE_IPAPI_TOKEN=your_ipapi_token \
+  -e KC_ADAPTIVE_IP_API_COM_API_KEY=your_ip_api_com_key ...
 ```
 
 ### Note on configuration
@@ -68,7 +82,7 @@ The core module provides additional location-related settings that affect all lo
 
 ## Location data
 
-The extension resolves the following fields from the ipapi.co response:
+The extension resolves the following fields from providers :
 
 | Field | Example |
 |---|---|
@@ -86,11 +100,13 @@ The extension resolves the following fields from the ipapi.co response:
 ## Architecture
 
 ```
-IpApiLocationContextFactory (SPI entry point)
+IpApiLocationContextFactory (UserContext SPI)
   └── IpApiLocationContext (remote context)
         ├── Uses IpAddressContext to get client IP
-        ├── Queries ipapi.co HTTP API
-        └── Deserializes response into IpApiLocationData
+        └── GeoIpResolverChain (order from KC_ADAPTIVE_LOCATION_PROVIDERS)
+              └── GeoIpResolver SPI providers (enable/disable via EnvironmentDependentProviderFactory)
+                    ├── ipapi-co-free / ipapi-co-pro   → IpApiCoGeoIpResolver
+                    └── ip-api-com-free / ip-api-com-pro → IpApiComGeoIpResolver
 ```
 
-The extension integrates into the location context chain — when multiple `LocationContext` implementations are present (e.g. cache layers), they delegate to each other based on priority.
+Each backend is a separate `GeoIpResolverFactory` in this extension JAR (`io.github.mabartos.context.location.geoip`). Pro tiers are only enabled when their credential env var is set. Future backends (e.g. MaxMind) can ship as additional extension JARs registering the same SPI.

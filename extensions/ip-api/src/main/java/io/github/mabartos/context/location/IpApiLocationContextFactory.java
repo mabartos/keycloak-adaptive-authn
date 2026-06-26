@@ -16,28 +16,48 @@
  */
 package io.github.mabartos.context.location;
 
-import io.github.mabartos.context.ip.IPAddress;
+import io.github.mabartos.context.location.geoip.GeoIpResolver;
+import io.github.mabartos.context.location.geoip.GeoIpResolverChain;
+import io.github.mabartos.context.location.geoip.GeoIpResolverIds;
 import io.github.mabartos.spi.context.UserContextFactory;
+import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.quarkus.runtime.configuration.Configuration;
+import org.keycloak.models.KeycloakSessionFactory;
 
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.List;
 
+/**
+ * SPI factory for the IP API location extension ({@value #PROVIDER_ID}).
+ *
+ * <p>Builds an {@link IpApiLocationContext} backed by an ordered {@link GeoIpResolver} chain
+ * registered via the internal GeoIP resolver SPI. Settings are read through SmallRye Config
+ * ({@code Configuration}), typically via {@code KC_ADAPTIVE_*} environment variables mapped to
+ * {@code kc.adaptive.*} property keys, not from SPI {@code keycloak.conf} keys.</p>
+ * <ul>
+ *   <li>{@link GeoIpResolverChain#PROVIDERS_PROPERTY} — comma-separated resolver ids (try order).
+ *       Default: {@value GeoIpResolverIds#IPAPI_CO_FREE}, or {@value GeoIpResolverIds#IPAPI_CO_PRO}
+ *       when {@link GeoIpResolverChain#IPAPI_TOKEN_PROPERTY} is set and providers were not configured.</li>
+ *   <li>Known ids: {@code ipapi-co-free}, {@code ipapi-co-pro}, {@code ip-api-com-free}, {@code ip-api-com-pro}.</li>
+ *   <li>{@link GeoIpResolverChain#IPAPI_TOKEN_PROPERTY} — required for {@code ipapi-co-pro}.</li>
+ *   <li>{@link IpApiComGeoIpResolverProFactory#API_KEY_PROPERTY} — required for {@code ip-api-com-pro}.</li>
+ *   <li>If every resolver fails, {@link IpApiLocationContext} returns {@link java.util.Optional#empty()}
+ *       (not cached, ERROR logged).</li>
+ * </ul>
+ */
 public class IpApiLocationContextFactory implements UserContextFactory<LocationContext> {
-    public static final String PROVIDER_ID = "ip-api-location-context";
-    private static final String API_TOKEN_PROPERTY = "kc.adaptive.ipapi.token";
 
-    public static final Function<IPAddress, String> SERVICE_URL = ip -> {
-        String tokenPart = getApiToken()
-                .map(token -> "?token=" + token)
-                .orElse("");
-        return String.format("https://ipapi.co/%s/json%s", ip.toString(), tokenPart);
-    };
+    /** Stable SPI id — do not rename (realm flows and {@link io.github.mabartos.context.UserContexts} lookups). */
+    public static final String PROVIDER_ID = "ip-api-location-context";
+
+    @Override
+    public void init(Config.Scope config) {
+        GeoIpResolverChain.configure();
+    }
 
     @Override
     public IpApiLocationContext create(KeycloakSession session) {
-        return new IpApiLocationContext(session);
+        List<GeoIpResolver> resolvers = GeoIpResolverChain.resolve(session);
+        return new IpApiLocationContext(session, resolvers);
     }
 
     @Override
@@ -50,8 +70,16 @@ public class IpApiLocationContextFactory implements UserContextFactory<LocationC
         return LocationContext.class;
     }
 
-    static Optional<String> getApiToken() {
-        return Configuration.getOptionalValue(API_TOKEN_PROPERTY)
-                .filter(token -> !token.isBlank());
+    @Override
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
+    public void postInit(KeycloakSessionFactory factory) {
+    }
+
+    @Override
+    public void close() {
     }
 }
