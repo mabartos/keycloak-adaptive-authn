@@ -50,3 +50,19 @@ After a login, one event is stored with detail:
 When continuous evaluation revokes sessions (score ≥ threshold), one event is stored with `custom_required_action=adaptive-risk-remediation`, `adaptive_phase=CONTINUOUS`, `adaptive_remediation=sessions_revoked`, continuous score, `adaptive_continuous_level`, and evaluators.
 
 Filter in **Events → User events** by those detail values (`adaptive-risk-evaluation` vs `adaptive-risk-remediation`) to distinguish login audit, remediation, and real required actions.
+
+### 3. Client role scores (`ClientRoleRiskEvaluator`, optional)
+
+Per client role, set attribute `adaptive-client-role-riskScore` (Admin Console: **Clients → {client} → Roles → {role} → Attributes**, or realm import / REST).
+
+| Attribute | Example |
+|-----------|---------|
+| `adaptive-client-role-riskScore` | `HIGH` |
+
+Allowed values match `Risk.Score` (`VERY_SMALL`, `SMALL`, `NONE`, `LOW`, `MEDIUM`, `HIGH`, `VERY_HIGH`, `NEGATIVE_LOW`, etc.). `INVALID` is not allowed.
+
+- **Missing attribute** — role ignored at login (WARN if assigned).
+- **Explicit `NONE`** — intentional neutral; stored on the role as proof of configuration, ignored for scoring.
+- **No scorable assigned role** — `ClientRoleRiskEvaluator` returns `invalid` for that dimension.
+
+Role scoring is evaluated at login only (`ClientRoleRiskEvaluator`, phase `USER_KNOWN`).
