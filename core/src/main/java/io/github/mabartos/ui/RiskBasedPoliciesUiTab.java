@@ -16,16 +16,18 @@
  */
 package io.github.mabartos.ui;
 
-import io.github.mabartos.level.Trust;
-import io.github.mabartos.spi.level.AdvancedRiskLevels;
-import io.github.mabartos.spi.level.SimpleRiskLevels;
-import org.jboss.logging.Logger;
-import org.keycloak.Config;
+import io.github.mabartos.audit.admin.AdaptiveAdminAudit;
+import io.github.mabartos.audit.admin.RiskPoliciesSettingsSnapshot;
 import io.github.mabartos.evaluator.EvaluatorUtils;
+import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithmFactory;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
+import io.github.mabartos.spi.level.AdvancedRiskLevels;
+import io.github.mabartos.spi.level.SimpleRiskLevels;
+import org.jboss.logging.Logger;
+import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
@@ -70,6 +72,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     public static final String RISK_BASED_AUTHN_ENABLED_CONFIG = "adaptive-engine-enabled";
     public static final String AUDIT_EVENTS_ENABLED_CONFIG = "adaptive-audit-events-enabled";
+    public static final String ADMIN_CONFIG_AUDIT_ENABLED_CONFIG = "adaptive-admin-config-audit-enabled";
     public static final String RISK_SCORE_ALGORITHM_CONFIG = "adaptive-engine-scoreAlgorithm";
     public static final String SIMPLE_FALLBACK_LEVEL_CONFIG = "adaptive-engine-simpleFallbackLevel";
     public static final String ADVANCED_FALLBACK_LEVEL_CONFIG = "adaptive-engine-advancedFallbackLevel";
@@ -102,6 +105,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         storeRealmAttributeFromModel(model, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, AUDIT_EVENTS_ENABLED_CONFIG, "onCreate");
+        storeRealmAttributeFromModel(model, realm, ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, EVALUATOR_TIMEOUT_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, EVALUATOR_RETRIES_CONFIG, "onCreate");
         storeRealmAttributeFromModel(model, realm, RISK_SCORE_ALGORITHM_CONFIG, "onCreate");
@@ -137,8 +141,11 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
         logger.debugf("onUpdate execution");
 
+        var settingsBeforeUpdate = collectEffectivePolicySettings(realm);
+
         storeRealmAttributeFromModel(newModel, realm, RISK_BASED_AUTHN_ENABLED_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, AUDIT_EVENTS_ENABLED_CONFIG, "onUpdate");
+        storeRealmAttributeFromModel(newModel, realm, ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, EVALUATOR_TIMEOUT_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, EVALUATOR_RETRIES_CONFIG, "onUpdate");
         storeRealmAttributeFromModel(newModel, realm, RISK_SCORE_ALGORITHM_CONFIG, "onUpdate");
@@ -161,6 +168,18 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 }));
 
         riskEvaluatorFactories.forEach(f -> persistEvaluatorSettings(newModel, realm, f, "onUpdate"));
+        auditPolicyUpdate(session, realm, settingsBeforeUpdate);
+    }
+
+    private void auditPolicyUpdate(KeycloakSession session, RealmModel realm, Map<String, String> settingsBeforeUpdate) {
+        AdaptiveAdminAudit.recordRiskPoliciesUpdate(session, realm, settingsBeforeUpdate, collectEffectivePolicySettings(realm));
+    }
+
+    /**
+     * Effective tab values after persistence (realm attributes with property defaults).
+     */
+    Map<String, String> collectEffectivePolicySettings(RealmModel realm) {
+        return RiskPoliciesSettingsSnapshot.collect(realm, getConfigProperties());
     }
 
     private void persistEvaluatorSettings(ComponentModel model, RealmModel realm, RiskEvaluatorFactory evalFactory, String context) {
@@ -345,6 +364,15 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                 .helpText("Persist risk evaluation summaries as user events (login and continuous remediation). "
                         + "Requires Realm settings → Events → User events: Save user events ON and "
                         + "Custom required action listed under Saved event types.")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE)
+                .defaultValue(false)
+                .add()
+                .property()
+                .name(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG)
+                .label("Risk policy change audit (admin events)")
+                .helpText("On Risk-based policies updates, emit an extra admin event with per-setting diffs (old > new) in event details. "
+                        + "Requires Realm settings → Events → Admin events: Save admin events ON. "
+                        + "Full tab JSON is already available via Include representation on the native component event.")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue(false)
                 .add()

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENABLED_CONFIG;
 import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getTrustConfig;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
@@ -360,6 +361,17 @@ class RiskBasedPoliciesUiTabPersistenceTest {
 
         assertEquals("1.0", realmAttributes.get(trustKey));
         assertEquals("true", realmAttributes.get(enabledKey));
+    }
+
+    @Test
+    void collectEffectivePolicySettings_includesRealmAttributesAndDefaults() {
+        realmAttributes.put(RISK_BASED_AUTHN_ENABLED_CONFIG, "false");
+        var properties = tab.getConfigProperties();
+
+        var snapshot = tab.collectEffectivePolicySettings(realm);
+
+        assertEquals("false", snapshot.get(RISK_BASED_AUTHN_ENABLED_CONFIG));
+        assertEquals(properties.size(), snapshot.size());
     }
 
     private static ComponentModel componentModel(Map<String, String> entries) {
