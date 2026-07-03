@@ -2,7 +2,6 @@ package io.github.mabartos.context.location.geoip;
 
 import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.quarkus.runtime.configuration.Configuration;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,16 +10,22 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Resolves the ordered GeoIP resolver chain from {@value #PROVIDERS_PROPERTY} while honouring
- * Keycloak's provider registry ({@link KeycloakSession#getProvider(Class, String)}).
+ * Resolves the ordered GeoIP resolver chain from {@link AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY}
+ * while honouring Keycloak's provider registry ({@link KeycloakSession#getProvider(Class, String)}).
  *
  * <p>Provider order is user-controlled via config; SPI factory {@code order()} is not used for
- * fallback sequencing. Enabled factories are looked up by id in the configured order.</p>
+ * fallback sequencing. Pro-tier resolvers are registered at Keycloak build time and filtered here
+ * at runtime when their credential env vars are absent.</p>
  */
 public final class GeoIpResolverChain {
 
-    public static final String PROVIDERS_PROPERTY = "kc.adaptive.location.providers";
-    public static final String IPAPI_TOKEN_PROPERTY = "kc.adaptive.ipapi.token";
+    /** @deprecated use {@link AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY} */
+    @Deprecated
+    public static final String PROVIDERS_PROPERTY = AdaptiveConfig.LOCATION_PROVIDERS_PROPERTY;
+
+    /** @deprecated use {@link AdaptiveConfig#IPAPI_TOKEN_PROPERTY} */
+    @Deprecated
+    public static final String IPAPI_TOKEN_PROPERTY = AdaptiveConfig.IPAPI_TOKEN_PROPERTY;
 
     private static final Logger log = Logger.getLogger(GeoIpResolverChain.class);
 
@@ -57,16 +62,24 @@ public final class GeoIpResolverChain {
                 log.warnf(
                         "Duplicate GeoIP resolver id '%s' in %s=%s; skipping.",
                         providerId,
-                        PROVIDERS_PROPERTY,
+                        AdaptiveConfig.LOCATION_PROVIDERS_PROPERTY,
                         raw);
                 continue;
             }
             GeoIpResolver resolver = providerById.apply(providerId);
             if (resolver == null) {
                 log.warnf(
-                        "GeoIP resolver id '%s' from %s=%s is not available (disabled or missing credentials); skipping.",
+                        "GeoIP resolver id '%s' from %s=%s is not registered; skipping.",
                         providerId,
-                        PROVIDERS_PROPERTY,
+                        AdaptiveConfig.LOCATION_PROVIDERS_PROPERTY,
+                        raw);
+                continue;
+            }
+            if (!hasCredentialsFor(providerId)) {
+                log.warnf(
+                        "GeoIP resolver id '%s' from %s=%s is not available (missing credentials); skipping.",
+                        providerId,
+                        AdaptiveConfig.LOCATION_PROVIDERS_PROPERTY,
                         raw);
                 continue;
             }
@@ -76,20 +89,28 @@ public final class GeoIpResolverChain {
         if (chain.isEmpty()) {
             log.warnf(
                     "No usable GeoIP resolvers after parsing %s=%s; falling back to %s.",
-                    PROVIDERS_PROPERTY,
+                    AdaptiveConfig.LOCATION_PROVIDERS_PROPERTY,
                     raw,
                     GeoIpResolverIds.DEFAULT_FALLBACK);
             GeoIpResolver fallback = providerById.apply(GeoIpResolverIds.DEFAULT_FALLBACK);
-            if (fallback != null) {
+            if (fallback != null && hasCredentialsFor(GeoIpResolverIds.DEFAULT_FALLBACK)) {
                 chain.add(fallback);
             }
         }
         return List.copyOf(chain);
     }
 
+    static boolean hasCredentialsFor(String providerId) {
+        return switch (providerId) {
+            case GeoIpResolverIds.IPAPI_CO_PRO -> readIpApiToken() != null;
+            case GeoIpResolverIds.IP_API_COM_PRO -> readIpApiComApiKey() != null;
+            default -> true;
+        };
+    }
+
     /**
-     * Preserves legacy behaviour: deployments that set only {@value #IPAPI_TOKEN_PROPERTY} (no
-     * {@value #PROVIDERS_PROPERTY}) default to {@value GeoIpResolverIds#IPAPI_CO_PRO}.
+     * Preserves legacy behaviour: deployments that set only {@link AdaptiveConfig#IPAPI_TOKEN_PROPERTY} (no
+     * {@link AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY}) default to {@value GeoIpResolverIds#IPAPI_CO_PRO}.
      */
     static String resolveProvidersForMigration(
             String configuredProviders, boolean providersExplicitlySet, String ipApiToken) {
@@ -103,7 +124,7 @@ public final class GeoIpResolverChain {
     }
 
     /**
-     * True when {@value #PROVIDERS_PROPERTY} is set in SmallRye Config (env, properties file, etc.).
+     * True when {@link AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY} is set in SmallRye Config (env, properties file, etc.).
      */
     static boolean isProvidersExplicitlyConfigured(String configuredProviders) {
         return configuredProviders != null && !configuredProviders.isBlank();
@@ -130,16 +151,14 @@ public final class GeoIpResolverChain {
     }
 
     private static String readConfiguredProviders() {
-        return Configuration.getOptionalValue(PROVIDERS_PROPERTY)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .orElse(null);
+        return AdaptiveConfig.locationProviders().orElse(null);
     }
 
     private static String readIpApiToken() {
-        return Configuration.getOptionalValue(IPAPI_TOKEN_PROPERTY)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .orElse(null);
+        return AdaptiveConfig.ipApiCoToken().orElse(null);
+    }
+
+    private static String readIpApiComApiKey() {
+        return AdaptiveConfig.ipApiComApiKey().orElse(null);
     }
 }

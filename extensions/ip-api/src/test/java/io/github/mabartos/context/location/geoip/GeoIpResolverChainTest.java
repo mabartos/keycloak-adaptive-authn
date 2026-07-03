@@ -34,7 +34,7 @@ class GeoIpResolverChainTest {
     }
 
     @Test
-    void buildChain_skipsProWhenProviderUnavailable() {
+    void buildChain_skipsProWhenProviderNotRegistered() {
         Map<String, GeoIpResolver> providers = Map.of(
                 GeoIpResolverIds.IPAPI_CO_FREE, resolver(GeoIpResolverIds.IPAPI_CO_FREE));
 
@@ -44,6 +44,33 @@ class GeoIpResolverChainTest {
 
         assertThat(chain, hasSize(1));
         assertThat(chain.get(0).id(), is(GeoIpResolverIds.IPAPI_CO_FREE));
+    }
+
+    @Test
+    void buildChain_skipsProWhenCredentialsMissing() {
+        Map<String, GeoIpResolver> providers = Map.of(
+                GeoIpResolverIds.IPAPI_CO_FREE, resolver(GeoIpResolverIds.IPAPI_CO_FREE),
+                GeoIpResolverIds.IPAPI_CO_PRO, resolver(GeoIpResolverIds.IPAPI_CO_PRO),
+                GeoIpResolverIds.IP_API_COM_PRO, resolver(GeoIpResolverIds.IP_API_COM_PRO));
+
+        List<GeoIpResolver> chain = GeoIpResolverChain.buildChain(
+                List.of(GeoIpResolverIds.IPAPI_CO_PRO, GeoIpResolverIds.IP_API_COM_PRO),
+                providers::get);
+
+        assertThat(chain, hasSize(1));
+        assertThat(chain.get(0).id(), is(GeoIpResolverIds.IPAPI_CO_FREE));
+    }
+
+    @Test
+    void hasCredentialsFor_freeProvidersDoNotRequireSecrets() {
+        assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.IPAPI_CO_FREE), is(true));
+        assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.IP_API_COM_FREE), is(true));
+    }
+
+    @Test
+    void hasCredentialsFor_proProvidersRequireSecrets() {
+        assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.IPAPI_CO_PRO), is(false));
+        assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.IP_API_COM_PRO), is(false));
     }
 
     @Test

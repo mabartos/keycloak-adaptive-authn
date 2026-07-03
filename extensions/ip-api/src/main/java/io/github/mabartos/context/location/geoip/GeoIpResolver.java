@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * One GeoIP lookup backend. Instances are obtained from the Keycloak provider registry and
- * tried in order by {@link GeoIpResolverChain} (see {@code kc.adaptive.location.providers}).
+ * tried in order by {@link GeoIpResolverChain} (see {@link AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY}).
  */
 public interface GeoIpResolver extends Provider {
 

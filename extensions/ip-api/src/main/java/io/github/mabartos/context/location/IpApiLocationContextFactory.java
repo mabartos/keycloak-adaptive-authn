@@ -32,13 +32,14 @@ import java.util.List;
  * <p>Builds an {@link IpApiLocationContext} backed by an ordered {@link GeoIpResolver} chain
  * registered via the internal GeoIP resolver SPI. Settings are read through SmallRye Config
  * ({@code Configuration}), typically via {@code KC_ADAPTIVE_*} environment variables mapped to
- * {@code kc.adaptive.*} property keys, not from SPI {@code keycloak.conf} keys.</p>
+ * {@code kc.adaptive-*} property keys (see {@link io.github.mabartos.context.location.geoip.AdaptiveConfig}),
+ * not from SPI {@code keycloak.conf} keys.</p>
  * <ul>
- *   <li>{@link GeoIpResolverChain#PROVIDERS_PROPERTY} — comma-separated resolver ids (try order).
+ *   <li>{@link io.github.mabartos.context.location.geoip.AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY} — comma-separated resolver ids (try order).
  *       Default: {@value GeoIpResolverIds#IPAPI_CO_FREE}, or {@value GeoIpResolverIds#IPAPI_CO_PRO}
- *       when {@link GeoIpResolverChain#IPAPI_TOKEN_PROPERTY} is set and providers were not configured.</li>
+ *       when {@link io.github.mabartos.context.location.geoip.AdaptiveConfig#IPAPI_TOKEN_PROPERTY} is set and providers were not configured.</li>
  *   <li>Known ids: {@code ipapi-co-free}, {@code ipapi-co-pro}, {@code ip-api-com-free}, {@code ip-api-com-pro}.</li>
- *   <li>{@link GeoIpResolverChain#IPAPI_TOKEN_PROPERTY} — required for {@code ipapi-co-pro}.</li>
+ *   <li>{@link io.github.mabartos.context.location.geoip.AdaptiveConfig#IPAPI_TOKEN_PROPERTY} — required for {@code ipapi-co-pro}.</li>
  *   <li>{@link IpApiComGeoIpResolverProFactory#API_KEY_PROPERTY} — required for {@code ip-api-com-pro}.</li>
  *   <li>If every resolver fails, {@link IpApiLocationContext} returns {@link java.util.Optional#empty()}
  *       (not cached, ERROR logged).</li>

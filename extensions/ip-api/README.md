@@ -67,7 +67,7 @@ docker run ... \
 
 The extension reads configuration through SmallRye Config (Keycloak's Quarkus `Configuration` API), which automatically resolves environment variables — no `application.properties` file is needed.
 
-If you previously used `application.properties` to set `location.ipapi.token`, replace it with the `KC_ADAPTIVE_IPAPI_TOKEN` environment variable instead.
+Property keys follow Keycloak's kebab-case form (as in `kc.sh show-config`), e.g. `KC_ADAPTIVE_IP_API_COM_API_KEY` → `kc.adaptive-ip-api-com-api-key`.
 
 ### Related core configuration
 
@@ -104,9 +104,9 @@ IpApiLocationContextFactory (UserContext SPI)
   └── IpApiLocationContext (remote context)
         ├── Uses IpAddressContext to get client IP
         └── GeoIpResolverChain (order from KC_ADAPTIVE_LOCATION_PROVIDERS)
-              └── GeoIpResolver SPI providers (enable/disable via EnvironmentDependentProviderFactory)
+              └── GeoIpResolver SPI providers (registered at build; pro tiers gated at runtime on credentials)
                     ├── ipapi-co-free / ipapi-co-pro   → IpApiCoGeoIpResolver
                     └── ip-api-com-free / ip-api-com-pro → IpApiComGeoIpResolver
 ```
 
-Each backend is a separate `GeoIpResolverFactory` in this extension JAR (`io.github.mabartos.context.location.geoip`). Pro tiers are only enabled when their credential env var is set. Future backends (e.g. MaxMind) can ship as additional extension JARs registering the same SPI.
+Each backend is a separate `GeoIpResolverFactory` in this extension JAR (`io.github.mabartos.context.location.geoip`). Pro tiers are skipped at runtime when their credential env var is unset (factories stay registered so a Keycloak rebuild is not required when secrets are supplied only at container start). Future backends (e.g. MaxMind) can ship as additional extension JARs registering the same SPI.
