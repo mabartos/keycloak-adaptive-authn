@@ -10,13 +10,13 @@ import java.util.Objects;
  * Attribute format: {@code country:city:epochSeconds}. Legacy entries without a timestamp
  * are backfilled on first read.
  */
-public record KnownLocationData(String country, String city, Integer lastSeenEpochSeconds) implements LocationData {
+public record KnownLocationData(String country, String city, Long lastSeenEpochSeconds) implements LocationData {
 
     private static final Logger logger = Logger.getLogger(KnownLocationData.class);
     private static final String SEPARATOR = ":";
-    private static final int SECONDS_PER_DAY = 86_400;
+    private static final long SECONDS_PER_DAY = 86_400L;
 
-    public static KnownLocationData of(String country, String city, int lastSeenEpochSeconds) {
+    public static KnownLocationData of(String country, String city, long lastSeenEpochSeconds) {
         return new KnownLocationData(country, city, lastSeenEpochSeconds);
     }
 
@@ -30,10 +30,10 @@ public record KnownLocationData(String country, String city, Integer lastSeenEpo
             return null;
         }
 
-        Integer lastSeen = null;
+        Long lastSeen = null;
         if (parts.length == 3 && StringUtil.isNotBlank(parts[2])) {
             try {
-                int parsed = Integer.parseInt(parts[2]);
+                long parsed = Long.parseLong(parts[2]);
                 if (parsed > 0) {
                     lastSeen = parsed;
                 }
@@ -53,7 +53,7 @@ public record KnownLocationData(String country, String city, Integer lastSeenEpo
         return country + SEPARATOR + city + SEPARATOR + lastSeenEpochSeconds;
     }
 
-    public KnownLocationData withLastSeen(int lastSeenEpochSeconds) {
+    public KnownLocationData withLastSeen(long lastSeenEpochSeconds) {
         return new KnownLocationData(country, city, lastSeenEpochSeconds);
     }
 
@@ -61,7 +61,7 @@ public record KnownLocationData(String country, String city, Integer lastSeenEpo
         return lastSeenEpochSeconds == null || lastSeenEpochSeconds <= 0;
     }
 
-    public KnownLocationData ensureLastSeen(int now) {
+    public KnownLocationData ensureLastSeen(long now) {
         return isUndated() ? withLastSeen(now) : this;
     }
 
@@ -69,11 +69,11 @@ public record KnownLocationData(String country, String city, Integer lastSeenEpo
         return Objects.equals(country, otherCountry) && Objects.equals(city, otherCity);
     }
 
-    public boolean isExpired(int now, int ttlDays) {
+    public boolean isExpired(long now, int ttlDays) {
         if (ttlDays <= 0 || lastSeenEpochSeconds == null || lastSeenEpochSeconds <= 0) {
             return false;
         }
-        return now - lastSeenEpochSeconds > ttlDays * SECONDS_PER_DAY;
+        return now - lastSeenEpochSeconds > (long) ttlDays * SECONDS_PER_DAY;
     }
 
     @Override

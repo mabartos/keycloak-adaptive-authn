@@ -28,12 +28,12 @@ class KnownLocationDataTest {
         assertThat(location, notNullValue());
         assertThat(location.getCountry(), is("France"));
         assertThat(location.getCity(), is("Paris"));
-        assertThat(location.lastSeenEpochSeconds(), is(1_700_000_000));
+        assertThat(location.lastSeenEpochSeconds(), is(1_700_000_000L));
     }
 
     @Test
     void formatsWithTimestamp() {
-        var location = KnownLocationData.of("France", "Paris", 1_700_000_000);
+        var location = KnownLocationData.of("France", "Paris", 1_700_000_000L);
 
         assertThat(location.formatToAttribute(), is("France:Paris:1700000000"));
     }
@@ -51,36 +51,36 @@ class KnownLocationDataTest {
 
         assertThat(location, notNullValue());
         assertThat(location.lastSeenEpochSeconds(), nullValue());
-        assertThat(location.isExpired(1_700_000_000, 90), is(false));
+        assertThat(location.isExpired(1_700_000_000L, 90), is(false));
     }
 
     @Test
     void detectsExpiredLocation() {
-        int now = 1_700_000_000;
-        var location = KnownLocationData.of("France", "Paris", now - (int) Duration.ofDays(91).toSeconds());
+        long now = 1_700_000_000L;
+        var location = KnownLocationData.of("France", "Paris", now - Duration.ofDays(91).toSeconds());
 
         assertThat(location.isExpired(now, 90), is(true));
     }
 
     @Test
     void keepsFreshLocation() {
-        int now = 1_700_000_000;
-        var location = KnownLocationData.of("France", "Paris", now - (int) Duration.ofDays(30).toSeconds());
+        long now = 1_700_000_000L;
+        var location = KnownLocationData.of("France", "Paris", now - Duration.ofDays(30).toSeconds());
 
         assertThat(location.isExpired(now, 90), is(false));
     }
 
     @Test
     void neverExpiresWhenTtlDisabled() {
-        int now = 1_700_000_000;
-        var location = KnownLocationData.of("France", "Paris", now - (int) Duration.ofDays(365).toSeconds());
+        long now = 1_700_000_000L;
+        var location = KnownLocationData.of("France", "Paris", now - Duration.ofDays(365).toSeconds());
 
         assertThat(location.isExpired(now, 0), is(false));
     }
 
     @Test
     void ensureLastSeen_backfillsUndatedEntriesOnly() {
-        int now = 1_700_000_000;
+        long now = 1_700_000_000L;
         var legacy = KnownLocationData.parseFromAttribute("France:Paris");
         var dated = KnownLocationData.of("Germany", "Berlin", now - 100);
 
