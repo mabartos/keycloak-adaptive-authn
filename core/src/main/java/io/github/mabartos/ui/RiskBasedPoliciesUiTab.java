@@ -204,7 +204,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.tracef("validateConfiguration execution");
 
         validateEvaluatorTrustValues(model);
-        validateSubmittedAdditionalEvaluatorSettings(model);
 
         var persisted = resolvePersistedTabComponent(realm, model);
         hydrateModelFromRealmAttributes(realm, model, persisted);
@@ -215,11 +214,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
         validateFallbackLevel(model.get(SIMPLE_FALLBACK_LEVEL_CONFIG), SimpleRiskLevels.getSimpleLevelNames(), "Simple fallback risk level");
         validateFallbackLevel(model.get(ADVANCED_FALLBACK_LEVEL_CONFIG), AdvancedRiskLevels.getAdvancedLevelNames(), "Advanced fallback risk level");
-
-        riskEvaluatorFactories.stream()
-                .flatMap(f -> f.getAdditionalAdminConfigProperties().stream())
-                .filter(prop -> ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType()))
-                .forEach(prop -> validateInteger(model.get(prop.getName()), prop.getLabel()));
     }
 
     private void validateEvaluatorTrustValues(ComponentModel model) {
@@ -238,18 +232,6 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
                         "Risk Trust levels must be double values in range [0.0, 1.0]");
             }
         });
-    }
-
-    private void validateSubmittedAdditionalEvaluatorSettings(ComponentModel model) {
-        riskEvaluatorFactories.stream()
-                .flatMap(factory -> factory.getAdditionalAdminConfigProperties().stream())
-                .filter(prop -> ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType()))
-                .forEach(prop -> {
-                    var value = model.get(prop.getName());
-                    if (StringUtil.isNotBlank(value)) {
-                        validateInteger(value, prop.getLabel());
-                    }
-                });
     }
 
     private void populateMissingDefaults(ComponentModel model) {
