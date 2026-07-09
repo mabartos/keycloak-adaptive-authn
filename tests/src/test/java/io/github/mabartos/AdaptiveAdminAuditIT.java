@@ -39,6 +39,50 @@ class AdaptiveAdminAuditIT {
     RunOnServerClient runOnServer;
 
     @Test
+    void recordRiskPoliciesUpdate_skipsWhenSessionNull() {
+        runOnServer.run(session -> {
+            RealmModel realm = session.realms().getRealmByName("adaptive");
+            var snapshot = RealmSnapshot.capture(realm);
+            try {
+                configureAdminAudit(realm, true);
+                clearAdaptiveAdminEvents(session, realm);
+
+                var before = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
+                var after = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
+
+                AdaptiveAdminAudit.recordRiskPoliciesUpdate(null, realm, before, after);
+
+                assertThat(latestAdaptiveAdminEvent(session, realm), is(Optional.empty()));
+            } finally {
+                snapshot.restore(realm);
+            }
+        });
+    }
+
+    @Test
+    void recordRiskPoliciesUpdate_skipsWhenAdminEventsDisabled() {
+        runOnServer.run(session -> {
+            RealmModel realm = session.realms().getRealmByName("adaptive");
+            var snapshot = RealmSnapshot.capture(realm);
+            try {
+                realm.setAdminEventsEnabled(false);
+                realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
+                clearAdaptiveAdminEvents(session, realm);
+
+                var before = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
+                var after = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
+
+                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                        session, realm, before, after, adminAuth(session, realm));
+
+                assertThat(latestAdaptiveAdminEvent(session, realm), is(Optional.empty()));
+            } finally {
+                snapshot.restore(realm);
+            }
+        });
+    }
+
+    @Test
     void recordRiskPoliciesUpdate_persistsAdminEventWhenEnabledAndChanged() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
