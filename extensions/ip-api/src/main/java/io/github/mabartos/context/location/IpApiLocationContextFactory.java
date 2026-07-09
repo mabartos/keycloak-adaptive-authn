@@ -38,9 +38,12 @@ import java.util.List;
  *   <li>{@link io.github.mabartos.context.location.geoip.AdaptiveConfig#LOCATION_PROVIDERS_PROPERTY} — comma-separated resolver ids (try order).
  *       Default: {@value GeoIpResolverIds#IPAPI_CO_FREE}, or {@value GeoIpResolverIds#IPAPI_CO_PRO}
  *       when {@link io.github.mabartos.context.location.geoip.AdaptiveConfig#IPAPI_TOKEN_PROPERTY} is set and providers were not configured.</li>
- *   <li>Known ids: {@code ipapi-co-free}, {@code ipapi-co-pro}, {@code ip-api-com-free}, {@code ip-api-com-pro}.</li>
+ *   <li>Known ids: {@code ipapi-co-free}, {@code ipapi-co-pro}, {@code ip-api-com-free}, {@code ip-api-com-pro}, {@code maxmind}.</li>
  *   <li>{@link io.github.mabartos.context.location.geoip.AdaptiveConfig#IPAPI_TOKEN_PROPERTY} — required for {@code ipapi-co-pro}.</li>
  *   <li>{@link IpApiComGeoIpResolverProFactory#API_KEY_PROPERTY} — required for {@code ip-api-com-pro}.</li>
+ *   <li>{@link io.github.mabartos.context.location.geoip.AdaptiveConfig#MAXMIND_ACCOUNT_ID_PROPERTY} and
+ *       {@link io.github.mabartos.context.location.geoip.AdaptiveConfig#MAXMIND_LICENSE_KEY_PROPERTY} — optional for
+ *       {@code maxmind}; when both are set, the GeoLite2-City database is downloaded from MaxMind's official API.</li>
  *   <li>If every resolver fails, {@link IpApiLocationContext} returns {@link java.util.Optional#empty()}
  *       (not cached, ERROR logged).</li>
  * </ul>

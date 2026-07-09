@@ -12,6 +12,11 @@
     <artifactId>keycloak-adaptive-ext-ip-api</artifactId>
     <name>Keycloak Adaptive Authentication Extension: IP API</name>
 
+    <properties>
+        <geoip2.version>5.1.0</geoip2.version>
+        <commons-compress.version>1.27.1</commons-compress.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.mabartos</groupId>
@@ -35,11 +40,80 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.maxmind.geoip2</groupId>
+            <artifactId>geoip2</artifactId>
+            <version>${geoip2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons-compress.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.keycloak.testframework</groupId>
             <artifactId>keycloak-test-framework-core</artifactId>
             <version>${keycloak.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>${maven.plugins.download.version}</version>
+                <executions>
+                    <execution>
+                        <id>download-geolite2-city-test-mmdb</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/maxmind/MaxMind-DB/raw/main/test-data/GeoLite2-City-Test.mmdb</url>
+                            <outputDirectory>${project.build.testOutputDirectory}/maxmind</outputDirectory>
+                            <outputFileName>GeoLite2-City-Test.mmdb</outputFileName>
+                            <followRedirects>true</followRedirects>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.plugins.shade.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.maxmind.geoip2:geoip2</include>
+                                    <include>com.maxmind.db:maxmind-db</include>
+                                    <include>org.apache.commons:commons-compress</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
