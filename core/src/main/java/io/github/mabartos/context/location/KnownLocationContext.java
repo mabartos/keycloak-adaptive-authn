@@ -11,6 +11,7 @@ import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.utils.StringUtil;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -33,7 +34,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
             return DEFAULT_TTL_DAYS;
         }
         var value = realm.getAttribute(TTL_DAYS_CONFIG);
-        if (value == null || value.isBlank()) {
+        if (StringUtil.isBlank(value)) {
             return DEFAULT_TTL_DAYS;
         }
         try {
@@ -60,7 +61,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
             return Optional.empty();
         }
 
-        int now = Time.currentTime();
+        long now = Time.currentTime();
         int ttlDays = getTtlDays(realm);
         var activeLocations = selectActiveLocations(getKnownLocationData(knownUser), now, ttlDays);
         if (activeLocations.isEmpty()) {
@@ -80,7 +81,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
             return;
         }
 
-        int now = Time.currentTime();
+        long now = Time.currentTime();
         int ttlDays = getTtlDays(realm);
         var knownLocations = selectActiveLocations(getKnownLocationData(user), now, ttlDays);
 
@@ -109,7 +110,7 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
      * In-memory during {@link #initData}; persisted in {@link #onSuccessfulLogin}.
      */
     private static LinkedHashSet<KnownLocationData> selectActiveLocations(
-            LinkedHashSet<KnownLocationData> rawLocations, int now, int ttlDays) {
+            Set<KnownLocationData> rawLocations, long now, int ttlDays) {
         var activeLocations = new LinkedHashSet<KnownLocationData>();
         for (KnownLocationData location : rawLocations) {
             if (location.isExpired(now, ttlDays)) {
