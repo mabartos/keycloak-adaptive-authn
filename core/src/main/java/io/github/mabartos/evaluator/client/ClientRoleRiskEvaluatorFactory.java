@@ -25,9 +25,10 @@ public class ClientRoleRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
     @Override
     public String getDescription() {
-        return "Scores risk from the user's assigned roles on the requesting OAuth client using the "
+        return "Scores risk from the user's assigned roles on the requesting OAuth client using Keycloak "
+                + "role-name prefix heuristics (manage-*, create-*, etc.). Override per role with "
                 + ClientRoleRiskEvaluator.RISK_SCORE_ATTRIBUTE
-                + " attribute on each client role. Configure per role under Clients → Roles → Attributes.";
+                + " under Clients → Roles → Attributes.";
     }
 
     @Override

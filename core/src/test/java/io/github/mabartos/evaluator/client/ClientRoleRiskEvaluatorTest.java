@@ -2,116 +2,94 @@ package io.github.mabartos.evaluator.client;
 
 import io.github.mabartos.spi.level.Risk;
 import org.junit.jupiter.api.Test;
-import org.keycloak.models.ClientModel;
 import org.keycloak.models.RoleModel;
 
 import java.lang.reflect.Proxy;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 
 class ClientRoleRiskEvaluatorTest {
 
     @Test
-    void noAssignedRolesReturnsNegativeLow() {
-        Risk risk = ClientRoleRiskEvaluator.evaluateAssignments("grafana", Map.of());
-        assertThat(risk.getScore(), is(Risk.Score.NEGATIVE_LOW));
+    void scoreFromRoleName_managePrefixReturnsMedium() {
+        assertThat(ClientRoleRiskEvaluator.scoreFromRoleName("manage-users"), is(Risk.Score.MEDIUM));
     }
 
     @Test
-    void configuredRoleReturnsConfiguredScore() {
-        Risk risk = ClientRoleRiskEvaluator.evaluateAssignments(
-                "grafana",
-                Map.of("admin", Optional.of(Risk.Score.HIGH)));
-        assertThat(risk.getScore(), is(Risk.Score.HIGH));
+    void scoreFromRoleName_createPrefixReturnsSmall() {
+        assertThat(ClientRoleRiskEvaluator.scoreFromRoleName("create-client"), is(Risk.Score.SMALL));
     }
 
     @Test
-    void soleUnconfiguredAssignedRoleReturnsInvalid() {
-        Risk risk = ClientRoleRiskEvaluator.evaluateAssignments(
-                "grafana",
-                Map.of("viewer", Optional.empty()));
-        assertThat(risk.getScore(), is(Risk.Score.INVALID));
-        assertThat(risk.getReason().orElse(""), containsString("viewer"));
-        assertThat(risk.getReason().orElse(""), containsString(ClientRoleRiskEvaluator.RISK_SCORE_ATTRIBUTE));
+    void scoreFromRoleName_viewPrefixReturnsNone() {
+        assertThat(ClientRoleRiskEvaluator.scoreFromRoleName("view-users"), is(Risk.Score.NONE));
     }
 
     @Test
-    void explicitNoneAssignedRoleReturnsInvalid() {
-        Risk risk = ClientRoleRiskEvaluator.evaluateAssignments(
-                "grafana",
-                Map.of("viewer", Optional.of(Risk.Score.NONE)));
-        assertThat(risk.getScore(), is(Risk.Score.INVALID));
-        assertThat(risk.getReason().orElse(""), containsString("viewer"));
+    void scoreFromRoleName_unknownRoleReturnsNone() {
+        assertThat(ClientRoleRiskEvaluator.scoreFromRoleName("admin"), is(Risk.Score.NONE));
     }
 
     @Test
-    void partiallyConfiguredRolesUsesHighestScorableScore() {
-        Map<String, Optional<Risk.Score>> assigned = new LinkedHashMap<>();
-        assigned.put("viewer", Optional.of(Risk.Score.NONE));
-        assigned.put("editor", Optional.empty());
-        assigned.put("admin", Optional.of(Risk.Score.HIGH));
-
-        Risk risk = ClientRoleRiskEvaluator.evaluateAssignments("grafana", assigned);
-        assertThat(risk.getScore(), is(Risk.Score.HIGH));
+    void scoreFromRoleName_impersonationReturnsMedium() {
+        assertThat(ClientRoleRiskEvaluator.scoreFromRoleName("impersonation"), is(Risk.Score.MEDIUM));
     }
 
     @Test
-    void scoreFromRole_returnsEmptyWhenNoAttribute() {
+    void scoreForRole_usesPrefixWhenNoAttribute() {
+        RoleModel role = role("manage-reports", null);
+
+        assertThat(ClientRoleRiskEvaluator.scoreForRole(role), is(Risk.Score.MEDIUM));
+    }
+
+    @Test
+    void scoreForRole_attributeOverridesPrefix() {
+        RoleModel role = role("manage-reports", "NONE");
+
+        assertThat(ClientRoleRiskEvaluator.scoreForRole(role), is(Risk.Score.NONE));
+    }
+
+    @Test
+    void scoreForRole_attributeOverridesPrefixWithHigherScore() {
+        RoleModel role = role("viewer", "HIGH");
+
+        assertThat(ClientRoleRiskEvaluator.scoreForRole(role), is(Risk.Score.HIGH));
+    }
+
+    @Test
+    void parseAttributeScore_returnsEmptyWhenNoAttribute() {
         RoleModel role = role("admin", null);
 
-        assertThat(ClientRoleRiskEvaluator.scoreFromRole(role), is(Optional.empty()));
+        assertThat(ClientRoleRiskEvaluator.parseAttributeScore(role).isEmpty(), is(true));
     }
 
     @Test
-    void scoreFromRole_parsesConfiguredScore() {
+    void parseAttributeScore_parsesConfiguredScore() {
         RoleModel role = role("admin", "negative_low");
 
-        assertThat(ClientRoleRiskEvaluator.scoreFromRole(role), is(Optional.of(Risk.Score.NEGATIVE_LOW)));
+        assertThat(ClientRoleRiskEvaluator.parseAttributeScore(role), is(java.util.Optional.of(Risk.Score.NEGATIVE_LOW)));
     }
 
     @Test
-    void scoreFromRole_parsesExplicitNone() {
+    void parseAttributeScore_parsesExplicitNone() {
         RoleModel role = role("viewer", "NONE");
 
-        assertThat(ClientRoleRiskEvaluator.scoreFromRole(role), is(Optional.of(Risk.Score.NONE)));
+        assertThat(ClientRoleRiskEvaluator.parseAttributeScore(role), is(java.util.Optional.of(Risk.Score.NONE)));
     }
 
     @Test
-    void scoreFromRole_skipsInvalidScoreAtRuntime() {
+    void parseAttributeScore_skipsInvalidScoreAtRuntime() {
         RoleModel role = role("admin", "NOT_A_SCORE");
 
-        assertThat(ClientRoleRiskEvaluator.scoreFromRole(role), is(Optional.empty()));
+        assertThat(ClientRoleRiskEvaluator.parseAttributeScore(role).isEmpty(), is(true));
     }
 
     @Test
-    void getAttributeState_activeWhenRoleHasExplicitNone() {
-        ClientModel client = clientWithRoles(Map.of("viewer", "NONE"));
+    void scoreForRole_fallsBackToPrefixWhenAttributeInvalid() {
+        RoleModel role = role("manage-reports", "NOT_A_SCORE");
 
-        ClientRoleRiskEvaluator.AttributeState state = ClientRoleRiskEvaluator.getAttributeState(client);
-        assertThat(state.configured(), is(true));
-        assertThat(state.active(), is(true));
-    }
-
-    @Test
-    void getAttributeState_emptyWhenClientHasNoRoles() {
-        ClientModel client = clientWithRoles(Map.of());
-
-        assertThat(ClientRoleRiskEvaluator.getAttributeState(client), is(ClientRoleRiskEvaluator.AttributeState.EMPTY));
-    }
-
-    @Test
-    void getAttributeState_unusableWhenAttributesExistButInvalid() {
-        ClientModel client = clientWithRoles(Map.of("admin", "NOT_A_SCORE"));
-
-        ClientRoleRiskEvaluator.AttributeState state = ClientRoleRiskEvaluator.getAttributeState(client);
-        assertThat(state.configured(), is(true));
-        assertThat(state.active(), is(false));
-        assertThat(state.unusable(), is(true));
+        assertThat(ClientRoleRiskEvaluator.scoreForRole(role), is(Risk.Score.MEDIUM));
     }
 
     private static RoleModel role(String name, String scoreRaw) {
@@ -126,29 +104,6 @@ class ClientRoleRiskEvaluatorTest {
                             && args.length == 1
                             && ClientRoleRiskEvaluator.RISK_SCORE_ATTRIBUTE.equals(args[0])) {
                         return scoreRaw;
-                    }
-                    Class<?> returnType = method.getReturnType();
-                    if (returnType == boolean.class) {
-                        return false;
-                    }
-                    if (returnType == int.class) {
-                        return 0;
-                    }
-                    if (returnType == long.class) {
-                        return 0L;
-                    }
-                    return null;
-                });
-    }
-
-    private static ClientModel clientWithRoles(Map<String, String> roleScores) {
-        return (ClientModel) Proxy.newProxyInstance(
-                ClientModel.class.getClassLoader(),
-                new Class[]{ClientModel.class},
-                (proxy, method, args) -> {
-                    if ("getRolesStream".equals(method.getName())) {
-                        return roleScores.entrySet().stream()
-                                .map(entry -> role(entry.getKey(), entry.getValue()));
                     }
                     Class<?> returnType = method.getReturnType();
                     if (returnType == boolean.class) {

@@ -70,7 +70,9 @@ No event on create, and no event on update when nothing changed.
 
 ### 3. Client role scores (`ClientRoleRiskEvaluator`, optional)
 
-Per client role, set attribute `adaptive-client-role-riskScore` (Admin Console: **Clients → {client} → Roles → {role} → Attributes**, or realm import / REST).
+By default, client roles are scored using Keycloak prefix heuristics (`manage-*` → `MEDIUM`, `create-*` → `SMALL`, `view-*` / `query-*` → `NONE`, etc.), consistent with realm role evaluation.
+
+To override a role's default score, set attribute `adaptive-client-role-riskScore` on the role (Admin Console: **Clients → {client} → Roles → {role} → Attributes**, or realm import / REST).
 
 | Attribute | Example |
 |-----------|---------|
@@ -78,8 +80,8 @@ Per client role, set attribute `adaptive-client-role-riskScore` (Admin Console: 
 
 Allowed values match `Risk.Score` (`VERY_SMALL`, `SMALL`, `NONE`, `LOW`, `MEDIUM`, `HIGH`, `VERY_HIGH`, `NEGATIVE_LOW`, etc.). `INVALID` is not allowed.
 
-- **Missing attribute** — role ignored at login (WARN if assigned).
-- **Explicit `NONE`** — intentional neutral; stored on the role as proof of configuration, ignored for scoring.
-- **No scorable assigned role** — `ClientRoleRiskEvaluator` returns `invalid` for that dimension.
+- **No attribute** — prefix heuristics apply.
+- **Attribute set** — explicit score overrides prefix heuristics for that role.
+- **Explicit `NONE`** — intentional neutral override (e.g. to neutralize a `manage-*` role on a custom app).
 
 Role scoring is evaluated at login only (`ClientRoleRiskEvaluator`, phase `USER_KNOWN`).
