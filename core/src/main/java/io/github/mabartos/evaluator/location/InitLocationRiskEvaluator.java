@@ -48,6 +48,11 @@ public class InitLocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
     public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         // Trigger location data fetching and caching
         var location = locationContext.getData(realm).orElse(null);

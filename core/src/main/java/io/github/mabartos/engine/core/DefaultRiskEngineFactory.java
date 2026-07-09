@@ -16,14 +16,14 @@
  */
 package io.github.mabartos.engine.core;
 
-import org.keycloak.Config;
 import io.github.mabartos.spi.engine.RiskEngine;
 import io.github.mabartos.spi.engine.RiskEngineFactory;
+import org.keycloak.Config;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 
 public class DefaultRiskEngineFactory implements RiskEngineFactory {
-    public static final String PROVIDER_ID = "default-mutiny";
+    public static final String PROVIDER_ID = "default";
 
     @Override
     public RiskEngine create(KeycloakSession session) {
@@ -36,6 +36,11 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
     }
 
     @Override
+    public int order() {
+        return 1;
+    }
+
+    @Override
     public void init(Config.Scope config) {
     }
 
@@ -45,6 +50,5 @@ public class DefaultRiskEngineFactory implements RiskEngineFactory {
 
     @Override
     public void close() {
-
     }
 }

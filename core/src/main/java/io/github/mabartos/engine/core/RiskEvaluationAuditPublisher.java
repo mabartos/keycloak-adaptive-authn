@@ -98,7 +98,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
     /**
      * Retains per-evaluator results from {@code BEFORE_AUTHN} for the consolidated login audit event.
      */
-    public void stageBeforeAuthnEvaluators(@Nonnull List<AbstractRiskEngine.EvaluatorResult> evaluatorResults) {
+    public void stageBeforeAuthnEvaluators(@Nonnull List<DefaultRiskEngine.EvaluatorResult> evaluatorResults) {
         if (!RiskEvaluationAuditConfig.isAuditEnabled(session.getContext().getRealm())) {
             return;
         }
@@ -117,7 +117,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
             @Nonnull ResultRisk userKnownRisk,
             @Nullable ResultRisk overallRisk,
             @Nonnull RiskScoreAlgorithm algorithm,
-            @Nonnull List<AbstractRiskEngine.EvaluatorResult> userKnownEvaluatorResults
+            @Nonnull List<DefaultRiskEngine.EvaluatorResult> userKnownEvaluatorResults
     ) {
         if (!RiskEvaluationAuditConfig.isAuditEnabled(realm)) {
             logger.debugf("Risk evaluation audit disabled for realm %s (events off or %s not in saved event types)",
@@ -144,7 +144,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
             @Nonnull UserModel user,
             @Nonnull ResultRisk continuousRisk,
             @Nonnull RiskScoreAlgorithm algorithm,
-            @Nonnull List<AbstractRiskEngine.EvaluatorResult> evaluatorResults
+            @Nonnull List<DefaultRiskEngine.EvaluatorResult> evaluatorResults
     ) {
         if (!RiskEvaluationAuditConfig.isAuditEnabled(realm) || !continuousRisk.isValid()) {
             return;
@@ -273,7 +273,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
             @Nullable ResultRisk overallRisk,
             RiskScoreAlgorithm algorithm,
             @Nullable String beforeAuthnEvaluators,
-            List<AbstractRiskEngine.EvaluatorResult> userKnownEvaluatorResults
+            List<DefaultRiskEngine.EvaluatorResult> userKnownEvaluatorResults
     ) {
         var authSession = session.getContext().getAuthenticationSession();
         var clientId = authSession != null && authSession.getClient() != null
@@ -389,7 +389,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
                 .orElse("UNKNOWN");
     }
 
-    static String formatEvaluators(List<AbstractRiskEngine.EvaluatorResult> results) {
+    static String formatEvaluators(List<DefaultRiskEngine.EvaluatorResult> results) {
         if (results == null || results.isEmpty()) {
             return "";
         }
@@ -404,14 +404,14 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
     /**
      * Highest {@link io.github.mabartos.spi.level.Risk.Score} ordinal first; {@code INVALID} last; name as tie-breaker.
      */
-    static Comparator<AbstractRiskEngine.EvaluatorResult> compareEvaluatorsBySeverity() {
+    static Comparator<DefaultRiskEngine.EvaluatorResult> compareEvaluatorsBySeverity() {
         return Comparator
                 .comparingInt(RiskEvaluationAuditPublisher::evaluatorSeverityOrdinal)
                 .reversed()
-                .thenComparing(AbstractRiskEngine.EvaluatorResult::evaluatorName);
+                .thenComparing(DefaultRiskEngine.EvaluatorResult::evaluatorName);
     }
 
-    static int evaluatorSeverityOrdinal(AbstractRiskEngine.EvaluatorResult result) {
+    static int evaluatorSeverityOrdinal(DefaultRiskEngine.EvaluatorResult result) {
         var risk = result.risk();
         if (risk == null || risk.getScore() == null) {
             return -1;
@@ -423,7 +423,7 @@ public class RiskEvaluationAuditPublisher implements RiskAuditPublisher {
      * One evaluator line: {@code Name=SCORE} or {@code Name=INVALID:reason} (reason truncated, no line breaks / {@code =}).
      */
     @Nullable
-    static String formatEvaluatorEntry(AbstractRiskEngine.EvaluatorResult result) {
+    static String formatEvaluatorEntry(DefaultRiskEngine.EvaluatorResult result) {
         var risk = result.risk();
         if (risk == null || risk.getScore() == null) {
             return null;

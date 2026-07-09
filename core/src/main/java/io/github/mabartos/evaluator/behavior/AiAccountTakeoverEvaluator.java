@@ -110,6 +110,11 @@ public class AiAccountTakeoverEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
     public boolean allowRetries() {
         return false;
     }
