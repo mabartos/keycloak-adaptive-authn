@@ -83,6 +83,7 @@ For more information and setup, see the <a href="docs/ai-engine-integration.md">
 
 | Keycloak Version | Supported |
 |------------------|-----------|
+| 26.7.x           | Yes       |
 | 26.6.x           | Yes       |
 | 26.5.x           | Testing ended June 2026 |
 | main (nightly)   | Yes       |

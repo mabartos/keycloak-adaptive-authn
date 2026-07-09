@@ -16,9 +16,12 @@ jobs:
           - keycloak-version: 999.0.0-SNAPSHOT
             build-args: ""
             test-args: -Dkeycloak.version=999.0.0-SNAPSHOT
-          - keycloak-version: 26.6.3
-            build-args: -Pdist-maven -Dkeycloak.version=26.6.3 -Dkeycloak.test.realm.source=released -Dssf.skip
-            test-args: -Dkeycloak.version=26.6.3 -Dkeycloak.test.realm.source=released
+          - keycloak-version: 26.7.0
+            build-args: -Pdist-maven -Dkeycloak.version=26.7.0
+            test-args: -Dkeycloak.version=26.7.0
+          - keycloak-version: 26.6.4
+            build-args: -Pdist-maven -Dkeycloak.version=26.6.4 -Dkeycloak.test.realm.source=legacy -Dssf.skip
+            test-args: -Dkeycloak.version=26.6.4 -Dkeycloak.test.realm.source=legacy
 
     name: Keycloak ${{ matrix.keycloak-version }}
     steps:

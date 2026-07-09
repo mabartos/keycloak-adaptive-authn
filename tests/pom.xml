@@ -64,8 +64,8 @@
     <build>
         <plugins>
             <!--
-              Realm config: java-${keycloak.test.realm.source} (default nightly).
-              Stable Keycloak: pass -Dkeycloak.test.realm.source=released with -Dkeycloak.version=26.6.2.
+              Realm config: java-${keycloak.test.realm.source} (default).
+              Keycloak 26.6.x: pass -Dkeycloak.test.realm.source=legacy.
             -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -102,13 +102,13 @@
     </build>
 
     <profiles>
-        <!-- keycloak-test-framework-builders: SNAPSHOT / java-nightly only (keycloak/keycloak#48315) -->
+        <!-- keycloak-test-framework-builders: 26.7+ / nightly (keycloak/keycloak#48315) -->
         <profile>
-            <id>keycloak-nightly-test-framework</id>
+            <id>keycloak-test-framework-builders</id>
             <activation>
                 <property>
                     <name>keycloak.test.realm.source</name>
-                    <value>nightly</value>
+                    <value>default</value>
                 </property>
             </activation>
             <dependencies>
