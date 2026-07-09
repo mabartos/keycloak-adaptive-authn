@@ -110,3 +110,6 @@ IpApiLocationContextFactory (UserContext SPI)
 ```
 
 Each backend is a separate `GeoIpResolverFactory` in this extension JAR (`io.github.mabartos.context.location.geoip`). Pro tiers are skipped at runtime when their credential env var is unset (factories stay registered so a Keycloak rebuild is not required when secrets are supplied only at container start). Future backends (e.g. MaxMind) can ship as additional extension JARs registering the same SPI.
+
+## Community maintainer
+- [Thomas DELORGE](https://github.com/thomasdelorge)
