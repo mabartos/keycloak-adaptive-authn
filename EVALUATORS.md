@@ -12,7 +12,7 @@ Executed before the user is known. Useful for evaluating risk from browser, IP a
 | Browser | Scores the browser from the login request user agent. Chrome, Firefox, and Safari reduce risk, other browsers score moderate risk. |
 | Client sensitivity | Scores risk from the requesting OAuth client's sensitivity. Configure per client under Client → Risk-based settings. |
 | Init location | Prepares GeoIP/location context for later evaluators. |
-| Operating system | Scores the operating system from the login request user agent. |
+| Operating system | Scores the operating system from the login request user agent. Linux, macOS, and Windows 10/11 reduce risk, older Windows versions score moderate risk. |
 | reCAPTCHA | Uses Google reCAPTCHA Enterprise risk scores for the login attempt. |
 
 ## User Known (`USER_KNOWN`)
