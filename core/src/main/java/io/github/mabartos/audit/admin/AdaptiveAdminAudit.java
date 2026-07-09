@@ -3,7 +3,6 @@ package io.github.mabartos.audit.admin;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
-import org.keycloak.common.ClientConnection;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -21,33 +20,6 @@ public final class AdaptiveAdminAudit {
     private static final Logger logger = Logger.getLogger(AdaptiveAdminAudit.class);
 
     public static final String RESOURCE_TYPE = "ADAPTIVE_RISK_CONFIG";
-
-    private static final ClientConnection UNKNOWN_CONNECTION = new ClientConnection() {
-        @Override
-        public String getRemoteAddr() {
-            return "unknown";
-        }
-
-        @Override
-        public String getRemoteHost() {
-            return "unknown";
-        }
-
-        @Override
-        public int getRemotePort() {
-            return 0;
-        }
-
-        @Override
-        public String getLocalAddr() {
-            return "unknown";
-        }
-
-        @Override
-        public int getLocalPort() {
-            return 0;
-        }
-    };
 
     private AdaptiveAdminAudit() {
     }
@@ -112,7 +84,7 @@ public final class AdaptiveAdminAudit {
         }
 
         try {
-            var builder = new AdminEventBuilder(realm, auth, session, resolveClientConnection(session))
+            var builder = new AdminEventBuilder(realm, auth, session, session.getContext().getConnection())
                     .resource(RESOURCE_TYPE)
                     .operation(OperationType.UPDATE)
                     .resourcePath(resourcePath);
@@ -150,15 +122,4 @@ public final class AdaptiveAdminAudit {
         }
     }
 
-    static ClientConnection resolveClientConnection(KeycloakSession session) {
-        try {
-            var connection = session.getContext().getConnection();
-            if (connection != null) {
-                return connection;
-            }
-        } catch (RuntimeException e) {
-            logger.tracef("Client connection unavailable for adaptive admin audit: %s", e.getMessage());
-        }
-        return UNKNOWN_CONNECTION;
-    }
 }
