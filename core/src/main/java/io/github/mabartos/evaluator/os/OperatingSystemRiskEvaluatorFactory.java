@@ -41,7 +41,7 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
 
     @Override
     public String getDescription() {
-        return "Scores the operating system from the login request user agent.";
+        return "Scores the operating system from the login request user agent. Linux, macOS, and Windows 10/11 reduce risk, older Windows versions score moderate risk.";
     }
 
     @Override

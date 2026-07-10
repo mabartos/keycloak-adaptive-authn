@@ -34,6 +34,12 @@
             <artifactId>keycloak-quarkus-server</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.keycloak.testframework</groupId>
+            <artifactId>keycloak-test-framework-core</artifactId>
+            <version>${keycloak.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

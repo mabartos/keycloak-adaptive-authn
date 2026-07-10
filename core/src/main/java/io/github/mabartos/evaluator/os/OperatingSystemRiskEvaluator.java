@@ -17,6 +17,7 @@
 package io.github.mabartos.evaluator.os;
 
 import io.github.mabartos.context.UserContexts;
+import io.github.mabartos.context.os.DefaultOperatingSystems;
 import io.github.mabartos.context.os.OperatingSystemCondition;
 import io.github.mabartos.context.os.OperatingSystemConditionFactory;
 import io.github.mabartos.spi.evaluator.EvaluationPhase;
@@ -32,8 +33,8 @@ import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
 import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
 
 /**
- * Risk evaluator for OS properties
- * Known OS = trust signal, unknown OS = moderate risk
+ * Risk evaluator for OS properties.
+ * Linux, macOS, and recent Windows (10/11) reduce risk; legacy Windows and unknown OS score moderate risk.
  */
 @EvaluationPhase(BEFORE_AUTHN)
 public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
@@ -45,8 +46,15 @@ public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
-        return condition.isDefaultKnownOs(realm)
-            ? Risk.of(NEGATIVE_LOW, "Known OS - trust signal")
-            : Risk.of(MEDIUM, "Unknown OS");
+        if (condition.isTrustedOs(realm)) {
+            if (condition.isOs(realm, DefaultOperatingSystems.WINDOWS)) {
+                return Risk.of(NEGATIVE_LOW, "Recent Windows - trust signal");
+            }
+            return Risk.of(NEGATIVE_LOW, "Known OS - trust signal");
+        }
+        if (condition.isLegacyWindows(realm)) {
+            return Risk.of(MEDIUM, "Legacy Windows");
+        }
+        return Risk.of(MEDIUM, "Unknown OS");
     }
 }

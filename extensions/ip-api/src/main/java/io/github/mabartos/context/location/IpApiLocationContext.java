@@ -19,35 +19,39 @@ package io.github.mabartos.context.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.ip.IPAddress;
 import io.github.mabartos.context.ip.client.IpAddressContext;
+import io.github.mabartos.context.location.geoip.GeoIpResolver;
 import jakarta.annotation.Nonnull;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.util.EntityUtils;
 import org.jboss.logging.Logger;
-import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.util.JsonSerialization;
-import org.keycloak.utils.StringUtil;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * Obtain location data based on the IP address from 'ipapi.co' server
+ * Resolves {@link LocationData} using an ordered list of {@link GeoIpResolver} backends
+ * (e.g. {@code ipapi-co-free} then {@code ip-api-com-free}) so a later resolver runs only if earlier ones fail.
+ *
+ * <p>If every resolver fails, returns {@link Optional#empty()}. Nothing is cached here; upper
+ * cache layers ({@link GlobalCacheLocationContext}, {@link AuthnSessionLocationContext}) are updated
+ * by {@link io.github.mabartos.spi.context.AbstractUserContext} when this context is used as a delegate.
+ * {@link LocationConditionFactory} maps absent data to {@code "<unknown>"} for country/city conditions.</p>
  */
 public class IpApiLocationContext extends LocationContext {
-
     private static final Logger log = Logger.getLogger(IpApiLocationContext.class);
 
-    private final HttpClientProvider httpClientProvider;
     private final IpAddressContext ipAddressContext;
+    private final List<GeoIpResolver> resolvers;
 
-    public IpApiLocationContext(KeycloakSession session) {
+    public IpApiLocationContext(KeycloakSession session, List<GeoIpResolver> resolvers) {
+        this(session, UserContexts.getContext(session, IpAddressContext.class), resolvers);
+    }
+
+    IpApiLocationContext(KeycloakSession session, IpAddressContext ipAddressContext, List<GeoIpResolver> resolvers) {
         super(session);
-        this.httpClientProvider = session.getProvider(HttpClientProvider.class);
-        this.ipAddressContext = UserContexts.getContext(session, IpAddressContext.class);
+        this.ipAddressContext = ipAddressContext;
+        this.resolvers = List.copyOf(resolvers);
     }
 
     @Override
@@ -57,47 +61,81 @@ public class IpApiLocationContext extends LocationContext {
 
     @Override
     public Optional<LocationData> initData(@Nonnull RealmModel realm) {
-        try {
-            IPAddress ipAddress = ipAddressContext.getData(realm).orElse(null);
-
-            if (ipAddress == null) {
-                log.trace("Cannot obtain IP address");
-                return Optional.empty();
-            }
-
-            var client = httpClientProvider.getHttpClient();
-            var uriString = Optional.of(ipAddress)
-                    .map(IpApiLocationContextFactory.SERVICE_URL)
-                    .filter(StringUtil::isNotBlank);
-
-            if (uriString.isEmpty()) {
-                log.error("Cannot obtain full URL for IP API");
-                return Optional.empty();
-            }
-
-            var getRequest = new HttpGet(new URIBuilder(uriString.get()).build());
-
-            try (var response = client.execute(getRequest)) {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    EntityUtils.consumeQuietly(response.getEntity());
-                    log.error(response.getStatusLine().getReasonPhrase());
-                    return Optional.empty();
-                }
-
-                Optional<LocationData> data = Optional.ofNullable(
-                        JsonSerialization.readValue(
-                                response.getEntity().getContent(),
-                                IpApiLocationData.class));
-
-                data.ifPresent(location -> log.tracef("Location obtained: %s", location));
-
-                return data;
-            }
-        } catch (URISyntaxException | IOException | RuntimeException e) {
-            log.error("Failed to initialize location data", e);
-        }
-
-        return Optional.empty();
+        IPAddress ipAddress = resolveIpAddress(ipAddressContext, realm);
+        return resolveForIp(session, realm, ipAddress);
     }
 
+    static IPAddress resolveIpAddress(IpAddressContext ipAddressContext, RealmModel realm) {
+        return Optional.ofNullable(ipAddressContext)
+                .flatMap(ctx -> ctx.getData(realm))
+                .orElse(null);
+    }
+
+    Optional<LocationData> resolveForIp(KeycloakSession session, RealmModel realm, IPAddress ipAddress) {
+        if (ipAddress == null) {
+            log.tracef("Cannot obtain IP address");
+            return Optional.empty();
+        }
+
+        return resolveThroughResolvers(session, realm, ipAddress, resolvers);
+    }
+
+    /**
+     * Tries each resolver in order. Upper cache layers ({@link GlobalCacheLocationContext},
+     * {@link AuthnSessionLocationContext}) are updated by {@link io.github.mabartos.spi.context.AbstractUserContext}
+     * when this context is used as a delegate.
+     */
+    static Optional<LocationData> resolveThroughResolvers(
+            KeycloakSession session, RealmModel realm, IPAddress ipAddress, List<GeoIpResolver> resolvers) {
+        String realmName = realm != null ? realm.getName() : "";
+        log.tracef(
+                "GeoIP resolution start realm=%s ip=%s resolverChain=[%s]",
+                realmName,
+                ipAddress,
+                resolvers.stream().map(GeoIpResolver::id).collect(Collectors.joining(", ")));
+
+        int total = resolvers.size();
+        for (int i = 0; i < total; i++) {
+            GeoIpResolver resolver = resolvers.get(i);
+            log.tracef(
+                    "GeoIP trying resolver id=%s for ip=%s realm=%s (%d/%d)",
+                    resolver.id(), ipAddress, realmName, i + 1, total);
+
+            Optional<LocationData> data = resolver.resolve(session, realm, ipAddress);
+            if (data.isPresent()) {
+                LocationData resolved = data.get();
+                log.tracef(
+                        "GeoIP location obtained from resolver id=%s for ip=%s realm=%s (country=%s, city=%s)",
+                        resolver.id(),
+                        ipAddress,
+                        realmName,
+                        resolved.getCountry(),
+                        resolved.getCity());
+                return data;
+            }
+
+            if (i + 1 < total) {
+                String nextId = resolvers.get(i + 1).id();
+                log.tracef(
+                        "GeoIP resolver id=%s returned no location for ip=%s realm=%s; falling back to resolver id=%s",
+                        resolver.id(),
+                        ipAddress,
+                        realmName,
+                        nextId);
+            } else {
+                log.tracef(
+                        "GeoIP resolver id=%s returned no location for ip=%s realm=%s; no further resolvers in chain",
+                        resolver.id(),
+                        ipAddress,
+                        realmName);
+            }
+        }
+
+        log.errorf(
+                "GeoIP all %d resolver(s) failed for ip=%s realm=%s; returning no location (not cached)",
+                total,
+                ipAddress,
+                realmName);
+        return Optional.empty();
+    }
 }

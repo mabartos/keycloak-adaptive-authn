@@ -54,8 +54,12 @@ public class OperatingSystemCondition implements UserContextCondition, Condition
         return OperatingSystemConditionFactory.isOs(realm, deviceContext, os);
     }
 
-    public boolean isDefaultKnownOs(RealmModel realmModel) {
-        return DefaultOperatingSystems.DEFAULT_OPERATING_SYSTEMS.stream().anyMatch(os -> isOs(realmModel, os));
+    public boolean isTrustedOs(RealmModel realm) {
+        return OperatingSystemConditionFactory.isTrustedOs(realm, deviceContext);
+    }
+
+    public boolean isLegacyWindows(RealmModel realm) {
+        return OperatingSystemConditionFactory.isLegacyWindows(realm, deviceContext);
     }
 
     @Override
