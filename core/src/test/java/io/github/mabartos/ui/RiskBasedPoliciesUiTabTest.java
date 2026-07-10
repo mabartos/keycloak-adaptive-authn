@@ -3,6 +3,8 @@ package io.github.mabartos.ui;
 import io.github.mabartos.evaluator.behavior.ConcurrentSessionRiskEvaluatorFactory;
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory;
 import io.github.mabartos.evaluator.client.ClientSensitivityRiskEvaluatorFactory;
+import io.github.mabartos.context.location.KnownLocationContext;
+import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluatorFactory;
 import io.github.mabartos.evaluator.role.DefaultUserRoleEvaluatorFactory;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.junit.jupiter.api.Test;
@@ -65,6 +67,20 @@ class RiskBasedPoliciesUiTabTest {
                 .orElseThrow();
 
         assertEquals("[BEFORE_AUTHN] Browser trust", trust.getLabel());
+    }
+
+    @Test
+    void buildConfigProperties_includesEvaluatorSpecificProperties() {
+        var factories = List.<RiskEvaluatorFactory>of(new KnownLocationRiskEvaluatorFactory());
+
+        var ttl = RiskBasedPoliciesUiTab.buildConfigProperties(List.of(), factories).stream()
+                .filter(p -> KnownLocationContext.TTL_DAYS_CONFIG.equals(p.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals("[USER_KNOWN] Known location TTL (days)", ttl.getLabel());
+        assertEquals(ProviderConfigProperty.INTEGER_TYPE, ttl.getType());
+        assertEquals(KnownLocationContext.DEFAULT_TTL_DAYS, ttl.getDefaultValue());
     }
 
     private static List<String> evaluatorEnabledLabels(List<ProviderConfigProperty> props) {
