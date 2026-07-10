@@ -50,3 +50,20 @@ After a login, one event is stored with detail:
 When continuous evaluation revokes sessions (score ≥ threshold), one event is stored with `custom_required_action=adaptive-risk-remediation`, `adaptive_phase=CONTINUOUS`, `adaptive_remediation=sessions_revoked`, continuous score, `adaptive_continuous_level`, and evaluators.
 
 Filter in **Events → User events** by those detail values (`adaptive-risk-evaluation` vs `adaptive-risk-remediation`) to distinguish login audit, remediation, and real required actions.
+
+#### Risk policy change audit (optional)
+
+Native admin events already capture the full tab JSON when **Include representation** is enabled on admin events.
+
+For **updates only** on the **Risk-based policies** tab, you can enable an extra diff-oriented admin event from **Authentication → Risk-based policies**:
+
+1. Enable **Risk policy change audit (admin events)** on the tab.
+2. In **Realm settings → Events → Admin events settings**:
+   - **Save admin events** — `ON`
+
+On save, when at least one setting changed, one additional admin event is stored (`resourceType` = `ADAPTIVE_RISK_CONFIG`) with one detail per changed attribute:
+
+- detail key = attribute name (e.g. `adaptive-audit-events-enabled`, `adaptive-engine-enabled`)
+- detail value = `old > new` (e.g. `false > true`, `1500 > 2500`)
+
+No event on create, and no event on update when nothing changed.
