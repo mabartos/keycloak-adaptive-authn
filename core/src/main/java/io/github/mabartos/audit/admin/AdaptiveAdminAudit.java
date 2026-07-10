@@ -36,10 +36,7 @@ public final class AdaptiveAdminAudit {
         recordRiskPoliciesUpdate(session, realm, beforeSettings, afterSettings, null);
     }
 
-    /**
-     * @param adminAuthOverride when non-null, used instead of resolving auth from the HTTP request (integration tests).
-     */
-    public static void recordRiskPoliciesUpdate(
+    private static void recordRiskPoliciesUpdate(
             @Nullable KeycloakSession session,
             @Nonnull RealmModel realm,
             @Nonnull Map<String, String> beforeSettings,
@@ -89,27 +86,13 @@ public final class AdaptiveAdminAudit {
                     .operation(OperationType.UPDATE)
                     .resourcePath(resourcePath);
 
-            buildPolicyChangeDetails(changes).forEach(builder::detail);
+            changes.forEach(builder::detail);
             builder.success();
             logger.debugf("Recorded adaptive admin audit for %s in realm %s (%d changed settings)",
                     logContext, realm.getName(), changes.size());
         } catch (RuntimeException e) {
             logger.warnf(e, "Failed to record adaptive admin audit for %s in realm %s", logContext, realm.getName());
         }
-    }
-
-    /**
-     * Detail key = config attribute name, value = {@code old > new}.
-     */
-    static Map<String, String> buildPolicyChangeDetails(Map<String, String> changes) {
-        var details = new java.util.LinkedHashMap<String, String>();
-        changes.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> details.put(
-                        entry.getKey(),
-                        RiskPoliciesSettingsSnapshot.sanitizeDetailValue(entry.getValue())
-                ));
-        return details;
     }
 
     @Nullable

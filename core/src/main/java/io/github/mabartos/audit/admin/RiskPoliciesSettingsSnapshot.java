@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * Collects and formats the effective realm-wide adaptive policy settings shown on the
@@ -24,7 +25,7 @@ public final class RiskPoliciesSettingsSnapshot {
      * Keys whose effective value changed between two snapshots (values formatted as {@code old > new}).
      */
     public static Map<String, String> diff(Map<String, String> before, Map<String, String> after) {
-        var changes = new LinkedHashMap<String, String>();
+        var changes = new TreeMap<String, String>();
         if (after == null || after.isEmpty()) {
             return changes;
         }

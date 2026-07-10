@@ -3,7 +3,6 @@ package io.github.mabartos.audit.admin;
 import org.keycloak.models.RealmModel;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.ADMIN_CONFIG_AUDIT_ENABLED_CONFIG;
 
@@ -42,8 +41,6 @@ public final class AdaptiveAdminAuditConfig {
     }
 
     private static boolean parseToggle(String value) {
-        return Optional.ofNullable(value)
-                .map(Boolean::parseBoolean)
-                .orElse(false);
+        return Boolean.parseBoolean(value);
     }
 }

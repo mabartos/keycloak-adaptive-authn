@@ -1,6 +1,7 @@
 package io.github.mabartos;
 
 import io.github.mabartos.audit.admin.AdaptiveAdminAuditConfig;
+import io.github.mabartos.support.AdminConfigAuditRealmSnapshot;
 import org.junit.jupiter.api.Test;
 import org.keycloak.models.RealmModel;
 import org.keycloak.testframework.annotations.InjectRealm;
@@ -31,7 +32,7 @@ class AdaptiveAdminAuditConfigIT {
     void isAdminAuditEnabled_falseWhenToggleOff() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
@@ -46,7 +47,7 @@ class AdaptiveAdminAuditConfigIT {
     void isAdminAuditEnabled_falseWhenAdminEventsDisabled() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(false);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -61,7 +62,7 @@ class AdaptiveAdminAuditConfigIT {
     void isAdminAuditEnabled_trueWhenFullyConfigured() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -76,7 +77,7 @@ class AdaptiveAdminAuditConfigIT {
     void shouldRecord_falseWhenBothToggleSnapshotsOff() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
@@ -98,7 +99,7 @@ class AdaptiveAdminAuditConfigIT {
     void shouldRecord_trueWhenToggleEnabledInSameSave() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -120,7 +121,7 @@ class AdaptiveAdminAuditConfigIT {
     void shouldRecord_trueWhenToggleDisabledInSameSave() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
@@ -142,7 +143,7 @@ class AdaptiveAdminAuditConfigIT {
     void shouldRecord_trueWhenToggleWasAlreadyOn() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -164,7 +165,7 @@ class AdaptiveAdminAuditConfigIT {
     void shouldRecord_falseWhenAdminEventsDisabled() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(false);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -180,31 +181,6 @@ class AdaptiveAdminAuditConfigIT {
                 snapshot.restore(realm);
             }
         });
-    }
-
-    private static final class RealmSnapshot {
-        private final boolean adminEventsEnabled;
-        private final String configAuditToggle;
-
-        private RealmSnapshot(boolean adminEventsEnabled, String configAuditToggle) {
-            this.adminEventsEnabled = adminEventsEnabled;
-            this.configAuditToggle = configAuditToggle;
-        }
-
-        static RealmSnapshot capture(RealmModel realm) {
-            return new RealmSnapshot(
-                    realm.isAdminEventsEnabled(),
-                    realm.getAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG));
-        }
-
-        void restore(RealmModel realm) {
-            realm.setAdminEventsEnabled(adminEventsEnabled);
-            if (configAuditToggle != null) {
-                realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, configAuditToggle);
-            } else {
-                realm.removeAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG);
-            }
-        }
     }
 
     public static class Config implements KeycloakServerConfig {

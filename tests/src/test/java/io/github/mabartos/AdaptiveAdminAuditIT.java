@@ -1,6 +1,8 @@
 package io.github.mabartos;
 
 import io.github.mabartos.audit.admin.AdaptiveAdminAudit;
+import io.github.mabartos.support.AdaptiveAdminAuditInvoker;
+import io.github.mabartos.support.AdminConfigAuditRealmSnapshot;
 import org.junit.jupiter.api.Test;
 import org.keycloak.events.EventStoreProvider;
 import org.keycloak.events.admin.AdminEvent;
@@ -42,7 +44,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_skipsWhenSessionNull() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 configureAdminAudit(realm, true);
                 clearAdaptiveAdminEvents(session, realm);
@@ -63,7 +65,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_skipsWhenAdminEventsDisabled() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(false);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -72,7 +74,7 @@ class AdaptiveAdminAuditIT {
                 var before = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
                 var after = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
 
-                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                AdaptiveAdminAuditInvoker.recordRiskPoliciesUpdate(
                         session, realm, before, after, adminAuth(session, realm));
 
                 assertThat(latestAdaptiveAdminEvent(session, realm), is(Optional.empty()));
@@ -86,7 +88,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_persistsAdminEventWhenEnabledAndChanged() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 configureAdminAudit(realm, true);
                 clearAdaptiveAdminEvents(session, realm);
@@ -100,7 +102,7 @@ class AdaptiveAdminAuditIT {
                         RISK_BASED_AUTHN_ENABLED_CONFIG, "false"
                 );
 
-                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                AdaptiveAdminAuditInvoker.recordRiskPoliciesUpdate(
                         session, realm, before, after, adminAuth(session, realm));
 
                 var event = latestAdaptiveAdminEvent(session, realm).orElseThrow();
@@ -117,7 +119,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_skipsWhenNothingChanged() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 configureAdminAudit(realm, true);
                 clearAdaptiveAdminEvents(session, realm);
@@ -127,7 +129,7 @@ class AdaptiveAdminAuditIT {
                         RISK_BASED_AUTHN_ENABLED_CONFIG, "true"
                 );
 
-                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                AdaptiveAdminAuditInvoker.recordRiskPoliciesUpdate(
                         session, realm, unchanged, unchanged, adminAuth(session, realm));
 
                 assertThat(latestAdaptiveAdminEvent(session, realm), is(Optional.empty()));
@@ -141,7 +143,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_skipsWhenBothToggleSnapshotsOff() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 configureAdminAudit(realm, false);
                 clearAdaptiveAdminEvents(session, realm);
@@ -155,7 +157,7 @@ class AdaptiveAdminAuditIT {
                         RISK_BASED_AUTHN_ENABLED_CONFIG, "false"
                 );
 
-                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                AdaptiveAdminAuditInvoker.recordRiskPoliciesUpdate(
                         session, realm, before, after, adminAuth(session, realm));
 
                 assertThat(latestAdaptiveAdminEvent(session, realm), is(Optional.empty()));
@@ -169,7 +171,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_logsToggleEnableInSameSave() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 realm.setAdminEventsEnabled(true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
@@ -178,7 +180,7 @@ class AdaptiveAdminAuditIT {
                 var before = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
                 var after = Map.of(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "true");
 
-                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                AdaptiveAdminAuditInvoker.recordRiskPoliciesUpdate(
                         session, realm, before, after, adminAuth(session, realm));
 
                 var event = latestAdaptiveAdminEvent(session, realm).orElseThrow();
@@ -193,7 +195,7 @@ class AdaptiveAdminAuditIT {
     void recordRiskPoliciesUpdate_logsToggleDisableInSameSave() {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
-            var snapshot = RealmSnapshot.capture(realm);
+            var snapshot = AdminConfigAuditRealmSnapshot.capture(realm);
             try {
                 configureAdminAudit(realm, true);
                 realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, "false");
@@ -208,7 +210,7 @@ class AdaptiveAdminAuditIT {
                         RISK_BASED_AUTHN_ENABLED_CONFIG, "false"
                 );
 
-                AdaptiveAdminAudit.recordRiskPoliciesUpdate(
+                AdaptiveAdminAuditInvoker.recordRiskPoliciesUpdate(
                         session, realm, before, after, adminAuth(session, realm));
 
                 var event = latestAdaptiveAdminEvent(session, realm).orElseThrow();
@@ -251,31 +253,6 @@ class AdaptiveAdminAuditIT {
         UserModel user = session.users().getUserByUsername(realm, "admin");
         ClientModel client = realm.getClientByClientId("admin-cli");
         return new AdminAuth(realm, new AccessToken(), user, client);
-    }
-
-    private static final class RealmSnapshot {
-        private final boolean adminEventsEnabled;
-        private final String configAuditToggle;
-
-        private RealmSnapshot(boolean adminEventsEnabled, String configAuditToggle) {
-            this.adminEventsEnabled = adminEventsEnabled;
-            this.configAuditToggle = configAuditToggle;
-        }
-
-        static RealmSnapshot capture(RealmModel realm) {
-            return new RealmSnapshot(
-                    realm.isAdminEventsEnabled(),
-                    realm.getAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG));
-        }
-
-        void restore(RealmModel realm) {
-            realm.setAdminEventsEnabled(adminEventsEnabled);
-            if (configAuditToggle != null) {
-                realm.setAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG, configAuditToggle);
-            } else {
-                realm.removeAttribute(ADMIN_CONFIG_AUDIT_ENABLED_CONFIG);
-            }
-        }
     }
 
     public static class Config implements KeycloakServerConfig {
