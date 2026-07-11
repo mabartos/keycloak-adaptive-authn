@@ -67,3 +67,7 @@ On save, when at least one setting changed, one additional admin event is stored
 - detail value = `old > new` (e.g. `false > true`, `1500 > 2500`)
 
 No event on create, and no event on update when nothing changed.
+
+### Evaluator-specific settings
+
+Individual evaluators can expose extra realm settings (risk scores, thresholds, TTL) in the same **Risk-based policies** tab via `getAdditionalAdminConfigProperties()`. See [Evaluator settings](evaluator-settings.md) for naming conventions and how to add new fields.

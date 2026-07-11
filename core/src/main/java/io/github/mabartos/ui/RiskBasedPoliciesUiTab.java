@@ -18,6 +18,8 @@ package io.github.mabartos.ui;
 
 import io.github.mabartos.audit.admin.AdaptiveAdminAudit;
 import io.github.mabartos.audit.admin.RiskPoliciesSettingsSnapshot;
+import io.github.mabartos.evaluator.EvaluatorIntegerConfigProperty;
+import io.github.mabartos.evaluator.EvaluatorSettingUtils;
 import io.github.mabartos.evaluator.EvaluatorUtils;
 import io.github.mabartos.level.Trust;
 import io.github.mabartos.spi.engine.RiskScoreAlgorithm;
@@ -211,9 +213,18 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             var key = prop.getName();
             if (model.contains(key)) {
                 storeRealmAttributeFromModel(model, realm, key, context);
-            } else if (realm.getAttribute(key) == null && prop.getDefaultValue() != null) {
-                logger.debugf("%s setting evaluator default '%s' = '%s'", context, key, prop.getDefaultValue());
-                realm.setAttribute(key, prop.getDefaultValue().toString());
+            } else if (StringUtil.isBlank(realm.getAttribute(key))) {
+                var persisted = resolvePersistedTabComponent(realm, model);
+                if (persisted != null
+                        && persisted.getConfig().containsKey(key)
+                        && StringUtil.isNotBlank(persisted.get(key))) {
+                    logger.debugf("%s migrating component evaluator setting '%s' = '%s' to realm",
+                            context, key, persisted.get(key));
+                    realm.setAttribute(key, persisted.get(key));
+                } else if (prop.getDefaultValue() != null) {
+                    logger.debugf("%s setting evaluator default '%s' = '%s'", context, key, prop.getDefaultValue());
+                    realm.setAttribute(key, prop.getDefaultValue().toString());
+                }
             }
         });
     }
@@ -223,6 +234,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.tracef("validateConfiguration execution");
 
         validateEvaluatorTrustValues(model);
+        validateAdditionalEvaluatorSettings(model);
 
         var persisted = resolvePersistedTabComponent(realm, model);
         hydrateModelFromRealmAttributes(realm, model, persisted);
@@ -253,6 +265,35 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         });
     }
 
+    private void validateAdditionalEvaluatorSettings(ComponentModel model) {
+        riskEvaluatorFactories.forEach(factory -> factory.getAdditionalAdminConfigProperties().forEach(prop -> {
+            var value = model.get(prop.getName());
+            if (StringUtil.isBlank(value)) {
+                return;
+            }
+            if (isScoreListProperty(prop)) {
+                if (!EvaluatorSettingUtils.isValidScoreName(value)) {
+                    throw new ComponentValidationException(String.format(
+                            "%s must be one of: %s",
+                            prop.getLabel(),
+                            String.join(", ", EvaluatorSettingUtils.configurableScoreNames())));
+                }
+                return;
+            }
+            if (prop instanceof EvaluatorIntegerConfigProperty intProp) {
+                validateIntegerAtLeast(value, intProp.getMinimum(), prop.getLabel());
+            } else if (ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType())) {
+                validateInteger(value, prop.getLabel());
+            }
+        }));
+    }
+
+    private static boolean isScoreListProperty(ProviderConfigProperty prop) {
+        return ProviderConfigProperty.LIST_TYPE.equals(prop.getType())
+                && prop.getOptions() != null
+                && prop.getOptions().equals(EvaluatorSettingUtils.configurableScoreNames());
+    }
+
     private void populateMissingDefaults(ComponentModel model) {
         getConfigProperties().forEach(prop -> {
             if (model.get(prop.getName()) == null && prop.getDefaultValue() != null) {
@@ -276,6 +317,13 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             var key = prop.getName();
             var realmValue = realm.getAttribute(key);
             if (isRealmSourcedEvaluatorSetting(key) || isAdditionalAdminConfigKey(key)) {
+                if (isAdditionalAdminConfigKey(key)
+                        && persisted == null
+                        && StringUtil.isBlank(realmValue)
+                        && StringUtil.isNotBlank(model.get(key))) {
+                    logger.tracef("Keeping first-save additional evaluator setting '%s' = '%s'", key, model.get(key));
+                    return;
+                }
                 applyRealmSourcedEvaluatorSettingHydration(model, persisted, key, realmValue);
                 return;
             }
@@ -367,6 +415,17 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             }
         } catch (NumberFormatException e) {
             throw new ComponentValidationException(String.format("%s must be positive number or 0", attributeDisplayName));
+        }
+    }
+
+    protected void validateIntegerAtLeast(String value, int minimum, String attributeDisplayName) {
+        try {
+            if (Integer.parseInt(value) < minimum) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            throw new ComponentValidationException(
+                    String.format("%s must be at least %d", attributeDisplayName, minimum));
         }
     }
 
@@ -504,9 +563,17 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
 
     private static ProviderConfigProperty withEvaluatorSettingLabel(
             RiskEvaluatorFactory factory, ProviderConfigProperty prop) {
+        var label = RiskEvaluatorUi.additionalSettingLabel(factory, prop.getLabel());
+        if (prop instanceof EvaluatorIntegerConfigProperty intProp) {
+            var defaultValue = prop.getDefaultValue() instanceof Number number
+                    ? number.intValue()
+                    : intProp.getMinimum();
+            return new EvaluatorIntegerConfigProperty(
+                    prop.getName(), label, prop.getHelpText(), defaultValue, intProp.getMinimum());
+        }
         var labeled = new ProviderConfigProperty();
         labeled.setName(prop.getName());
-        labeled.setLabel(RiskEvaluatorUi.additionalSettingLabel(factory, prop.getLabel()));
+        labeled.setLabel(label);
         labeled.setHelpText(prop.getHelpText());
         labeled.setType(prop.getType());
         labeled.setDefaultValue(prop.getDefaultValue());

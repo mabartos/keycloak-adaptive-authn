@@ -502,6 +502,22 @@ class RiskBasedPoliciesUiTabPersistenceTest {
         assertEquals(String.valueOf(KnownLocationContext.DEFAULT_TTL_DAYS), model.get(KnownLocationContext.TTL_DAYS_CONFIG));
     }
 
+
+    @Test
+    void onUpdate_migratesStaleComponentAdditionalSettingToRealm() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var persisted = tabComponent(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "180"));
+        persisted.setId("risk-tab");
+        var newModel = componentModel(Map.of());
+        newModel.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.onUpdate(null, realm, persisted, newModel);
+
+        assertEquals("180", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
     private static ComponentModel componentModel(Map<String, String> entries) {
         var model = new ComponentModel();
         entries.forEach((key, value) -> model.getConfig().putSingle(key, value));
