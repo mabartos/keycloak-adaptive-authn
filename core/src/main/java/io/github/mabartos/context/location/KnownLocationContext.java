@@ -3,7 +3,6 @@ package io.github.mabartos.context.location;
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.spi.context.AbstractUserContext;
 import io.github.mabartos.spi.engine.OnSuccessfulLoginCallback;
-import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jboss.logging.Logger;
@@ -11,7 +10,6 @@ import org.keycloak.common.util.Time;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
-import org.keycloak.utils.StringUtil;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -22,27 +20,11 @@ import java.util.stream.Collectors;
 public class KnownLocationContext extends AbstractUserContext<Set<LocationData>> implements OnSuccessfulLoginCallback {
     private static final Logger logger = Logger.getLogger(KnownLocationContext.class);
     public static final String KNOWN_LOCATIONS_ATTR = "adaptive-location-known";
-    public static final String TTL_DAYS_SETTING_KEY = "ttl-days";
-    public static final String TTL_DAYS_CONFIG = RiskEvaluatorFactory.getAdditionalSettingConfig(
-            "KnownLocationRiskEvaluator", TTL_DAYS_SETTING_KEY);
-    public static final int DEFAULT_TTL_DAYS = 90;
-    // TODO later, it might be configurable
-    private static final int MAX_STORED_LOCATIONS = 10;
+    public static final String TTL_DAYS_CONFIG = KnownLocationSettings.TTL_DAYS_CONFIG;
+    public static final int DEFAULT_TTL_DAYS = KnownLocationSettings.DEFAULT_TTL_DAYS;
 
     public static int getTtlDays(RealmModel realm) {
-        if (realm == null) {
-            return DEFAULT_TTL_DAYS;
-        }
-        var value = realm.getAttribute(TTL_DAYS_CONFIG);
-        if (StringUtil.isBlank(value)) {
-            return DEFAULT_TTL_DAYS;
-        }
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            logger.warnf("Invalid known location TTL realm attribute '%s', using default %d", value, DEFAULT_TTL_DAYS);
-            return DEFAULT_TTL_DAYS;
-        }
+        return KnownLocationSettings.ttlDays(realm);
     }
 
     public KnownLocationContext(KeycloakSession session) {
@@ -95,10 +77,11 @@ public class KnownLocationContext extends AbstractUserContext<Set<LocationData>>
         removeMatchingLocation(knownLocations, currentKnownLocation);
         knownLocations.add(currentKnownLocation);
 
-        // Keep only the last N locations
-        if (knownLocations.size() > MAX_STORED_LOCATIONS) {
+        // Keep only the last N locations (realm setting)
+        int maxStoredLocations = KnownLocationSettings.maxStoredLocations(realm);
+        if (knownLocations.size() > maxStoredLocations) {
             knownLocations = knownLocations.stream()
-                    .skip(knownLocations.size() - MAX_STORED_LOCATIONS)
+                    .skip(knownLocations.size() - maxStoredLocations)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
