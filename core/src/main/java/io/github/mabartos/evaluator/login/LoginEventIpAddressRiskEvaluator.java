@@ -17,10 +17,6 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import static io.github.mabartos.spi.level.Risk.Score.HIGH;
-import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
-import static io.github.mabartos.spi.level.Risk.Score.VERY_SMALL;
-
 /**
  * Evaluates risk based on IP address history.
  * Known IPs = trust signal, unknown IPs = risk signal
@@ -33,6 +29,12 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
     public LoginEventIpAddressRiskEvaluator(KeycloakSession session) {
         this.loginEventsContext = UserContexts.getContext(session, KcLoginEventsContextFactory.PROVIDER_ID);
         this.deviceContext = UserContexts.getContext(session, DeviceRepresentationContext.class);
+    }
+
+    LoginEventIpAddressRiskEvaluator(
+            LoginEventsContext loginEventsContext, DeviceRepresentationContext deviceContext) {
+        this.loginEventsContext = loginEventsContext;
+        this.deviceContext = deviceContext;
     }
 
     @Override
@@ -56,24 +58,25 @@ public class LoginEventIpAddressRiskEvaluator extends AbstractRiskEvaluator {
                 .filter(f -> f.equals(deviceRepresentation.getIpAddress()))
                 .count();
 
-        if (numberOccurrences == 0) {
-            return Risk.of(HIGH, "IP address never seen before");
-        } else {
-            var eventsSize = events.size();
-            if (eventsSize > 3) {
-                long threshold = eventsSize / 3;
-                if (numberOccurrences >= threshold) {
-                    // Seen frequently - trust signal
-                    return Risk.of(NEGATIVE_LOW, "Frequently used IP address - trust signal");
-                } else {
-                    // Seen sometimes but not frequently
-                    return Risk.of(VERY_SMALL, "IP address seen occasionally");
-                }
-            } else {
-                // Not enough data
-                return Risk.invalid("Not enough login history");
-            }
-        }
+        return evaluateIpHistory(realm, numberOccurrences, events.size());
+    }
 
+    protected Risk evaluateIpHistory(RealmModel realm, long numberOccurrences, int eventsSize) {
+        if (numberOccurrences == 0) {
+            return Risk.of(
+                    LoginEventIpAddressEvaluatorConfig.neverSeenIpScore(realm), "IP address never seen before");
+        }
+        if (eventsSize >= LoginEventIpAddressEvaluatorConfig.minLoginEvents(realm)) {
+            int divisor = LoginEventIpAddressEvaluatorConfig.frequentIpThresholdDivisor(realm);
+            long threshold = eventsSize / divisor;
+            if (numberOccurrences >= threshold) {
+                return Risk.of(
+                        LoginEventIpAddressEvaluatorConfig.frequentIpScore(realm),
+                        "Frequently used IP address - trust signal");
+            }
+            return Risk.of(
+                    LoginEventIpAddressEvaluatorConfig.occasionalIpScore(realm), "IP address seen occasionally");
+        }
+        return Risk.invalid("Not enough login history");
     }
 }
