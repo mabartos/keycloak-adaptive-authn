@@ -29,9 +29,6 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
-
 /**
  * Risk evaluator for OS properties.
  * Linux, macOS, and recent Windows (10/11) reduce risk; legacy Windows and unknown OS score moderate risk.
@@ -44,17 +41,21 @@ public class OperatingSystemRiskEvaluator extends DeviceRiskEvaluator {
         this.condition = UserContexts.getContextCondition(session, OperatingSystemConditionFactory.PROVIDER_ID);
     }
 
+    OperatingSystemRiskEvaluator(OperatingSystemCondition condition) {
+        this.condition = condition;
+    }
+
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
         if (condition.isTrustedOs(realm)) {
             if (condition.isOs(realm, DefaultOperatingSystems.WINDOWS)) {
-                return Risk.of(NEGATIVE_LOW, "Recent Windows - trust signal");
+                return Risk.of(OperatingSystemEvaluatorConfig.knownOsScore(realm), "Recent Windows - trust signal");
             }
-            return Risk.of(NEGATIVE_LOW, "Known OS - trust signal");
+            return Risk.of(OperatingSystemEvaluatorConfig.knownOsScore(realm), "Known OS - trust signal");
         }
         if (condition.isLegacyWindows(realm)) {
-            return Risk.of(MEDIUM, "Legacy Windows");
+            return Risk.of(OperatingSystemEvaluatorConfig.legacyWindowsScore(realm), "Legacy Windows");
         }
-        return Risk.of(MEDIUM, "Unknown OS");
+        return Risk.of(OperatingSystemEvaluatorConfig.unknownOsScore(realm), "Unknown OS");
     }
 }
