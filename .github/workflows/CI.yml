@@ -1,4 +1,4 @@
-name: Build Keycloak Adaptive Authentication extension
+name: Build Keycloak Adaptive Authentication
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
             test-args: -Dkeycloak.version=26.7.0
           - keycloak-version: 26.6.4
             build-args: -Pdist-maven -Dkeycloak.version=26.6.4 -Dkeycloak.test.realm.source=legacy -Dssf.skip
-            test-args: -Dkeycloak.version=26.6.4 -Dkeycloak.test.realm.source=legacy
+            test-args: -Dkeycloak.version=26.6.4 -Dkeycloak.test.realm.source=legacy -Dssf.skip
 
     name: Keycloak ${{ matrix.keycloak-version }}
     steps:
@@ -34,15 +34,32 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build extension
+    - name: Build core and extensions
       # maven.test.skip (not skipTests): tests compile later with test-args (version may differ from build)
       run: ./mvnw clean install -Dmaven.test.skip=true -Pbuild-distribution ${{ matrix.build-args }}
+
+    - name: Verify extension artifacts
+      run: |
+        set -euo pipefail
+        shopt -s nullglob
+        jars=(extensions/*/target/keycloak-adaptive-ext-*.jar)
+        if [ "${#jars[@]}" -eq 0 ]; then
+          echo "No extension JARs found under extensions/*/target/"
+          exit 1
+        fi
+        printf '%s\n' "${jars[@]}"
+
+    - name: Copy extensions to distribution
+      run: ./mvnw -f core exec:exec@copy-extensions ${{ matrix.test-args }}
 
     - name: Test execute 'build' command
       run: ./mvnw -f core exec:exec@build ${{ matrix.test-args }}
 
-    - name: Unit tests
+    - name: Unit tests (core)
       run: ./mvnw -f core test ${{ matrix.test-args }}
+
+    - name: Unit tests (extensions)
+      run: ./mvnw -f extensions test ${{ matrix.test-args }}
 
     - name: Integration tests
       run: ./mvnw -f tests test ${{ matrix.test-args }}

@@ -60,10 +60,19 @@ jobs:
       - name: Set release version
         run: ./set-version.sh "${VERSION}"
 
+      - name: Build core and extensions
+        run: |
+          # -pl '!tests': full reactor except IT module; includes core and all extension submodules.
+          # -pl extensions -am only installs aggregator POMs, not ip-api/openrouter/ssf jars.
+          # build-distribution profile lives in core/pom.xml and requires core in the reactor.
+          ./mvnw -B -ntp -U clean install -pl '!tests' \
+            -Dmaven.test.skip=true \
+            -Pbuild-distribution
+
       - name: Deploy to GitHub Packages
         run: |
           echo "Publishing to https://maven.pkg.github.com/${GITHUB_REPOSITORY}"
-          ./mvnw -B -ntp -U clean deploy -pl core -am \
+          ./mvnw -B -ntp deploy -pl core \
             -Dmaven.test.skip=true \
             -Dgithub.packages.repository="${GITHUB_REPOSITORY}"
 
@@ -80,6 +89,13 @@ jobs:
           cp "${CORE_JAR}" dist/
           cp "${THEME_JAR}" dist/adaptive-authn-theme-${VERSION}.jar
           cp "${REALM_JSON}" dist/adaptive-realm-${VERSION}.json
+          shopt -s nullglob
+          ext_jars=(extensions/*/target/keycloak-adaptive-ext-*.jar)
+          if [ "${#ext_jars[@]}" -eq 0 ]; then
+            echo "No extension JARs found under extensions/*/target/"
+            exit 1
+          fi
+          cp "${ext_jars[@]}" dist/
           (cd dist && for f in *.jar *.json; do sha256sum "${f}" > "${f}.sha256"; done)
           ls -la dist/
           (cd dist && cat *.sha256)
@@ -124,6 +140,13 @@ jobs:
           test -f dist/adaptive-authn-theme-${VERSION}.jar
           test -f dist/adaptive-realm-${VERSION}.json
           test -f dist/keycloak-adaptive-authn-${VERSION}.jar
+          shopt -s nullglob
+          ext_jars=(dist/keycloak-adaptive-ext-*.jar)
+          if [ "${#ext_jars[@]}" -eq 0 ]; then
+            echo "No extension JARs found in dist/"
+            exit 1
+          fi
+          printf '%s\n' "${ext_jars[@]}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2

@@ -211,7 +211,7 @@
                                 <arguments>
                                     <argument>-c</argument>
                                     <argument>
-                                        cp extensions/*/target/*.jar ${keycloak.exec.distribution.path}/providers/
+                                        cp ${maven.multiModuleProjectDirectory}/extensions/*/target/*.jar ${keycloak.exec.distribution.path}/providers/
                                     </argument>
                                 </arguments>
                             </configuration>
