@@ -7,13 +7,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Generates {@code EVALUATORS.md} from all {@link RiskEvaluatorFactory} implementations
@@ -50,14 +47,8 @@ public final class EvaluatorDocGenerator {
 
         Path outputFile = Path.of(args[0]).resolve("EVALUATORS.md");
 
-        Map<EvaluationPhase, List<RiskEvaluatorFactory>> byPhase = StreamSupport
-                .stream(ServiceLoader.load(RiskEvaluatorFactory.class).spliterator(), false)
-                .sorted(Comparator.comparing(RiskEvaluatorFactory::getName, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.groupingBy(
-                        RiskEvaluatorFactory::evaluationPhase,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
+        Map<EvaluationPhase, List<RiskEvaluatorFactory>> byPhase =
+                RiskEvaluatorDocSupport.groupByPhase(RiskEvaluatorDocSupport.loadFactories());
 
         try (var out = new PrintWriter(outputFile.toFile(), StandardCharsets.UTF_8)) {
             out.println("# Risk Evaluators");
@@ -77,10 +68,12 @@ public final class EvaluatorDocGenerator {
                 if (factories.isEmpty()) {
                     out.println("_No evaluators registered for this phase._");
                 } else {
-                    out.println("| Evaluator | Description |");
-                    out.println("|-----------|-------------|");
+                    out.println("| Evaluator | Source | Description |");
+                    out.println("|-----------|--------|-------------|");
                     for (RiskEvaluatorFactory f : factories) {
-                        out.printf("| %s | %s |%n", escape(f.getName()), escape(f.getDescription()));
+                        String source = RiskEvaluatorDocSupport.isExtension(f) ? "Extension" : "Core";
+                        out.printf("| %s | %s | %s |%n",
+                                escape(f.getName()), source, escape(f.getDescription()));
                     }
                 }
                 out.println();
@@ -88,7 +81,9 @@ public final class EvaluatorDocGenerator {
 
             out.println("---");
             out.println();
-            out.println("Additional evaluators are available in the [extensions](extensions/) directory.");
+            out.println("Rows marked **Extension** come from optional modules under [extensions](extensions/) ");
+            out.println("when present on the generator classpath (currently SSF). ");
+            out.println("Backend-only modules such as `ip-api` (GeoIP) and `openrouter` (AI engine) do not register evaluators.");
             out.println();
             out.println("---");
             out.println();

@@ -62,9 +62,12 @@
           </thead>
           <tbody data-phase="${section.phaseKey}">
             <#list evaluatorsByPhase[section.phaseKey] as ev>
-            <tr class="eval-row">
+            <tr class="eval-row<#if ev.extension == "true"> eval-extension</#if>">
               <td>
-                <div class="eval-name">${ev.name?html}</div>
+                <div class="eval-name">
+                  ${ev.name?html}
+                  <#if ev.extension == "true"><span class="eval-ext-badge" title="Optional module under extensions/">extension</span></#if>
+                </div>
                 <div class="eval-hint">${ev.description?html}</div>
                 <div class="eval-id">${ev.id?html}</div>
               </td>
@@ -157,14 +160,16 @@
         <p class="ref-note">
           Default level thresholds from <code>LogOddsDefaultRiskLevels</code> (used by <code>LogOddsRiskAlgorithmFactory</code>).
           Range rule matches <code>RiskLevel.matchesRisk()</code>: 0 is LOW; otherwise (min, max].
-          Evaluator list is loaded from <code>RiskEvaluatorFactory</code> via ServiceLoader (core module only).
+          Evaluator list is loaded from <code>RiskEvaluatorFactory</code> via ServiceLoader
+          (core + extension modules that register evaluators, e.g. SSF).
+          Backend-only extensions such as <code>ip-api</code> and <code>openrouter</code> do not appear here.
         </p>
       </section>
     </main>
 
     <footer class="kc-footer">
-      Additional evaluators are available in the
-      <a href="../../extensions/">extensions</a> directory.
+      Rows tagged <span class="eval-ext-badge">extension</span> come from optional modules under
+      <a href="../../extensions/">extensions/</a>.
     </footer>
   </div>
 

@@ -178,9 +178,22 @@ tr:last-child td { border-bottom: none; }
   border-top: 1px solid var(--kc-border);
   background: var(--kc-surface);
 }
-.eval-name { font-weight: 500; }
+.eval-name { font-weight: 500; display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
 .eval-hint { font-size: 0.75rem; color: var(--kc-muted); margin-top: 0.1rem; }
 .eval-id { font-size: 0.7rem; color: var(--kc-muted); font-family: "Red Hat Mono", ui-monospace, monospace; }
+.eval-ext-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6a6e73;
+  background: #f0f0f0;
+  border: 1px solid #d2d2d2;
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+  vertical-align: middle;
+}
 .inactive td { opacity: 0.5; }
 input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: var(--kc-primary); cursor: pointer; }
 .phase-note {

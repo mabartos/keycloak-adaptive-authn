@@ -12,15 +12,11 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Generates {@code utils/log-odds-calculator/log-odds-calculator.html} from
@@ -101,14 +97,8 @@ public final class LogOddsCalculatorGenerator {
     }
 
     private static Map<String, List<Map<String, String>>> evaluatorsByPhase() {
-        Map<EvaluationPhase, List<RiskEvaluatorFactory>> byPhase = StreamSupport
-                .stream(ServiceLoader.load(RiskEvaluatorFactory.class).spliterator(), false)
-                .sorted(Comparator.comparing(RiskEvaluatorFactory::getName, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.groupingBy(
-                        RiskEvaluatorFactory::evaluationPhase,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
+        Map<EvaluationPhase, List<RiskEvaluatorFactory>> byPhase =
+                RiskEvaluatorDocSupport.groupByPhase(RiskEvaluatorDocSupport.loadFactories());
 
         Map<String, List<Map<String, String>>> result = new LinkedHashMap<>();
         result.put("before", toEvaluatorRows(byPhase.getOrDefault(EvaluationPhase.BEFORE_AUTHN, List.of())));
@@ -123,6 +113,7 @@ public final class LogOddsCalculatorGenerator {
             row.put("id", factory.getId());
             row.put("name", factory.getName());
             row.put("description", factory.getDescription());
+            row.put("extension", String.valueOf(RiskEvaluatorDocSupport.isExtension(factory)));
             return row;
         }).toList();
     }

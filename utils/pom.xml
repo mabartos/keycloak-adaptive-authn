@@ -54,6 +54,31 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <!-- Same activation as extensions/pom.xml: skip when building against released KC without SSF. -->
+        <profile>
+            <id>ssf</id>
+            <activation>
+                <property>
+                    <name>!ssf.skip</name>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- Only modules that register RiskEvaluatorFactory (not backends like openrouter/ip-api). -->
+                <dependency>
+                    <groupId>io.github.mabartos</groupId>
+                    <artifactId>keycloak-adaptive-ext-ssf</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.keycloak</groupId>
+                    <artifactId>keycloak-ssf-core</artifactId>
+                    <version>${keycloak.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>

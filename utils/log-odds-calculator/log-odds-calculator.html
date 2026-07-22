@@ -62,7 +62,10 @@
           <tbody data-phase="before">
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Browser</div>
+                <div class="eval-name">
+                  Browser
+                  
+                </div>
                 <div class="eval-hint">Scores the browser from the login request user agent. Chrome, Firefox, and Safari reduce risk, other browsers score moderate risk.</div>
                 <div class="eval-id">default-browser-risk-factor-evaluator</div>
               </td>
@@ -86,7 +89,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Client sensitivity</div>
+                <div class="eval-name">
+                  Client sensitivity
+                  
+                </div>
                 <div class="eval-hint">Scores risk from the requesting OAuth client&#39;s sensitivity. Configure per client under Client → Risk-based settings.</div>
                 <div class="eval-id">default-client-sensitivity-risk-factor</div>
               </td>
@@ -110,7 +116,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Init location</div>
+                <div class="eval-name">
+                  Init location
+                  
+                </div>
                 <div class="eval-hint">Prepares GeoIP/location context for later evaluators.</div>
                 <div class="eval-id">init-location-risk-evaluator</div>
               </td>
@@ -134,7 +143,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Operating system</div>
+                <div class="eval-name">
+                  Operating system
+                  
+                </div>
                 <div class="eval-hint">Scores the operating system from the login request user agent. Linux, macOS, and Windows 10/11 reduce risk, older Windows versions score moderate risk.</div>
                 <div class="eval-id">default-operating-system-risk-evaluator-factory</div>
               </td>
@@ -158,7 +170,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">reCAPTCHA</div>
+                <div class="eval-name">
+                  reCAPTCHA
+                  
+                </div>
                 <div class="eval-hint">Uses Google reCAPTCHA Enterprise risk scores for the login attempt.</div>
                 <div class="eval-id">recaptcha-enterprise</div>
               </td>
@@ -201,7 +216,10 @@
           <tbody data-phase="user">
             <tr class="eval-row">
               <td>
-                <div class="eval-name">AI account takeover</div>
+                <div class="eval-name">
+                  AI account takeover
+                  
+                </div>
                 <div class="eval-hint">LLM behavioral analysis for account takeover (anonymized).</div>
                 <div class="eval-id">ai-account-takeover</div>
               </td>
@@ -225,7 +243,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Client role</div>
+                <div class="eval-name">
+                  Client role
+                  
+                </div>
                 <div class="eval-hint">Scores risk from the user&#39;s roles on the requesting OAuth client using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).</div>
                 <div class="eval-id">default-client-role-risk-factor</div>
               </td>
@@ -249,7 +270,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Failed login pattern</div>
+                <div class="eval-name">
+                  Failed login pattern
+                  
+                </div>
                 <div class="eval-hint">Detects distributed attack patterns and bot-like timing in login failure events.</div>
                 <div class="eval-id">failed-login-pattern</div>
               </td>
@@ -273,7 +297,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Known IP address</div>
+                <div class="eval-name">
+                  Known IP address
+                  
+                </div>
                 <div class="eval-hint">Scores whether the current IP was seen in the user&#39;s successful login history. New or rare IPs increase risk, familiar IPs can reduce it.</div>
                 <div class="eval-id">login-event-ip-address-risk-evaluator</div>
               </td>
@@ -297,7 +324,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Known location</div>
+                <div class="eval-name">
+                  Known location
+                  
+                </div>
                 <div class="eval-hint">Compares the current login location (GeoIP) to the user&#39;s known locations after identification. Requires location context, enable Init location if this evaluator is active.</div>
                 <div class="eval-id">known-location-risk-evaluator</div>
               </td>
@@ -321,7 +351,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Login failures</div>
+                <div class="eval-name">
+                  Login failures
+                  
+                </div>
                 <div class="eval-hint">Increases risk from recent LOGIN_ERROR events for the user (failure count, recency, and IP mismatch). Uses the Keycloak event store, not the brute-force counter.</div>
                 <div class="eval-id">login-failures-risk-evaluator</div>
               </td>
@@ -345,7 +378,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Realm role</div>
+                <div class="eval-name">
+                  Realm role
+                  
+                </div>
                 <div class="eval-hint">Scores realm roles assigned to the user using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles).</div>
                 <div class="eval-id">default-user-role-risk-factor</div>
               </td>
@@ -369,9 +405,39 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Unusual login time</div>
+                <div class="eval-name">
+                  Unusual login time
+                  
+                </div>
                 <div class="eval-hint">Scores login attempts outside the user&#39;s typical time-of-day/weekday pattern (learned from history).</div>
                 <div class="eval-id">time-pattern</div>
+              </td>
+              <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
+              <td>
+                <select class="score">
+                  <option value="NEGATIVE_HIGH" data-evidence="-2.5">NEGATIVE_HIGH</option>
+                  <option value="NEGATIVE_LOW" data-evidence="-0.3">NEGATIVE_LOW</option>
+                  <option value="NONE" data-evidence="0" selected>NONE</option>
+                  <option value="VERY_SMALL" data-evidence="0.1">VERY_SMALL</option>
+                  <option value="SMALL" data-evidence="0.4">SMALL</option>
+                  <option value="MEDIUM" data-evidence="0.8">MEDIUM</option>
+                  <option value="HIGH" data-evidence="1.5">HIGH</option>
+                  <option value="VERY_HIGH" data-evidence="2">VERY_HIGH</option>
+                  <option value="EXTREME" data-evidence="2.5">EXTREME</option>
+                </select>
+              </td>
+              <td class="num evidence">-</td>
+              <td class="num"><input type="number" class="trust" min="0" max="1" step="0.1" value="1" style="width:4rem"></td>
+              <td class="num contribution">-</td>
+            </tr>
+            <tr class="eval-row eval-extension">
+              <td>
+                <div class="eval-name">
+                  SSF signal
+                  <span class="eval-ext-badge" title="Optional module under extensions/">extension</span>
+                </div>
+                <div class="eval-hint">Scores risk from Shared Signals Framework (SSF) events when the SSF extension is available.</div>
+                <div class="eval-id">ssf-signal-risk-evaluator</div>
               </td>
               <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
               <td>
@@ -412,7 +478,10 @@
           <tbody data-phase="continuous">
             <tr class="eval-row">
               <td>
-                <div class="eval-name">Concurrent sessions</div>
+                <div class="eval-name">
+                  Concurrent sessions
+                  
+                </div>
                 <div class="eval-hint">Detects many concurrent sessions or spread across IPs for the same user during the session. Useful for session hijacking or shared-credential abuse after login.</div>
                 <div class="eval-id">concurrent-session-continuous</div>
               </td>
@@ -436,7 +505,10 @@
             </tr>
             <tr class="eval-row">
               <td>
-                <div class="eval-name">User actions</div>
+                <div class="eval-name">
+                  User actions
+                  
+                </div>
                 <div class="eval-hint">Scores bursts of sensitive account events (email change, password reset, credential changes, etc) in the continuous evaluation phase.</div>
                 <div class="eval-id">user-actions-continuous</div>
               </td>
@@ -553,14 +625,16 @@
         <p class="ref-note">
           Default level thresholds from <code>LogOddsDefaultRiskLevels</code> (used by <code>LogOddsRiskAlgorithmFactory</code>).
           Range rule matches <code>RiskLevel.matchesRisk()</code>: 0 is LOW; otherwise (min, max].
-          Evaluator list is loaded from <code>RiskEvaluatorFactory</code> via ServiceLoader (core module only).
+          Evaluator list is loaded from <code>RiskEvaluatorFactory</code> via ServiceLoader
+          (core + extension modules that register evaluators, e.g. SSF).
+          Backend-only extensions such as <code>ip-api</code> and <code>openrouter</code> do not appear here.
         </p>
       </section>
     </main>
 
     <footer class="kc-footer">
-      Additional evaluators are available in the
-      <a href="../../extensions/">extensions</a> directory.
+      Rows tagged <span class="eval-ext-badge">extension</span> come from optional modules under
+      <a href="../../extensions/">extensions/</a>.
     </footer>
   </div>
 
