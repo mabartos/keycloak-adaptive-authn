@@ -19,7 +19,7 @@ import java.util.stream.StreamSupport;
  * Generates {@code EVALUATORS.md} from all {@link RiskEvaluatorFactory} implementations
  * discovered via {@link ServiceLoader}.
  *
- * <p>Run with: {@code mvn -pl core compile exec:java@generate-evaluators-doc}
+ * <p>Run with: {@code mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@generate-evaluators-doc}
  */
 public final class EvaluatorDocGenerator {
 
@@ -95,7 +95,7 @@ public final class EvaluatorDocGenerator {
             out.println("**Note:** This file is auto-generated. To regenerate it, run:");
             out.println();
             out.println("```bash");
-            out.println("mvn -pl core compile exec:java@generate-evaluators-doc");
+            out.println("mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@generate-evaluators-doc");
             out.println("```");
             out.println();
         }

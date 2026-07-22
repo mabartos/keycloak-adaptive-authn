@@ -121,7 +121,7 @@ Interactive tool to explore how evaluator scores and trust weights combine under
 Regenerate after adding evaluators:
 
 ```bash
-mvn -pl core compile exec:java@algorithm-calculator
+mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@algorithm-calculator
 ```
 
 ## Resources with more info

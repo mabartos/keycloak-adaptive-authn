@@ -168,7 +168,7 @@ Open [utils/log-odds-calculator/log-odds-calculator.html](../../utils/log-odds-c
 Regenerate after SPI changes:
 
 ```bash
-mvn -pl core compile exec:java@algorithm-calculator
+mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@algorithm-calculator
 ```
 
 ## Version History

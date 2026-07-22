@@ -26,11 +26,12 @@ import java.util.stream.StreamSupport;
  * Generates {@code utils/log-odds-calculator/log-odds-calculator.html} from
  * {@code calculator.ftl} and core SPI / algorithm constants.
  *
- * <p>Run with: {@code mvn -pl core compile exec:java@algorithm-calculator}
+ * <p>Run with: {@code mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@algorithm-calculator}
  */
 public final class LogOddsCalculatorGenerator {
 
-    private static final String REGENERATE_COMMAND = "mvn -pl core compile exec:java@algorithm-calculator";
+    private static final String REGENERATE_COMMAND =
+            "mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@algorithm-calculator";
     private static final String DEFAULT_SCORE = "NONE";
     private static final double DEFAULT_TRUST = 1.0;
 

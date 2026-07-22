@@ -1,7 +1,6 @@
 # Risk Evaluators
 
 > Auto-generated — do not edit manually.
-> Regenerate: `mvn -pl core compile exec:java@generate-evaluators-doc`
 
 ## Before Authentication (`BEFORE_AUTHN`)
 
@@ -12,7 +11,7 @@ Executed before the user is known. Useful for evaluating risk from browser, IP a
 | Browser | Scores the browser from the login request user agent. Chrome, Firefox, and Safari reduce risk, other browsers score moderate risk. |
 | Client sensitivity | Scores risk from the requesting OAuth client's sensitivity. Configure per client under Client → Risk-based settings. |
 | Init location | Prepares GeoIP/location context for later evaluators. |
-| Operating system | Scores the operating system from the login request user agent. Linux, macOS, and Windows 10/11 reduce risk, older Windows versions score moderate risk. |
+| Operating system | Scores the operating system from the login request user agent. |
 | reCAPTCHA | Uses Google reCAPTCHA Enterprise risk scores for the login attempt. |
 
 ## User Known (`USER_KNOWN`)
@@ -23,7 +22,7 @@ Executed after identifying the user during authentication (e.g. after username +
 |-----------|-------------|
 | AI account takeover | LLM behavioral analysis for account takeover (anonymized). |
 | Client role | Scores risk from the user's roles on the requesting OAuth client using built-in prefix heuristics (manage-*, create-*, view-*, query-*, and selected admin roles). |
-| Failed login pattern | Detects abnormal failed-login patterns for the user from login failure events. |
+| Failed login pattern | Detects distributed attack patterns and bot-like timing in login failure events. |
 | Known IP address | Scores whether the current IP was seen in the user's successful login history. New or rare IPs increase risk, familiar IPs can reduce it. |
 | Known location | Compares the current login location (GeoIP) to the user's known locations after identification. Requires location context, enable Init location if this evaluator is active. |
 | Login failures | Increases risk from recent LOGIN_ERROR events for the user (failure count, recency, and IP mismatch). Uses the Keycloak event store, not the brute-force counter. |
@@ -48,6 +47,6 @@ Additional evaluators are available in the [extensions](extensions/) directory.
 **Note:** This file is auto-generated. To regenerate it, run:
 
 ```bash
-mvn -pl core compile exec:java@generate-evaluators-doc
+mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@generate-evaluators-doc
 ```
 

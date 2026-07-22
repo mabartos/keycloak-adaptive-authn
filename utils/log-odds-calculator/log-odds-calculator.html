@@ -23,7 +23,7 @@
 
     <main class="kc-main">
       <div class="kc-banner">
-        Auto-generated - do not edit manually. Regenerate: <code>mvn -pl core compile exec:java@algorithm-calculator</code>
+        Auto-generated - do not edit manually. Regenerate: <code>mvn -pl utils -am install -Dmaven.test.skip=true && mvn -pl utils exec:java@algorithm-calculator</code>
       </div>
 
       <div class="kc-page-header">
@@ -135,7 +135,7 @@
             <tr class="eval-row">
               <td>
                 <div class="eval-name">Operating system</div>
-                <div class="eval-hint">Scores the operating system from the login request user agent.</div>
+                <div class="eval-hint">Scores the operating system from the login request user agent. Linux, macOS, and Windows 10/11 reduce risk, older Windows versions score moderate risk.</div>
                 <div class="eval-id">default-operating-system-risk-evaluator-factory</div>
               </td>
               <td><input type="checkbox" class="active" checked title="Unchecked = Risk.INVALID (excluded)"></td>
