@@ -16,9 +16,13 @@
  */
 package io.github.mabartos.evaluator.os;
 
+import io.github.mabartos.evaluator.EvaluatorSettingProperties;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.provider.ProviderConfigProperty;
+
+import java.util.List;
 
 public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory {
     public static final String PROVIDER_ID = "default-operating-system-risk-evaluator-factory";
@@ -47,5 +51,26 @@ public class OperatingSystemRiskEvaluatorFactory implements RiskEvaluatorFactory
     @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return OperatingSystemRiskEvaluator.class;
+    }
+
+    @Override
+    public List<ProviderConfigProperty> getAdditionalAdminConfigProperties() {
+        var evaluatorClass = OperatingSystemRiskEvaluator.class;
+        return EvaluatorSettingProperties.of(
+                EvaluatorSettingProperties.scoreProperty(
+                        evaluatorClass, OperatingSystemEvaluatorConfig.KNOWN_OS_SCORE_SETTING_KEY,
+                        "Known OS score",
+                        "Risk score for Linux, macOS, or recent Windows (10/11) detected from the user agent.",
+                        OperatingSystemEvaluatorConfig.DEFAULT_KNOWN_OS_SCORE),
+                EvaluatorSettingProperties.scoreProperty(
+                        evaluatorClass, OperatingSystemEvaluatorConfig.LEGACY_WINDOWS_SCORE_SETTING_KEY,
+                        "Legacy Windows score",
+                        "Risk score for older Windows versions not treated as trusted.",
+                        OperatingSystemEvaluatorConfig.DEFAULT_LEGACY_WINDOWS_SCORE),
+                EvaluatorSettingProperties.scoreProperty(
+                        evaluatorClass, OperatingSystemEvaluatorConfig.UNKNOWN_OS_SCORE_SETTING_KEY,
+                        "Unknown OS score",
+                        "Risk score when the operating system cannot be classified from the user agent.",
+                        OperatingSystemEvaluatorConfig.DEFAULT_UNKNOWN_OS_SCORE));
     }
 }

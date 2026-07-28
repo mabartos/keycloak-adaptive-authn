@@ -4,6 +4,8 @@ import io.github.mabartos.evaluator.behavior.ConcurrentSessionRiskEvaluatorFacto
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory;
 import io.github.mabartos.evaluator.client.ClientSensitivityRiskEvaluatorFactory;
 import io.github.mabartos.context.location.KnownLocationContext;
+import io.github.mabartos.evaluator.location.KnownLocationEvaluatorConfig;
+import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluator;
 import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluatorFactory;
 import io.github.mabartos.evaluator.role.DefaultUserRoleEvaluatorFactory;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
@@ -12,6 +14,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.List;
 
+import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getAdditionalSettingConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -70,10 +73,12 @@ class RiskBasedPoliciesUiTabTest {
     }
 
     @Test
-    void buildConfigProperties_includesEvaluatorSpecificProperties() {
+    void buildConfigProperties_includesKnownLocationEvaluatorSettings() {
         var factories = List.<RiskEvaluatorFactory>of(new KnownLocationRiskEvaluatorFactory());
 
-        var ttl = RiskBasedPoliciesUiTab.buildConfigProperties(List.of(), factories).stream()
+        var props = RiskBasedPoliciesUiTab.buildConfigProperties(List.of(), factories);
+
+        var ttl = props.stream()
                 .filter(p -> KnownLocationContext.TTL_DAYS_CONFIG.equals(p.getName()))
                 .findFirst()
                 .orElseThrow();
@@ -81,6 +86,16 @@ class RiskBasedPoliciesUiTabTest {
         assertEquals("[USER_KNOWN] Known location TTL (days)", ttl.getLabel());
         assertEquals(ProviderConfigProperty.INTEGER_TYPE, ttl.getType());
         assertEquals(KnownLocationContext.DEFAULT_TTL_DAYS, ttl.getDefaultValue());
+
+        var newCountryScore = props.stream()
+                .filter(p -> getAdditionalSettingConfig(
+                        KnownLocationRiskEvaluator.class,
+                        KnownLocationEvaluatorConfig.NEW_COUNTRY_SCORE_SETTING_KEY).equals(p.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(ProviderConfigProperty.LIST_TYPE, newCountryScore.getType());
+        assertEquals("MEDIUM", newCountryScore.getDefaultValue());
     }
 
     private static List<String> evaluatorEnabledLabels(List<ProviderConfigProperty> props) {

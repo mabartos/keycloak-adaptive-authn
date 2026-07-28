@@ -16,9 +16,13 @@
  */
 package io.github.mabartos.evaluator.browser;
 
+import io.github.mabartos.evaluator.EvaluatorSettingProperties;
 import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.provider.ProviderConfigProperty;
+
+import java.util.List;
 
 public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
 
@@ -48,5 +52,21 @@ public class BrowserRiskEvaluatorFactory implements RiskEvaluatorFactory {
     @Override
     public Class<? extends RiskEvaluator> evaluatorClass() {
         return BrowserRiskEvaluator.class;
+    }
+
+    @Override
+    public List<ProviderConfigProperty> getAdditionalAdminConfigProperties() {
+        var evaluatorClass = BrowserRiskEvaluator.class;
+        return EvaluatorSettingProperties.of(
+                EvaluatorSettingProperties.scoreProperty(
+                        evaluatorClass, BrowserEvaluatorConfig.KNOWN_BROWSER_SCORE_SETTING_KEY,
+                        "Known browser score",
+                        "Risk score when the user agent matches a default known browser (Chrome, Firefox, Safari).",
+                        BrowserEvaluatorConfig.DEFAULT_KNOWN_BROWSER_SCORE),
+                EvaluatorSettingProperties.scoreProperty(
+                        evaluatorClass, BrowserEvaluatorConfig.UNKNOWN_BROWSER_SCORE_SETTING_KEY,
+                        "Unknown browser score",
+                        "Risk score when the user agent does not match a default known browser.",
+                        BrowserEvaluatorConfig.DEFAULT_UNKNOWN_BROWSER_SCORE));
     }
 }

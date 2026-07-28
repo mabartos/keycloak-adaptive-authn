@@ -2,7 +2,6 @@ package io.github.mabartos.evaluator.location;
 
 import io.github.mabartos.context.UserContexts;
 import io.github.mabartos.context.location.KnownLocationContext;
-import io.github.mabartos.context.location.KnownLocationContextFactory;
 import io.github.mabartos.context.location.LocationContext;
 import io.github.mabartos.context.location.LocationData;
 import io.github.mabartos.spi.level.Risk;
@@ -17,11 +16,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
+import java.util.Objects;
 import java.util.Set;
-
-import static io.github.mabartos.spi.level.Risk.Score.MEDIUM;
-import static io.github.mabartos.spi.level.Risk.Score.NEGATIVE_LOW;
-import static io.github.mabartos.spi.level.Risk.Score.VERY_SMALL;
 
 /**
  * Risk evaluator for location properties
@@ -38,6 +34,11 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
         this.knownLocationContext = UserContexts.getContext(session, KnownLocationContext.class);
     }
 
+    KnownLocationRiskEvaluator(LocationContext locationContext, KnownLocationContext knownLocationContext) {
+        this.locationContext = locationContext;
+        this.knownLocationContext = knownLocationContext;
+    }
+
     @Override
     public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         if (knownUser == null) {
@@ -51,38 +52,39 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
 
         logger.tracef("Current location: %s", currentLocation.toString());
 
-        // Get known locations for this user from KnownLocationContext
         var knownLocations = knownLocationContext.getData(realm, knownUser).orElse(Set.of());
 
         if (knownLocations.isEmpty()) {
-            return Risk.of(VERY_SMALL, "First tracked location");
+            return Risk.of(KnownLocationEvaluatorConfig.firstLocationScore(realm), "First tracked location");
         }
 
-        return calculateLocationRisk(currentLocation, knownLocations);
+        return calculateLocationRisk(realm, currentLocation, knownLocations);
     }
 
-    protected Risk calculateLocationRisk(LocationData currentLocation, Set<LocationData> knownLocations) {
+    protected Risk calculateLocationRisk(
+            RealmModel realm, LocationData currentLocation, Set<LocationData> knownLocations) {
         if (currentLocation.getCountry() == null) {
             return Risk.invalid("Cannot determine country from IP address");
         }
 
-        // Check for exact match (same city and country)
         boolean exactMatch = knownLocations.stream()
                 .anyMatch(loc ->
-                        java.util.Objects.equals(loc.getCountry(), currentLocation.getCountry()) &&
-                        java.util.Objects.equals(loc.getCity(), currentLocation.getCity())
-                );
+                        Objects.equals(loc.getCountry(), currentLocation.getCountry()) &&
+                        Objects.equals(loc.getCity(), currentLocation.getCity()));
         if (exactMatch) {
-            return Risk.of(NEGATIVE_LOW, "Known location (city + country) - trust signal");
+            return Risk.of(
+                    KnownLocationEvaluatorConfig.knownLocationScore(realm),
+                    "Known location (city + country) - trust signal");
         }
 
-        // Check if the country has been seen before (even if city is different)
         boolean sameCountry = knownLocations.stream()
-                .anyMatch(loc -> java.util.Objects.equals(loc.getCountry(), currentLocation.getCountry()));
+                .anyMatch(loc -> Objects.equals(loc.getCountry(), currentLocation.getCountry()));
         if (sameCountry) {
-            return Risk.of(VERY_SMALL, "Same country, different city - minor anomaly");
+            return Risk.of(
+                    KnownLocationEvaluatorConfig.sameCountryScore(realm),
+                    "Same country, different city - minor anomaly");
         }
 
-        return Risk.of(MEDIUM, "Completely new country");
+        return Risk.of(KnownLocationEvaluatorConfig.newCountryScore(realm), "Completely new country");
     }
 }

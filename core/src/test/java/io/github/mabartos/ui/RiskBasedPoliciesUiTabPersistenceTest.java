@@ -4,6 +4,9 @@ import io.github.mabartos.evaluator.EvaluatorUtils;
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluator;
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory;
 import io.github.mabartos.context.location.KnownLocationContext;
+import io.github.mabartos.context.location.KnownLocationSettings;
+import io.github.mabartos.evaluator.location.KnownLocationEvaluatorConfig;
+import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluator;
 import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluatorFactory;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +25,7 @@ import static io.github.mabartos.ui.RiskBasedPoliciesUiTab.RISK_BASED_AUTHN_ENAB
 import static io.github.mabartos.spi.engine.RiskEngineFactory.EVALUATOR_TIMEOUT_CONFIG;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getTrustConfig;
 import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.isEnabledConfig;
+import static io.github.mabartos.spi.evaluator.RiskEvaluatorFactory.getAdditionalSettingConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -485,6 +489,76 @@ class RiskBasedPoliciesUiTabPersistenceTest {
         tab.onUpdate(null, realm, persisted, model);
 
         assertEquals("1", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void onUpdate_migratesStaleComponentAdditionalSettingToRealm() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var persisted = tabComponent(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "180"));
+        persisted.setId("risk-tab");
+        var newModel = componentModel(Map.of());
+        newModel.setId("risk-tab");
+        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
+
+        tab.onUpdate(null, realm, persisted, newModel);
+
+        assertEquals("180", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    @Test
+    void onUpdate_persistsKnownLocationNewCountryScore() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var key = getAdditionalSettingConfig(
+                KnownLocationRiskEvaluator.class, KnownLocationEvaluatorConfig.NEW_COUNTRY_SCORE_SETTING_KEY);
+        var oldModel = componentModel(Map.of());
+        var newModel = componentModel(Map.of(key, "HIGH"));
+
+        tab.onUpdate(null, realm, oldModel, newModel);
+
+        assertEquals("HIGH", realmAttributes.get(key));
+    }
+
+    @Test
+    void validateConfiguration_rejectsInvalidKnownLocationScore() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var key = getAdditionalSettingConfig(
+                KnownLocationRiskEvaluator.class, KnownLocationEvaluatorConfig.NEW_COUNTRY_SCORE_SETTING_KEY);
+        var model = componentModel(Map.of(key, "NOT_A_SCORE"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_rejectsMaxStoredLocationsZero() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var model = componentModel(Map.of(KnownLocationSettings.MAX_STORED_LOCATIONS_CONFIG, "0"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_rejectsNegativeTtlDays() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var model = componentModel(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "-1"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_acceptsTtlDaysZero() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+        var model = componentModel(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "0"));
+
+        tab.validateConfiguration(null, realm, model);
     }
 
     @Test
