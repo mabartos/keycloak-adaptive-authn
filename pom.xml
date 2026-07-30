@@ -22,6 +22,7 @@
     <modules>
         <module>core</module>
         <module>extensions</module>
+        <module>utils</module>
         <module>tests</module>
     </modules>
 
