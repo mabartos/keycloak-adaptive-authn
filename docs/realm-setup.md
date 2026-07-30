@@ -68,6 +68,6 @@ On save, when at least one setting changed, one additional admin event is stored
 
 No event on create, and no event on update when nothing changed.
 
-### 3. IP whitelist extension (optional)
+### 3. IP allowlist extension (optional)
 
-Deploy `keycloak-adaptive-ext-ip-whitelist` and enable **IP whitelist** in **Risk-based policies**. Configure the IPv4 whitelist and scores on the same tab (`BEFORE_AUTHN`). See [extensions/ip-whitelist/README.md](../extensions/ip-whitelist/README.md).
+Deploy `keycloak-adaptive-ext-ip-allowlist` and enable **IP allowlist** in **Risk-based policies**. Configure the IPv4 allowlist and scores on the same tab (`BEFORE_AUTHN`). See [extensions/ip-allowlist/README.md](../extensions/ip-allowlist/README.md).

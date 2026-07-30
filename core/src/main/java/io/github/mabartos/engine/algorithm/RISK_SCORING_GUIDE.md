@@ -6,7 +6,7 @@ This guide provides a reference for setting `Risk.Score` values in evaluators wh
 
 | Risk.Score | Evidence Value | Probability Impact | Use Case |
 |-----------|----------------|-------------------|----------|
-| **NEGATIVE_HIGH** | -2.5 | Strong trust signal | Known good device, whitelisted IP, verified trusted location |
+| **NEGATIVE_HIGH** | -2.5 | Strong trust signal | Known good device, allowlisted IP, verified trusted location |
 | **NEGATIVE_LOW** | -0.3 | Weak trust signal | Recognized device, familiar location, normal behavior |
 | **NONE** | 0.0 | Neutral | No evidence either way, baseline state |
 | **VERY_SMALL** | +0.1 | Minimal risk | Slight deviation from normal, first-time occurrence |
