@@ -11,6 +11,7 @@
 
     <packaging>pom</packaging>
     <modules>
+        <module>fingerprintjs</module>
         <module>ip-api</module>
         <module>openrouter</module>
     </modules>
