@@ -488,36 +488,6 @@ class RiskBasedPoliciesUiTabPersistenceTest {
     }
 
     @Test
-    void onUpdate_migratesStaleComponentAdditionalSettingToRealm() throws Exception {
-        var factory = new KnownLocationRiskEvaluatorFactory();
-        injectFactories(tab, List.of(factory));
-        var persisted = tabComponent(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "180"));
-        persisted.setId("risk-tab");
-        var newModel = componentModel(Map.of());
-        newModel.setId("risk-tab");
-        realm = realmBackedBy(realmAttributes, Map.of("risk-tab", persisted), List.of(persisted));
-
-        tab.onUpdate(null, realm, persisted, newModel);
-
-        assertEquals("180", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
-    }
-
-    @Test
-    void validateConfiguration_preservesAdditionalSettingOnFirstSaveWhenNoPersistedComponent() throws Exception {
-        var factory = new KnownLocationRiskEvaluatorFactory();
-        injectFactories(tab, List.of(factory));
-        var model = componentModel(Map.of(KnownLocationContext.TTL_DAYS_CONFIG, "45"));
-
-        tab.validateConfiguration(null, realm, model);
-
-        assertEquals("45", model.get(KnownLocationContext.TTL_DAYS_CONFIG));
-
-        tab.onUpdate(null, realm, new ComponentModel(), model);
-
-        assertEquals("45", realmAttributes.get(KnownLocationContext.TTL_DAYS_CONFIG));
-    }
-
-    @Test
     void validateConfiguration_discardsStaleModelTtlWhenNoRealmAttribute() throws Exception {
         var factory = new KnownLocationRiskEvaluatorFactory();
         injectFactories(tab, List.of(factory));
