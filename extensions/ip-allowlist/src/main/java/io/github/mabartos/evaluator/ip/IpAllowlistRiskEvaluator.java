@@ -11,8 +11,6 @@ import jakarta.annotation.Nonnull;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-import java.util.Optional;
-
 import static io.github.mabartos.spi.evaluator.RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
 
 /**
@@ -33,7 +31,7 @@ public class IpAllowlistRiskEvaluator extends DeviceRiskEvaluator {
 
     @Override
     public Risk evaluate(@Nonnull RealmModel realm) {
-        return evaluateWithMatcher(allowlistMatcher(realm).orElse(null), realm);
+        return evaluateWithMatcher(allowlistMatcher(realm), realm);
     }
 
     /**
@@ -59,7 +57,11 @@ public class IpAllowlistRiskEvaluator extends DeviceRiskEvaluator {
         return Risk.of(notAllowlistedScore, "IP address is not allowlisted");
     }
 
-    private static Optional<IpAllowlistMatcher> allowlistMatcher(RealmModel realm) {
-        return IpAllowlistMatcherCache.get(realm);
+    private static IpAllowlistMatcher allowlistMatcher(RealmModel realm) {
+        var entries = IpAllowlistEvaluatorConfig.allowlistEntries(realm);
+        if (entries.isEmpty()) {
+            return null;
+        }
+        return IpAllowlistMatcher.fromEntries(entries);
     }
 }

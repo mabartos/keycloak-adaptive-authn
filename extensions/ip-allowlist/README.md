@@ -80,16 +80,5 @@ curl -X PUT "https://keycloak.example/admin/realms/myrealm" \
   }'
 ```
 
-## Cache
-
-Parsed allowlists are cached in-memory (Caffeine) keyed by realm id and the raw allowlist attribute value. Tab or API updates take effect on the next evaluation without waiting for TTL expiry.
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `ip-allowlist.cache.ttl` | `PT1H` | Cache entry TTL (ISO-8601 duration) |
-| `ip-allowlist.cache.maximum-size` | `1000` | Max cached allowlist configs |
-
-Set via `application.properties` / Quarkus config, not the risk-based policies tab.
-
 ## Community maintainer
 - [Thomas DELORGE](https://github.com/thomasdelorge)
