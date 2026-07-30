@@ -405,6 +405,18 @@ class RiskBasedPoliciesUiTabPersistenceTest {
     }
 
     @Test
+    void validateConfiguration_rejectsNegativeKnownLocationTtl() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+
+        var model = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "-1"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
     void validateConfiguration_hydratesKnownLocationTtlFromRealmAttributeWhenModelEmpty() throws Exception {
         var factory = new KnownLocationRiskEvaluatorFactory();
         injectFactories(tab, List.of(factory));
