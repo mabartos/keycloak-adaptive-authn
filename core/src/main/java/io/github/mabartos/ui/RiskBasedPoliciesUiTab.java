@@ -211,9 +211,18 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             var key = prop.getName();
             if (model.contains(key)) {
                 storeRealmAttributeFromModel(model, realm, key, context);
-            } else if (realm.getAttribute(key) == null && prop.getDefaultValue() != null) {
-                logger.debugf("%s setting evaluator default '%s' = '%s'", context, key, prop.getDefaultValue());
-                realm.setAttribute(key, prop.getDefaultValue().toString());
+            } else if (StringUtil.isBlank(realm.getAttribute(key))) {
+                var persisted = resolvePersistedTabComponent(realm, model);
+                if (persisted != null
+                        && persisted.getConfig().containsKey(key)
+                        && StringUtil.isNotBlank(persisted.get(key))) {
+                    logger.debugf("%s migrating component evaluator setting '%s' = '%s' to realm",
+                            context, key, persisted.get(key));
+                    realm.setAttribute(key, persisted.get(key));
+                } else if (prop.getDefaultValue() != null) {
+                    logger.debugf("%s setting evaluator default '%s' = '%s'", context, key, prop.getDefaultValue());
+                    realm.setAttribute(key, prop.getDefaultValue().toString());
+                }
             }
         });
     }
@@ -276,6 +285,13 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
             var key = prop.getName();
             var realmValue = realm.getAttribute(key);
             if (isRealmSourcedEvaluatorSetting(key) || isAdditionalAdminConfigKey(key)) {
+                if (isAdditionalAdminConfigKey(key)
+                        && persisted == null
+                        && StringUtil.isBlank(realmValue)
+                        && StringUtil.isNotBlank(model.get(key))) {
+                    logger.tracef("Keeping first-save additional evaluator setting '%s' = '%s'", key, model.get(key));
+                    return;
+                }
                 applyRealmSourcedEvaluatorSettingHydration(model, persisted, key, realmValue);
                 return;
             }
