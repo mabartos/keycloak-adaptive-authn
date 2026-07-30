@@ -90,7 +90,36 @@ For more information and setup, see the <a href="docs/ai-engine-integration.md">
 
 ## Getting Started
 
-Build and try it out locally:
+### Local Docker stack
+
+Dev tools and tasks are defined with [mise](https://mise.jdx.dev/) (`mise.toml`): JDK 21 (Temurin), Docker CLI, and Docker Compose. A Docker Engine (daemon) must still be installed and running on the host.
+
+```shell
+# Install mise: https://mise.jdx.dev/getting-started.html
+mise trust
+mise install                  # java + docker-cli + docker-compose
+
+cp .env.example .env          # optional: fill AI / GeoIP / reCAPTCHA secrets
+mise run build                # core + all extensions (skip tests)
+mise run dev                  # docker compose down && up
+```
+
+| Command | Purpose |
+|---------|---------|
+| `mise run build` | Package core + extensions |
+| `mise run dev` | Restart the local Keycloak stack |
+| `mise run up` / `mise run down` | Start / stop without rebuild |
+| `mise run test` | All tests (core + extensions + IT) |
+| `mise run test:core` | Core module tests |
+| `mise run test:ext` | Extension tests (`mise run test:ext -- ip-api` for one module) |
+
+Stack details: [`docker-compose.yaml`](docker-compose.yaml).
+Config reference: [`.env.example`](.env.example).
+
+- Admin console: http://localhost:8889 (`admin` / `admin`)
+- Example realm user account: http://localhost:8889/realms/adaptive/account (`user` / `user`)
+
+### Maven distribution (embedded Keycloak)
 
 ```shell
 ./mvnw clean install -DskipTests -Pbuild-distribution
