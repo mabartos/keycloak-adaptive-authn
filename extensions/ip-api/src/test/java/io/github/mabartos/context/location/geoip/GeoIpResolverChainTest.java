@@ -65,6 +65,7 @@ class GeoIpResolverChainTest {
     void hasCredentialsFor_freeProvidersDoNotRequireSecrets() {
         assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.IPAPI_CO_FREE), is(true));
         assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.IP_API_COM_FREE), is(true));
+        assertThat(GeoIpResolverChain.hasCredentialsFor(GeoIpResolverIds.MAXMIND), is(true));
     }
 
     @Test
@@ -157,6 +158,12 @@ class GeoIpResolverChainTest {
         assertThat(
                 chain.stream().map(GeoIpResolver::id).toList(),
                 contains(GeoIpResolverIds.IPAPI_CO_FREE, GeoIpResolverIds.IP_API_COM_FREE));
+    }
+
+    @Test
+    void isProviderConfigured_matchesParsedProviderIds() {
+        assertThat(GeoIpResolverChain.isProviderConfigured(GeoIpResolverIds.IPAPI_CO_FREE), is(true));
+        assertThat(GeoIpResolverChain.isProviderConfigured(GeoIpResolverIds.MAXMIND), is(false));
     }
 
     @Test

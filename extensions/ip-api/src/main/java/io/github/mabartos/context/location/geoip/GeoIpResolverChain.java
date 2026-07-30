@@ -131,6 +131,16 @@ public final class GeoIpResolverChain {
     }
 
     /**
+     * True when {@code providerId} appears in the configured provider list (CSV parsing + legacy migration rules).
+     */
+    public static boolean isProviderConfigured(String providerId) {
+        String configured = readConfiguredProviders();
+        String ipApiToken = readIpApiToken();
+        String raw = resolveProvidersForMigration(configured, isProvidersExplicitlyConfigured(configured), ipApiToken);
+        return parseOrderedProviderIds(raw).contains(providerId);
+    }
+
+    /**
      * Parses comma-separated provider ids (lower-cased, blanks skipped).
      */
     static List<String> parseOrderedProviderIds(String providersRaw) {
