@@ -1,0 +1,48 @@
+# Toolchain for local build / docker compose stack.
+# Run `mise install` once after clone (or let mise auto-install on `mise run`).
+#
+
+[tools]
+java = "temurin-21"
+docker-cli = "29"
+docker-compose = "5"
+
+[tasks.build]
+description = "Build core SPI + all extensions (skip tests)"
+run = "./mvnw -pl core,extensions -am clean package -DskipTests -q -B"
+
+[tasks.test]
+description = "Run all tests (core + extensions + IT)"
+run = "./mvnw test -B"
+
+[tasks."test:core"]
+description = "Run core module tests"
+run = "./mvnw -pl core -am test -B"
+
+[tasks."test:ext"]
+description = "Run extension tests (all, or one: ip-api|openrouter|ssf)"
+usage = 'arg "[module]" help="Extension directory under extensions/"'
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+if [ -n "${usage_module:-}" ]; then
+  ./mvnw -pl "extensions/${usage_module}" -am test -B
+else
+  ./mvnw -f extensions test -B
+fi
+'''
+
+[tasks.dev]
+description = "Restart local Keycloak + adaptive-authn (docker compose)"
+run = [
+  "docker compose down",
+  "docker compose up",
+]
+
+[tasks.down]
+description = "Stop local Keycloak stack"
+run = "docker compose down"
+
+[tasks.up]
+description = "Start local Keycloak stack (no rebuild)"
+run = "docker compose up"

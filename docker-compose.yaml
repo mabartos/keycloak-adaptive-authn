@@ -1,0 +1,121 @@
+# Quick local test stack (Keycloak + adaptive-authn SPI).
+#
+# Prerequisites:
+#   mise run build
+#   mise run dev
+#
+# Admin: http://localhost:8889  (id:admin / pwd:admin)
+# Realm: adaptive
+# User : http://localhost:8889/realms/adaptive/account (id:user / pwd:user)
+#
+# Override any ${VAR:-default} below via a local .env file.
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    container_name: keycloak-adaptive-authn
+    command:
+      - start-dev
+      - --hostname=http://localhost:8889
+      - --http-port=8889
+      - --import-realm
+    ports:
+      - "8889:8889"
+    volumes:
+      # Core
+      - ./core/target/keycloak-adaptive-authn-999.0.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-adaptive-authn.jar:ro
+      - ./core/src/main/assembly/adaptive-authn-theme.jar:/opt/keycloak/providers/adaptive-authn-theme.jar:ro
+      - ./core/src/main/assembly/adaptive-realm.json:/opt/keycloak/data/import/adaptive-realm.json:ro
+      # Extensions
+      - ./extensions/ip-api/target/keycloak-adaptive-ext-ip-api-999.0.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-adaptive-ext-ip-api.jar:ro
+      - ./extensions/openrouter/target/keycloak-adaptive-ext-openrouter-999.0.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-adaptive-ext-openrouter.jar:ro
+      - ./extensions/ssf/target/keycloak-adaptive-ext-ssf-999.0.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-adaptive-ext-ssf.jar:ro
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+
+      # -----------------------------------------------------------------
+      # Keycloak
+      # -----------------------------------------------------------------
+      # declarative-ui: Risk-based policies admin tab
+      KC_FEATURES: ${KC_FEATURES:-declarative-ui}
+      KC_LOG_LEVEL_IO_GITHUB_MABARTOS: ${KC_LOG_LEVEL_IO_GITHUB_MABARTOS:-trace}
+
+      # -----------------------------------------------------------------
+      # Core SPI defaults
+      # -----------------------------------------------------------------
+      # Risk engine: default-mutiny | default (virtual threads)
+      KC_SPI_RISK_ENGINE__PROVIDER: ${KC_SPI_RISK_ENGINE__PROVIDER:-default-mutiny} # Sync risk-engine, refacto in progress https://github.com/mabartos/keycloak-adaptive-authn/pull/86 
+      JAVA_OPTS_APPEND: --enable-preview
+
+      # Risk score algorithm: weighted-average | log-odds
+      KC_SPI_RISK_SCORE_ALGORITHM__PROVIDER: ${KC_SPI_RISK_SCORE_ALGORITHM__PROVIDER:-log-odds}
+
+      # AI engine: gpt | claude | gemini | granite | openrouter
+      KC_SPI_AI_ENGINE__PROVIDER: ${KC_SPI_AI_ENGINE__PROVIDER:-gemini}
+
+      # -----------------------------------------------------------------
+      # AI anonymization (docs/privacy-and-anonymization.md)
+      # -----------------------------------------------------------------
+      AI_ANONYMIZE_ENABLED: ${AI_ANONYMIZE_ENABLED:-true}
+      AI_ANONYMIZE_SALT: ${AI_ANONYMIZE_SALT:-}
+
+      # -----------------------------------------------------------------
+      # OpenAI ChatGPT (provider id: gpt)
+      # -----------------------------------------------------------------
+      OPEN_AI_API_URL: ${OPEN_AI_API_URL:-https://api.openai.com/v1/chat/completions}
+      OPEN_AI_API_KEY: ${OPEN_AI_API_KEY:-}
+      OPEN_AI_API_ORGANIZATION: ${OPEN_AI_API_ORGANIZATION:-}
+      OPEN_AI_API_PROJECT: ${OPEN_AI_API_PROJECT:-}
+      OPEN_AI_API_MODEL: ${OPEN_AI_API_MODEL:-gpt-4o-mini}
+
+      # -----------------------------------------------------------------
+      # Anthropic Claude (provider id: claude)
+      # -----------------------------------------------------------------
+      CLAUDE_API_URL: ${CLAUDE_API_URL:-https://api.anthropic.com/v1/messages}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-}
+      CLAUDE_API_MODEL: ${CLAUDE_API_MODEL:-claude-haiku-4-5-20251001}
+      CLAUDE_API_VERSION: ${CLAUDE_API_VERSION:-2023-06-01}
+      CLAUDE_API_ENABLE_CACHING: ${CLAUDE_API_ENABLE_CACHING:-true}
+
+      # -----------------------------------------------------------------
+      # Google Gemini (provider id: gemini)
+      # -----------------------------------------------------------------
+      GEMINI_API_URL: ${GEMINI_API_URL:-https://generativelanguage.googleapis.com/v1beta}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_API_MODEL: ${GEMINI_API_MODEL:-gemini-2.5-flash-lite}
+
+      # -----------------------------------------------------------------
+      # IBM Granite (provider id: granite, deprecated)
+      # URL must include /chat/completions
+      # -----------------------------------------------------------------
+      GRANITE_API_URL: ${GRANITE_API_URL:-}
+      GRANITE_API_KEY: ${GRANITE_API_KEY:-}
+      GRANITE_API_MODEL: ${GRANITE_API_MODEL:-granite-8b-code-instruct-128k}
+
+      # -----------------------------------------------------------------
+      # OpenRouter extension (provider id: openrouter)
+      # -----------------------------------------------------------------
+      OPENROUTER_API_URL: ${OPENROUTER_API_URL:-https://openrouter.ai/api/v1/chat/completions}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_API_MODEL: ${OPENROUTER_API_MODEL:-}
+
+      # -----------------------------------------------------------------
+      # reCAPTCHA evaluator
+      # -----------------------------------------------------------------
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY:-}
+      RECAPTCHA_PROJECT_ID: ${RECAPTCHA_PROJECT_ID:-}
+      RECAPTCHA_PROJECT_API_KEY: ${RECAPTCHA_PROJECT_API_KEY:-}
+
+      # -----------------------------------------------------------------
+      # extensions/ip-api + core location / IP testing
+      # -----------------------------------------------------------------
+      # GeoIP chain: ipapi-co-free | ipapi-co-pro | ip-api-com-free | ip-api-com-pro
+      KC_ADAPTIVE_LOCATION_PROVIDERS: ${KC_ADAPTIVE_LOCATION_PROVIDERS:-ipapi-co-free}
+      KC_ADAPTIVE_IPAPI_TOKEN: ${KC_ADAPTIVE_IPAPI_TOKEN:-}
+      KC_ADAPTIVE_IP_API_COM_API_KEY: ${KC_ADAPTIVE_IP_API_COM_API_KEY:-}
+      KC_ADAPTIVE_LOCATION_GLOBAL_CACHE_TTL: ${KC_ADAPTIVE_LOCATION_GLOBAL_CACHE_TTL:-PT24H}
+      KC_ADAPTIVE_LOCATION_GLOBAL_CACHE_MAXIMUM_SIZE: ${KC_ADAPTIVE_LOCATION_GLOBAL_CACHE_MAXIMUM_SIZE:-10000}
+      # ⚠️ Dev only: do not enable in production
+      KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED: ${KC_ADAPTIVE_TESTING_RANDOM_IP_ENABLED:-true}
+      KC_ADAPTIVE_TESTING_IP_VALUE: ${KC_ADAPTIVE_TESTING_IP_VALUE:-45.157.112.190} # Fixed IP override (France:Paris)
