@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Merged, sorted IPv4 ranges with O(log n) membership checks.
+ * Merged, sorted IPv4 intervals with O(log n) membership via {@link IPAddress#isInRange}.
  */
 public final class IpAllowlistIndex {
 
@@ -84,6 +84,6 @@ public final class IpAllowlistIndex {
     private static IpAllowlistEntry merge(IpAllowlistEntry left, IpAllowlistEntry right) {
         IPAddress mergedStart = left.start().compareTo(right.start()) <= 0 ? left.start() : right.start();
         IPAddress mergedEnd = left.end().compareTo(right.end()) >= 0 ? left.end() : right.end();
-        return new IpAllowlistEntry.Range(mergedStart, mergedEnd);
+        return IpAllowlistEntry.of(mergedStart, mergedEnd);
     }
 }

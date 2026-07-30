@@ -9,6 +9,10 @@ import java.util.Optional;
 
 /**
  * Parses allowlist entry strings and performs IPv4 membership checks.
+ * <p>
+ * Hyphen ranges follow the same {@link IPAddress#parse(String)} /
+ * {@link IPAddress#isInRange(IPAddress, IPAddress)} pattern as core
+ * {@code IpAddressUtils} range matching. CIDR is parsed locally then stored as an interval.
  */
 public final class IpAllowlistMatcher {
 
@@ -57,14 +61,15 @@ public final class IpAllowlistMatcher {
         }
 
         if (trimmed.contains("/")) {
-            CidrRange cidr = CidrRange.parseIpv4(trimmed);
+            IpAllowlistEntry cidr = CidrRange.parseIpv4(trimmed);
             if (cidr == null) {
                 logger.warnf("Ignoring invalid IPv4 CIDR allowlist entry: %s", entry);
                 return Optional.empty();
             }
-            return Optional.of(new IpAllowlistEntry.Cidr(cidr));
+            return Optional.of(cidr);
         }
 
+        // Same hyphen-range shape as IpAddressUtils.manageRange: "start-end"
         if (trimmed.contains("-")) {
             var parts = trimmed.split("-", 2);
             if (parts.length != 2) {
@@ -77,7 +82,7 @@ public final class IpAllowlistMatcher {
                 logger.warnf("Ignoring invalid IPv4 range allowlist entry: %s", entry);
                 return Optional.empty();
             }
-            return Optional.of(new IpAllowlistEntry.Range(start, end));
+            return Optional.of(IpAllowlistEntry.of(start, end));
         }
 
         IPAddress single = IPAddress.parse(trimmed);
@@ -85,7 +90,7 @@ public final class IpAllowlistMatcher {
             logger.warnf("Ignoring invalid IPv4 allowlist entry: %s", entry);
             return Optional.empty();
         }
-        return Optional.of(new IpAllowlistEntry.Single(single));
+        return Optional.of(IpAllowlistEntry.single(single));
     }
 
     static IPAddress normalizeClientIp(IPAddress ip) {

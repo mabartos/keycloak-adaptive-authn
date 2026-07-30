@@ -5,44 +5,18 @@ import io.github.mabartos.context.ip.IPAddress;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Objects;
 
 /**
- * IPv4 CIDR range for allowlist membership checks.
+ * Parses an IPv4 CIDR string into an inclusive {@link IpAllowlistEntry} interval.
+ * <p>
+ * CIDR support stays local to this extension; hyphen ranges reuse core {@link IPAddress} parsing.
  */
 final class CidrRange {
 
-    private final IPAddress start;
-    private final IPAddress end;
-
-    CidrRange(IPAddress start, IPAddress end) {
-        this.start = Objects.requireNonNull(start);
-        this.end = Objects.requireNonNull(end);
+    private CidrRange() {
     }
 
-    IPAddress start() {
-        return start;
-    }
-
-    IPAddress end() {
-        return end;
-    }
-
-    boolean contains(IPAddress ip) {
-        return ip != null && ip.isInRange(start, end);
-    }
-
-    boolean overlaps(CidrRange other) {
-        return start.compareTo(other.end) <= 0 && other.start.compareTo(end) <= 0;
-    }
-
-    CidrRange merge(CidrRange other) {
-        IPAddress mergedStart = start.compareTo(other.start) <= 0 ? start : other.start;
-        IPAddress mergedEnd = end.compareTo(other.end) >= 0 ? end : other.end;
-        return new CidrRange(mergedStart, mergedEnd);
-    }
-
-    static CidrRange parseIpv4(String cidr) {
+    static IpAllowlistEntry parseIpv4(String cidr) {
         if (cidr == null || cidr.isBlank()) {
             return null;
         }
@@ -87,7 +61,7 @@ final class CidrRange {
             if (start == null || end == null) {
                 return null;
             }
-            return new CidrRange(start, end);
+            return IpAllowlistEntry.of(start, end);
         } catch (UnknownHostException e) {
             return null;
         }
