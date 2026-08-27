@@ -5,3 +5,4 @@ io.github.mabartos.spi.condition.UserContextConditionSpi
 io.github.mabartos.spi.ai.AiEngineSpi
 io.github.mabartos.spi.engine.StoredRiskSpi
 io.github.mabartos.spi.engine.RiskScoreAlgorithmSpi
+io.github.mabartos.spi.engine.RemoteEvaluatorExecutorSpi

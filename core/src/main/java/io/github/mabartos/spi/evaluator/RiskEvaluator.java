@@ -76,6 +76,26 @@ public interface RiskEvaluator extends Provider {
     boolean allowRetries();
 
     /**
+     * Flag to determine whether the evaluator makes remote/network calls.
+     * <p>
+     * It is the <b>responsibility of the evaluator author</b> to correctly declare this flag.
+     * The author must consider all contexts and services the evaluator depends on —
+     * if any of them may perform remote calls (e.g., HTTP requests to external APIs,
+     * delegating to contexts that chain to remote providers), this method should return {@code true}.
+     * <p>
+     * When {@code true}, the risk engine may execute this evaluator asynchronously
+     * (e.g., on virtual threads or reactive streams) with timeout enforcement and
+     * separate transaction boundaries.
+     * When {@code false} (default), the evaluator runs synchronously on the caller's thread
+     * within the existing transaction, avoiding unnecessary overhead.
+     *
+     * @return {@code true} if the evaluator performs or may delegate to remote/network operations
+     */
+    default boolean isRemote() {
+        return false;
+    }
+
+    /**
      * Evaluation phase representing in what phase/situation the risk should be evaluated
      */
     enum EvaluationPhase {

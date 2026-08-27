@@ -24,9 +24,9 @@ class RiskEvaluationAuditPublisherTest {
   @Test
   void formatEvaluatorsJoinsValidScores() {
     var results = List.of(
-        new AbstractRiskEngine.EvaluatorResult("ClientRoleRiskEvaluator", Risk.of(MEDIUM), 0.8, 12),
-        new AbstractRiskEngine.EvaluatorResult("BrowserRiskEvaluator", Risk.of(NONE), 0.5, 3),
-        new AbstractRiskEngine.EvaluatorResult("LoginFailuresRiskEvaluator", Risk.of(HIGH), 0.9, 45)
+        new DefaultRiskEngine.EvaluatorResult("ClientRoleRiskEvaluator", Risk.of(MEDIUM), 0.8, 12, false),
+        new DefaultRiskEngine.EvaluatorResult("BrowserRiskEvaluator", Risk.of(NONE), 0.5, 3, false),
+        new DefaultRiskEngine.EvaluatorResult("LoginFailuresRiskEvaluator", Risk.of(HIGH), 0.9, 45, false)
     );
 
     assertThat(
@@ -38,18 +38,20 @@ class RiskEvaluationAuditPublisherTest {
   @Test
   void formatEvaluatorsIncludesInvalidWithTruncatedReason() {
     var results = List.of(
-        new AbstractRiskEngine.EvaluatorResult(
+        new DefaultRiskEngine.EvaluatorResult(
             "TimePatternRiskEvaluator",
             Risk.invalid("Building time pattern (login 0/4)"),
             1.0,
-            0
+            0,
+            false
         ),
-        new AbstractRiskEngine.EvaluatorResult("KnownLocationRiskEvaluator", Risk.of(MEDIUM), 1.0, 1),
-        new AbstractRiskEngine.EvaluatorResult(
+        new DefaultRiskEngine.EvaluatorResult("KnownLocationRiskEvaluator", Risk.of(MEDIUM), 1.0, 1, true),
+        new DefaultRiskEngine.EvaluatorResult(
             "AiAccountTakeoverEvaluator",
             Risk.invalid("No response from the Granite AI"),
             1.0,
-            7
+            7,
+            true
         )
     );
 
@@ -62,11 +64,12 @@ class RiskEvaluationAuditPublisherTest {
   @Test
   void formatEvaluatorsSanitizesReasonSeparators() {
     var entry = RiskEvaluationAuditPublisher.formatEvaluatorEntry(
-        new AbstractRiskEngine.EvaluatorResult(
+        new DefaultRiskEngine.EvaluatorResult(
             "Eval",
             Risk.invalid("a=b, c"),
             1.0,
-            1
+            1,
+            false
         )
     );
     assertThat(entry, is("Eval=INVALID:a b c"));
@@ -74,9 +77,9 @@ class RiskEvaluationAuditPublisherTest {
 
   @Test
   void formatEvaluatorsCapsCount() {
-    var results = new java.util.ArrayList<AbstractRiskEngine.EvaluatorResult>();
+    var results = new java.util.ArrayList<DefaultRiskEngine.EvaluatorResult>();
     for (int i = 0; i < 25; i++) {
-      results.add(new AbstractRiskEngine.EvaluatorResult("Eval" + i, Risk.of(NONE), 1.0, 1));
+      results.add(new DefaultRiskEngine.EvaluatorResult("Eval" + i, Risk.of(NONE), 1.0, 1, false));
     }
 
     var formatted = RiskEvaluationAuditPublisher.formatEvaluators(results);

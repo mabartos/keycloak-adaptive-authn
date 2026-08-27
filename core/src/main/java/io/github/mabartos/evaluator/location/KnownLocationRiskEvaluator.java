@@ -39,6 +39,11 @@ public class KnownLocationRiskEvaluator extends AbstractRiskEvaluator {
     }
 
     @Override
+    public boolean isRemote() {
+        return true;
+    }
+
+    @Override
     public Risk evaluate(@Nonnull RealmModel realm, @Nullable UserModel knownUser) {
         if (knownUser == null) {
             return Risk.invalid("User is null");
