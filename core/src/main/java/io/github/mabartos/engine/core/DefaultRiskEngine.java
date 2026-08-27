@@ -56,24 +56,19 @@ public class DefaultRiskEngine implements RiskEngine {
     protected static final double RISK_THRESHOLD_LOG_OUT_USER = 0.8;
 
     protected final KeycloakSession session;
-    protected final TracingProvider tracingProvider;
-    protected final RiskScoreAlgorithm defaultRiskScoreAlgorithm;
     protected final Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> riskEvaluators;
     protected final Set<UserContext> userContexts;
     protected final StoredRiskProvider storedRiskProvider;
-    protected final RiskEvaluationAuditPublisher auditPublisher;
     @Nullable
     protected final RemoteEvaluatorExecutor remoteExecutor;
 
     protected ResultRisk risk = ResultRisk.invalid();
+    protected ResultRisk overallRisk = ResultRisk.invalid();
 
     public DefaultRiskEngine(KeycloakSession session) {
         this.session = session;
-        this.tracingProvider = TracingProviderUtil.getTracingProvider(session);
-        this.defaultRiskScoreAlgorithm = session.getProvider(RiskScoreAlgorithm.class);
         this.userContexts = session.getAllProviders(UserContext.class);
         this.storedRiskProvider = session.getProvider(StoredRiskProvider.class);
-        this.auditPublisher = RiskEvaluationAuditPublisher.forSession(session);
         this.riskEvaluators = initializeRiskEvaluators(session);
         this.remoteExecutor = session.getProvider(RemoteEvaluatorExecutor.class);
 
@@ -102,7 +97,8 @@ public class DefaultRiskEngine implements RiskEngine {
 
         final var storedRisk = storedRiskProvider.getStoredRisk(phase);
         if (storedRisk.isValid()) {
-            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping it...", phase.name(), storedRisk.getScore());
+            logger.debugf("Risk for phase '%s' is already evaluated ('%s'). Skipping.", phase.name(), storedRisk.getScore());
+            return storedRisk;
         }
 
         logger.debug("--------------------------------------------------");
@@ -122,7 +118,7 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public ResultRisk getOverallRisk() {
-        return risk;
+        return overallRisk;
     }
 
     @Override
@@ -143,6 +139,10 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Override
     public RiskScoreAlgorithm getRiskScoreAlgorithm(@Nonnull RealmModel realm) {
+        return resolveRiskScoreAlgorithm(session, realm);
+    }
+
+    protected static RiskScoreAlgorithm resolveRiskScoreAlgorithm(@Nonnull KeycloakSession session, @Nonnull RealmModel realm) {
         var realmAlgorithm = realm.getAttribute(RISK_SCORE_ALGORITHM_CONFIG);
         if (realmAlgorithm != null) {
             var provider = session.getProvider(RiskScoreAlgorithm.class, realmAlgorithm);
@@ -150,7 +150,7 @@ public class DefaultRiskEngine implements RiskEngine {
                 return provider;
             }
         }
-        return defaultRiskScoreAlgorithm;
+        return session.getProvider(RiskScoreAlgorithm.class);
     }
 
     @Override
@@ -165,121 +165,175 @@ public class DefaultRiskEngine implements RiskEngine {
     // --------------------------------------------------
 
     protected ResultRisk evaluateRiskContinuous(@Nonnull RealmModel realm, @Nonnull UserModel knownUser) {
-        var evaluators = getRiskEvaluators(RiskEvaluator.EvaluationPhase.CONTINUOUS, realm);
+        var realmId = realm.getId();
+        var userId = knownUser.getId();
 
-        return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), s ->
-                tracingProvider.trace(DefaultRiskEngine.class, "evaluateContinuous", span -> {
-                    var results = new EvaluatorResults();
-                    evaluators.forEach(evaluator -> executeEvaluator(evaluator, realm, knownUser, 1, results));
-                    var risk = getRiskScoreAlgorithm(realm).evaluateRisk(evaluators, RiskEvaluator.EvaluationPhase.CONTINUOUS, realm, knownUser);
+        return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), s -> {
+            var freshRealm = s.realms().getRealm(realmId);
+            var freshUser = s.users().getUserById(freshRealm, userId);
+            var evaluators = getEnabledEvaluators(s, RiskEvaluator.EvaluationPhase.CONTINUOUS, freshRealm);
 
-                    if (risk.isValid()) {
-                        if (span.isRecording()) {
-                            span.setAttribute("keycloak.risk.engine.overall", risk.getScore());
-                            span.setAttribute("keycloak.risk.engine.phase", RiskEvaluator.EvaluationPhase.CONTINUOUS.name());
-                        }
+            var outcome = evaluatePhase(s, RiskEvaluator.EvaluationPhase.CONTINUOUS, freshRealm, freshUser, evaluators, 1, DEFAULT_EVALUATOR_TIMEOUT);
 
-                        if (risk.getScore() >= RISK_THRESHOLD_LOG_OUT_USER) {
-                            session.sessions().removeUserSessions(realm, knownUser);
-                            logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
-                                    knownUser.getId(),
-                                    risk.getScore(),
-                                    risk.getSummary().orElse(""));
-                            auditContinuousRemediation(realm, knownUser, risk, getRiskScoreAlgorithm(realm), results);
-                        }
-                    }
-                    results.logAll();
-                    return risk;
-                }), "DefaultRiskEngine.evaluateRiskContinuous");
+            if (outcome.risk.isValid() && outcome.risk.getScore() >= RISK_THRESHOLD_LOG_OUT_USER) {
+                s.sessions().removeUserSessions(freshRealm, freshUser);
+                logger.warnf("User with ID %s was logged out due to suspicious activity. Evaluated risk score was %f.%s",
+                        freshUser.getId(), outcome.risk.getScore(), outcome.risk.getSummary().orElse(""));
+                auditContinuousRemediation(s, freshRealm, freshUser, outcome.risk, outcome.algorithm, outcome.results);
+            }
+            return outcome.risk;
+        }, "DefaultRiskEngine.evaluateRiskContinuous");
     }
 
     protected ResultRisk evaluateRiskAuthentication(@Nonnull RiskEvaluator.EvaluationPhase phase, @Nonnull RealmModel realm, @Nullable UserModel knownUser) {
+        var retries = getNumberRealmAttribute(realm, EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
         var timeout = getNumberRealmAttribute(realm, EVALUATOR_TIMEOUT_CONFIG, Long::parseLong)
                 .map(Duration::ofMillis)
                 .orElse(DEFAULT_EVALUATOR_TIMEOUT);
-        var retries = getNumberRealmAttribute(realm, EVALUATOR_RETRIES_CONFIG, Integer::parseInt).orElse(DEFAULT_EVALUATOR_RETRIES);
-
-        var allEvaluators = getRiskEvaluators(phase, realm);
-        var localEvaluators = allEvaluators.stream().filter(e -> !e.isRemote()).collect(Collectors.toCollection(LinkedHashSet::new));
-        var remoteEvaluators = allEvaluators.stream().filter(RiskEvaluator::isRemote).collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (!phase.requiresKnownUser) {
-            // BEFORE_AUTHN: fire-and-forget — all evaluators run in the background on Keycloak's managed executor
-            var executor = session.getProvider(ExecutorsProvider.class).getExecutor("risk-engine");
-            CompletableFuture.runAsync(
-                    () -> evaluateAll(phase, realm, knownUser, localEvaluators, remoteEvaluators, retries, timeout), executor)
-                    .exceptionally(e -> {
-                        logger.errorf(e, "BEFORE_AUTHN background evaluation failed");
-                        return null;
-                    });
-            return risk;
+            evaluateBeforeAuthnInBackground(realm, retries, timeout);
+            return ResultRisk.invalid();
         }
 
         // USER_KNOWN: synchronous — start remote, run local, await remote, calculate risk
-        return evaluateAll(phase, realm, knownUser, localEvaluators, remoteEvaluators, retries, timeout);
+        return evaluateAll(session, phase, realm, knownUser, getRiskEvaluators(phase, realm), retries, timeout);
     }
 
+    /**
+     * Fire-and-forget BEFORE_AUTHN evaluation on a background thread.
+     * <p>
+     * Creates a fresh {@link KeycloakSession} with fresh evaluators, then delegates to
+     * {@link #evaluateAll} with all evaluators as local (no remote executor needed since
+     * we're already off the request thread).
+     * <p>
+     * TODO: BEFORE_AUTHN and USER_KNOWN execute in different HTTP requests. If this background
+     * task hasn't completed by the time USER_KNOWN computes the overall risk, BEFORE_AUTHN
+     * evidence will be missing. A coordination mechanism via the auth session (e.g., a completion
+     * flag that USER_KNOWN polls with a short timeout) would address this race.
+     */
+    protected void evaluateBeforeAuthnInBackground(@Nonnull RealmModel realm, int retries, @Nonnull Duration timeout) {
+        var sessionFactory = session.getKeycloakSessionFactory();
+        var sessionContext = session.getContext();
+        var realmId = realm.getId();
+        var backgroundExecutor = session.getProvider(ExecutorsProvider.class).getExecutor("risk-engine");
+
+        CompletableFuture.runAsync(() ->
+            KeycloakModelUtils.runJobInTransactionWithResult(sessionFactory, sessionContext, s -> {
+                var freshRealm = s.realms().getRealm(realmId);
+                var phase = RiskEvaluator.EvaluationPhase.BEFORE_AUTHN;
+
+                var evaluators = getEnabledEvaluators(s, phase, freshRealm);
+                if (evaluators.isEmpty()) {
+                    return null;
+                }
+
+                return evaluateAll(s, phase, freshRealm, null, evaluators, retries, timeout);
+            }, "DefaultRiskEngine.evaluateBeforeAuthnBackground"),
+            backgroundExecutor
+        ).exceptionally(e -> {
+            logger.errorf(e, "BEFORE_AUTHN background evaluation failed");
+            return null;
+        });
+    }
+
+    /**
+     * Evaluates risk for BEFORE_AUTHN and USER_KNOWN phases: runs the shared evaluation,
+     * computes overall risk (USER_KNOWN only), then stores the result and publishes audit events.
+     */
     protected ResultRisk evaluateAll(
+            @Nonnull KeycloakSession session,
             @Nonnull RiskEvaluator.EvaluationPhase phase,
             @Nonnull RealmModel realm,
             @Nullable UserModel knownUser,
-            @Nonnull Set<RiskEvaluator> localEvaluators,
-            @Nonnull Set<RiskEvaluator> remoteEvaluators,
+            @Nonnull Set<RiskEvaluator> evaluators,
             int retries,
             @Nonnull Duration timeout
     ) {
-        return KeycloakModelUtils.runJobInTransactionWithResult(session.getKeycloakSessionFactory(), session.getContext(), s -> {
-            return tracingProvider.trace(RiskEngine.class, "evaluateAll", span -> {
+        var outcome = evaluatePhase(session, phase, realm, knownUser, evaluators, retries, timeout);
+
+        ResultRisk computedOverallRisk = null;
+        if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN) {
+            this.risk = outcome.risk;
+            computedOverallRisk = outcome.algorithm.getOverallRisk();
+            this.overallRisk = computedOverallRisk;
+            logger.debugf("The overall risk score is '%f' (algorithm: %s)", computedOverallRisk.getScore(), outcome.algorithm.getClass().getSimpleName());
+        }
+
+        storePhaseRiskAndAudit(session, phase, realm, knownUser, outcome.risk, computedOverallRisk, outcome.algorithm, outcome.results);
+        return outcome.risk;
+    }
+
+    /**
+     * Core evaluation logic shared by all phases — splits evaluators, runs them, computes the phase risk.
+     * <p>
+     * Uses the provided {@code session} for all provider lookups. Callers are responsible for
+     * transaction management: the request-scoped session for USER_KNOWN, a fresh session for
+     * BEFORE_AUTHN (background thread) and CONTINUOUS (timer).
+     * <p>
+     * Only USER_KNOWN splits evaluators by {@link RiskEvaluator#isRemote()} — other phases
+     * already run off the request thread and treat all evaluators as local.
+     */
+    protected EvaluationOutcome evaluatePhase(
+            @Nonnull KeycloakSession session,
+            @Nonnull RiskEvaluator.EvaluationPhase phase,
+            @Nonnull RealmModel realm,
+            @Nullable UserModel knownUser,
+            @Nonnull Set<RiskEvaluator> evaluators,
+            int retries,
+            @Nonnull Duration timeout
+    ) {
+        var tracingProvider = TracingProviderUtil.getTracingProvider(session);
+        return tracingProvider.trace(RiskEngine.class, "evaluatePhase", span -> {
+            if (span.isRecording()) {
+                span.setAttribute("keycloak.risk.engine.provider", getClass().getSimpleName());
+            }
+
+            // Only USER_KNOWN dispatches remote evaluators via RemoteEvaluatorExecutor —
+            // BEFORE_AUTHN and CONTINUOUS already run off the request thread.
+            var localEvaluators = new LinkedHashSet<RiskEvaluator>();
+            var remoteEvaluators = new LinkedHashSet<RiskEvaluator>();
+            if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN) {
+                for (var e : evaluators) {
+                    (e.isRemote() ? remoteEvaluators : localEvaluators).add(e);
+                }
+            } else {
+                localEvaluators.addAll(evaluators);
+            }
+
+            // Pre-initialize local user contexts when remote evaluators need them warmed up
+            // before running on separate threads. Otherwise contexts are initialized on-demand.
+            if (!remoteEvaluators.isEmpty() && remoteExecutor != null && remoteExecutor.requiresPreInitUserContexts()) {
+                initUserContexts(phase, realm, knownUser);
+            }
+
+            var results = new EvaluatorResults();
+
+            var remoteEvaluation = !remoteEvaluators.isEmpty()
+                    ? startRemoteEvaluators(session, tracingProvider, remoteEvaluators, realm, knownUser, retries, timeout, results)
+                    : null;
+
+            var evaluatedRisks = new LinkedHashSet<>(evaluateLocalEvaluators(tracingProvider, localEvaluators, realm, knownUser, retries, results));
+
+            if (remoteEvaluation != null) {
+                evaluatedRisks.addAll(remoteEvaluation.awaitResults());
+            }
+
+            results.logAll();
+
+            var algorithm = resolveRiskScoreAlgorithm(session, realm);
+            var phaseRisk = algorithm.evaluateRisk(evaluatedRisks, phase, realm, knownUser);
+
+            if (phaseRisk.isValid()) {
+                logger.debugf("The phase risk score is %f - (evaluation phase: %s, algorithm: %s)", phaseRisk.getScore(), phase, algorithm.getClass().getSimpleName());
                 if (span.isRecording()) {
-                    span.setAttribute("keycloak.risk.engine.provider", getClass().getSimpleName());
+                    span.setAttribute("keycloak.risk.engine.phase.score", phaseRisk.getScore());
+                    span.setAttribute("keycloak.risk.engine.phase", phase.name());
                 }
+            }
 
-                if (remoteExecutor != null && remoteExecutor.requiresPreInitUserContexts()) {
-                    initUserContexts(phase, realm, knownUser);
-                }
-
-                var results = new EvaluatorResults();
-
-                // Start remote evaluators first (non-blocking) — they run in parallel while local evaluators execute
-                var remoteEvaluation = !remoteEvaluators.isEmpty()
-                        ? startRemoteEvaluators(remoteEvaluators, realm, knownUser, retries, timeout, results)
-                        : null;
-
-                // Run local evaluators sequentially on the current thread
-                var evaluatedRisks = new LinkedHashSet<>(evaluateLocalEvaluators(localEvaluators, realm, knownUser, retries, results));
-
-                // Await remote results
-                if (remoteEvaluation != null) {
-                    evaluatedRisks.addAll(remoteEvaluation.awaitResults());
-                }
-
-                results.logAll();
-
-                var algorithm = getRiskScoreAlgorithm(realm);
-                risk = algorithm.evaluateRisk(evaluatedRisks, phase, realm, knownUser);
-
-                if (risk.isValid()) {
-                    logger.debugf("The phase risk score is %f - (evaluation phase: %s, algorithm: %s)", risk.getScore(), phase, algorithm.getClass().getSimpleName());
-
-                    if (span.isRecording()) {
-                        span.setAttribute("keycloak.risk.engine.phase.score", risk.getScore());
-                        span.setAttribute("keycloak.risk.engine.phase", phase.name());
-                    }
-                }
-
-                ResultRisk overallRisk = null;
-                if (phase == RiskEvaluator.EvaluationPhase.USER_KNOWN) {
-                    overallRisk = algorithm.getOverallRisk();
-                    logger.debugf("The overall risk score is '%f' (algorithm: %s)", overallRisk.getScore(), algorithm.getClass().getSimpleName());
-                    if (span.isRecording()) {
-                        span.setAttribute("keycloak.risk.engine.overall", overallRisk.getScore());
-                    }
-                }
-
-                storePhaseRiskAndAudit(phase, realm, knownUser, risk, overallRisk, algorithm, results);
-                return risk;
-            });
-        }, "DefaultRiskEngine.evaluateAll");
+            return new EvaluationOutcome(phaseRisk, algorithm, results);
+        });
     }
 
     // --------------------------------------------------
@@ -287,6 +341,7 @@ public class DefaultRiskEngine implements RiskEngine {
     // --------------------------------------------------
 
     protected Set<RiskEvaluator> evaluateLocalEvaluators(
+            @Nonnull TracingProvider tracingProvider,
             @Nonnull Set<RiskEvaluator> evaluators,
             @Nonnull RealmModel realm,
             @Nullable UserModel knownUser,
@@ -294,15 +349,7 @@ public class DefaultRiskEngine implements RiskEngine {
             @Nonnull EvaluatorResults results
     ) {
         for (var evaluator : evaluators) {
-            tracingProvider.trace(evaluator.getClass(), "evaluate", span -> {
-                executeEvaluator(evaluator, realm, knownUser, retries, results);
-
-                if (span.isRecording()) {
-                    span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
-                    evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                    span.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(realm));
-                }
-            });
+            traceEvaluator(tracingProvider, evaluator, realm, knownUser, retries, results);
         }
 
         return evaluators.stream()
@@ -312,6 +359,8 @@ public class DefaultRiskEngine implements RiskEngine {
 
     @Nullable
     protected RemoteEvaluatorExecutor.RemoteEvaluation startRemoteEvaluators(
+            @Nonnull KeycloakSession session,
+            @Nonnull TracingProvider tracingProvider,
             @Nonnull Set<RiskEvaluator> evaluators,
             @Nonnull RealmModel realm,
             @Nullable UserModel knownUser,
@@ -330,20 +379,25 @@ public class DefaultRiskEngine implements RiskEngine {
 
         RemoteEvaluationContext.EvaluatorCallback callback = (evaluator, evalRealm, evalUser) -> {
             try (var ignored = parentContext.makeCurrent()) {
-                tracingProvider.trace(evaluator.getClass(), "evaluate", span -> {
-                    executeEvaluator(evaluator, evalRealm, evalUser, retries, results);
-
-                    if (span.isRecording()) {
-                        span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
-                        evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
-                        span.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(evalRealm));
-                    }
-                });
+                traceEvaluator(tracingProvider, evaluator, evalRealm, evalUser, retries, results);
             }
         };
 
         var context = new RemoteEvaluationContext(evaluators, realm, knownUser, timeout, session, callback);
         return remoteExecutor.start(context);
+    }
+
+    protected void traceEvaluator(@Nonnull TracingProvider tracingProvider, @Nonnull RiskEvaluator evaluator,
+            @Nonnull RealmModel realm, @Nullable UserModel knownUser, int retries, @Nonnull EvaluatorResults results) {
+        tracingProvider.trace(evaluator.getClass(), "evaluate", span -> {
+            executeEvaluator(evaluator, realm, knownUser, retries, results);
+
+            if (span.isRecording()) {
+                span.setAttribute("keycloak.risk.engine.evaluator.score", evaluator.getRisk().getScore().name());
+                evaluator.getRisk().getReason().ifPresent(reason -> span.setAttribute("keycloak.risk.engine.evaluator.reason", reason));
+                span.setAttribute("keycloak.risk.engine.evaluator.trust", evaluator.getTrust(realm));
+            }
+        });
     }
 
     // --------------------------------------------------
@@ -394,6 +448,7 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     protected void storePhaseRiskAndAudit(
+            @Nonnull KeycloakSession session,
             @Nonnull RiskEvaluator.EvaluationPhase phase,
             @Nonnull RealmModel realm,
             @Nullable UserModel knownUser,
@@ -402,6 +457,9 @@ public class DefaultRiskEngine implements RiskEngine {
             @Nonnull RiskScoreAlgorithm algorithm,
             @Nonnull EvaluatorResults results
     ) {
+        var storedRiskProvider = session.getProvider(StoredRiskProvider.class);
+        var auditPublisher = RiskEvaluationAuditPublisher.forSession(session);
+
         if (phaseRisk.isValid()) {
             storedRiskProvider.storeRisk(phaseRisk, phase);
         }
@@ -417,14 +475,23 @@ public class DefaultRiskEngine implements RiskEngine {
     }
 
     protected void auditContinuousRemediation(
+            @Nonnull KeycloakSession session,
             @Nonnull RealmModel realm,
             @Nonnull UserModel knownUser,
             @Nonnull ResultRisk continuousRisk,
             @Nonnull RiskScoreAlgorithm algorithm,
             @Nonnull EvaluatorResults results
     ) {
+        var auditPublisher = RiskEvaluationAuditPublisher.forSession(session);
         auditPublisher.recordContinuousSessionRevocation(realm, knownUser, continuousRisk, algorithm, results.snapshot());
         auditPublisher.flushNow();
+    }
+
+    protected static Set<RiskEvaluator> getEnabledEvaluators(KeycloakSession session, RiskEvaluator.EvaluationPhase phase, RealmModel realm) {
+        return initializeRiskEvaluators(session).get(phase)
+                .stream()
+                .filter(e -> e.isEnabled(realm))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     protected static Map<RiskEvaluator.EvaluationPhase, Set<RiskEvaluator>> initializeRiskEvaluators(KeycloakSession session) {
@@ -457,6 +524,8 @@ public class DefaultRiskEngine implements RiskEngine {
     // --------------------------------------------------
     // Result tracking
     // --------------------------------------------------
+
+    protected record EvaluationOutcome(ResultRisk risk, RiskScoreAlgorithm algorithm, EvaluatorResults results) {}
 
     protected record EvaluatorResult(String evaluatorName, Risk risk, double trust, long durationMs, boolean remote) {
         public String format() {
