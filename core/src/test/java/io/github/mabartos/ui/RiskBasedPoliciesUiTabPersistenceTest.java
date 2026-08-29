@@ -5,12 +5,16 @@ import io.github.mabartos.evaluator.browser.BrowserRiskEvaluator;
 import io.github.mabartos.evaluator.browser.BrowserRiskEvaluatorFactory;
 import io.github.mabartos.context.location.KnownLocationContext;
 import io.github.mabartos.evaluator.location.KnownLocationRiskEvaluatorFactory;
+import io.github.mabartos.spi.evaluator.RiskEvaluator;
 import io.github.mabartos.spi.evaluator.RiskEvaluatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
+import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.provider.ProviderConfigurationBuilder;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -405,6 +409,64 @@ class RiskBasedPoliciesUiTabPersistenceTest {
     }
 
     @Test
+    void validateConfiguration_rejectsNegativeKnownLocationTtl() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+
+        var model = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "-1"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_rejectsNonIntegerKnownLocationTtl() throws Exception {
+        var factory = new KnownLocationRiskEvaluatorFactory();
+        injectFactories(tab, List.of(factory));
+
+        var model = componentModel(Map.of(
+                KnownLocationContext.TTL_DAYS_CONFIG, "abc"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_rejectsInvalidAdditionalListOption() throws Exception {
+        injectFactories(tab, List.of(new AdditionalSettingsFactory(
+                ProviderConfigurationBuilder.create()
+                        .property()
+                        .name("adaptive-evaluator-list-test")
+                        .label("Mode")
+                        .type(ProviderConfigProperty.LIST_TYPE)
+                        .options(List.of("alpha", "beta"))
+                        .add()
+                        .build())));
+
+        var model = componentModel(Map.of("adaptive-evaluator-list-test", "gamma"));
+
+        assertThrows(ComponentValidationException.class,
+                () -> tab.validateConfiguration(null, realm, model));
+    }
+
+    @Test
+    void validateConfiguration_acceptsBlankAdditionalSettingWithoutDefault() throws Exception {
+        injectFactories(tab, List.of(new AdditionalSettingsFactory(
+                ProviderConfigurationBuilder.create()
+                        .property()
+                        .name("adaptive-evaluator-note-test")
+                        .label("Note")
+                        .type(ProviderConfigProperty.STRING_TYPE)
+                        .add()
+                        .build())));
+
+        var model = componentModel(Map.of("adaptive-evaluator-note-test", ""));
+
+        tab.validateConfiguration(null, realm, model);
+    }
+
+    @Test
     void validateConfiguration_hydratesKnownLocationTtlFromRealmAttributeWhenModelEmpty() throws Exception {
         var factory = new KnownLocationRiskEvaluatorFactory();
         injectFactories(tab, List.of(factory));
@@ -500,6 +562,49 @@ class RiskBasedPoliciesUiTabPersistenceTest {
         tab.validateConfiguration(null, realm, model);
 
         assertEquals(String.valueOf(KnownLocationContext.DEFAULT_TTL_DAYS), model.get(KnownLocationContext.TTL_DAYS_CONFIG));
+    }
+
+    private static final class AdditionalSettingsFactory implements RiskEvaluatorFactory {
+        private final List<ProviderConfigProperty> additional;
+
+        AdditionalSettingsFactory(List<ProviderConfigProperty> additional) {
+            this.additional = additional;
+        }
+
+        @Override
+        public String getName() {
+            return "Test additional";
+        }
+
+        @Override
+        public String getDescription() {
+            return "Test additional evaluator settings";
+        }
+
+        @Override
+        public RiskEvaluator.EvaluationPhase evaluationPhase() {
+            return RiskEvaluator.EvaluationPhase.USER_KNOWN;
+        }
+
+        @Override
+        public Class<? extends RiskEvaluator> evaluatorClass() {
+            return BrowserRiskEvaluator.class;
+        }
+
+        @Override
+        public RiskEvaluator create(KeycloakSession session) {
+            return null;
+        }
+
+        @Override
+        public String getId() {
+            return "test-additional-settings";
+        }
+
+        @Override
+        public List<ProviderConfigProperty> getAdditionalAdminConfigProperties() {
+            return additional;
+        }
     }
 
     private static ComponentModel componentModel(Map<String, String> entries) {
