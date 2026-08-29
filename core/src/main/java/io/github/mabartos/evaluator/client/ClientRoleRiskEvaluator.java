@@ -87,7 +87,7 @@ public class ClientRoleRiskEvaluator extends AbstractRiskEvaluator {
     /**
      * Resolves the effective score for a client role: explicit attribute overrides prefix heuristics.
      */
-    static Risk.Score scoreForRole(RoleModel role) {
+    private static Risk.Score scoreForRole(RoleModel role) {
         if (role == null) {
             return Risk.Score.NONE;
         }
@@ -98,7 +98,7 @@ public class ClientRoleRiskEvaluator extends AbstractRiskEvaluator {
      * Parses {@link #RISK_SCORE_ATTRIBUTE} when present. Empty when the attribute is absent;
      * invalid values are logged and yield empty so callers fall back to prefix heuristics.
      */
-    static Optional<Risk.Score> parseAttributeScore(RoleModel role) {
+    private static Optional<Risk.Score> parseAttributeScore(RoleModel role) {
         if (role == null) {
             return Optional.empty();
         }
@@ -123,7 +123,7 @@ public class ClientRoleRiskEvaluator extends AbstractRiskEvaluator {
         }
     }
 
-    static Risk.Score scoreFromRoleName(String roleName) {
+    private static Risk.Score scoreFromRoleName(String roleName) {
         if (SENSITIVE_ROLES.contains(roleName)) {
             return Risk.Score.MEDIUM;
         }

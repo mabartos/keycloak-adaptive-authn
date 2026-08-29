@@ -3,6 +3,7 @@ package io.github.mabartos;
 import io.github.mabartos.evaluator.client.ClientRoleRiskEvaluator;
 import io.github.mabartos.spi.level.Risk;
 import org.junit.jupiter.api.Test;
+import org.keycloak.models.AdminRoles;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -19,6 +20,7 @@ import org.keycloak.testframework.remote.runonserver.RunOnServerClient;
 import org.keycloak.testframework.server.KeycloakServerConfig;
 import org.keycloak.testframework.server.KeycloakServerConfigBuilder;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,102 +44,164 @@ class ClientRoleRiskEvaluatorIT {
 
     @Test
     void evaluate_returnsConfiguredScoreForMappedClientRole() {
-        runOnServer.run(session -> {
-            RealmModel realm = session.realms().getRealmByName("adaptive");
-            ClientModel client = requireTestClient(session, realm);
-            UserModel user = requireUser(session, realm);
-            var roleSnapshot = RoleAttributeSnapshot.capture(client);
-            var userRoleSnapshot = UserRoleSnapshot.capture(user, client);
-            try {
-                setRoleScore(client, "admin", Risk.Score.HIGH);
-                grantClientRole(user, client, "admin");
+        withRoleFixture((session, realm, client, user) -> {
+            setRoleScore(client, "admin", Risk.Score.HIGH);
+            grantClientRole(user, client, "admin");
 
-                withAuthSession(session, realm, client, () -> {
-                    Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
-                    assertThat(risk.getScore(), is(Risk.Score.HIGH));
-                    assertThat(risk.getReason().orElse(""), containsString("admin"));
-                });
-            } finally {
-                userRoleSnapshot.restore(user, client);
-                roleSnapshot.restore(client);
-            }
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.HIGH));
+                assertThat(risk.getReason().orElse(""), containsString("admin"));
+            });
         });
     }
 
     @Test
     void evaluate_usesPrefixHeuristicsWhenNoAttribute() {
-        runOnServer.run(session -> {
-            RealmModel realm = session.realms().getRealmByName("adaptive");
-            ClientModel client = requireTestClient(session, realm);
-            UserModel user = requireUser(session, realm);
-            var roleSnapshot = RoleAttributeSnapshot.capture(client);
-            var userRoleSnapshot = UserRoleSnapshot.capture(user, client);
-            try {
-                clearRoleRiskScores(client);
-                requireClientRole(client, "manage-reports");
-                grantClientRole(user, client, "manage-reports");
+        withRoleFixture((session, realm, client, user) -> {
+            clearRoleRiskScores(client);
+            requireClientRole(client, "manage-reports");
+            grantClientRole(user, client, "manage-reports");
 
-                withAuthSession(session, realm, client, () -> {
-                    Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
-                    assertThat(risk.getScore(), is(Risk.Score.MEDIUM));
-                    assertThat(risk.getReason().orElse(""), containsString("manage-reports"));
-                });
-            } finally {
-                userRoleSnapshot.restore(user, client);
-                roleSnapshot.restore(client);
-            }
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.MEDIUM));
+                assertThat(risk.getReason().orElse(""), containsString("manage-reports"));
+            });
         });
     }
 
     @Test
     void evaluate_returnsNegativeLowWhenUserHasNoClientRoles() {
-        runOnServer.run(session -> {
-            RealmModel realm = session.realms().getRealmByName("adaptive");
-            ClientModel client = requireTestClient(session, realm);
-            UserModel user = requireUser(session, realm);
-            var roleSnapshot = RoleAttributeSnapshot.capture(client);
-            var userRoleSnapshot = UserRoleSnapshot.capture(user, client);
-            try {
-                revokeAllClientRoles(user, client);
+        withRoleFixture((session, realm, client, user) -> {
+            revokeAllClientRoles(user, client);
 
-                withAuthSession(session, realm, client, () -> {
-                    Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
-                    assertThat(risk.getScore(), is(Risk.Score.NEGATIVE_LOW));
-                });
-            } finally {
-                userRoleSnapshot.restore(user, client);
-                roleSnapshot.restore(client);
-            }
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.NEGATIVE_LOW));
+            });
         });
     }
 
     @Test
     void evaluate_usesMaxScoreAcrossMappedRoles() {
-        runOnServer.run(session -> {
-            RealmModel realm = session.realms().getRealmByName("adaptive");
-            ClientModel client = requireTestClient(session, realm);
-            UserModel user = requireUser(session, realm);
-            var roleSnapshot = RoleAttributeSnapshot.capture(client);
-            var userRoleSnapshot = UserRoleSnapshot.capture(user, client);
-            try {
-                setRoleScore(client, "admin", Risk.Score.HIGH);
-                setRoleScore(client, "viewer", Risk.Score.VERY_SMALL);
-                grantClientRole(user, client, "admin");
-                grantClientRole(user, client, "viewer");
+        withRoleFixture((session, realm, client, user) -> {
+            setRoleScore(client, "admin", Risk.Score.HIGH);
+            setRoleScore(client, "viewer", Risk.Score.VERY_SMALL);
+            grantClientRole(user, client, "admin");
+            grantClientRole(user, client, "viewer");
 
-                withAuthSession(session, realm, client, () -> {
-                    Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
-                    assertThat(risk.getScore(), is(Risk.Score.HIGH));
-                });
-            } finally {
-                userRoleSnapshot.restore(user, client);
-                roleSnapshot.restore(client);
-            }
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.HIGH));
+            });
         });
     }
 
     @Test
     void evaluate_attributeOverridesPrefixHeuristic() {
+        withRoleFixture((session, realm, client, user) -> {
+            requireClientRole(client, "manage-reports");
+            setRoleScore(client, "manage-reports", Risk.Score.NONE);
+            grantClientRole(user, client, "manage-reports");
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.NONE));
+                assertThat(risk.getReason().orElse(""), containsString("manage-reports"));
+            });
+        });
+    }
+
+    @Test
+    void evaluate_usesPrefixScoreForUnconfiguredAssignedRole() {
+        withRoleFixture((session, realm, client, user) -> {
+            clearRoleRiskScores(client);
+            requireClientRole(client, "create-reports");
+            grantClientRole(user, client, "create-reports");
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.SMALL));
+                assertThat(risk.getReason().orElse(""), containsString("create-reports"));
+            });
+        });
+    }
+
+    @Test
+    void evaluate_usesPrefixScoreForQueryRole() {
+        withRoleFixture((session, realm, client, user) -> {
+            clearRoleRiskScores(client);
+            requireClientRole(client, "query-reports");
+            grantClientRole(user, client, "query-reports");
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.NONE));
+                assertThat(risk.getReason().orElse(""), containsString("query-reports"));
+            });
+        });
+    }
+
+    @Test
+    void evaluate_usesPrefixScoreForViewRole() {
+        withRoleFixture((session, realm, client, user) -> {
+            clearRoleRiskScores(client);
+            requireClientRole(client, "view-reports");
+            grantClientRole(user, client, "view-reports");
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.NONE));
+                assertThat(risk.getReason().orElse(""), containsString("view-reports"));
+            });
+        });
+    }
+
+    @Test
+    void evaluate_usesSensitiveRoleScoreForImpersonation() {
+        withRoleFixture((session, realm, client, user) -> {
+            clearRoleRiskScores(client);
+            requireClientRole(client, AdminRoles.IMPERSONATION);
+            grantClientRole(user, client, AdminRoles.IMPERSONATION);
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.MEDIUM));
+                assertThat(risk.getReason().orElse(""), containsString(AdminRoles.IMPERSONATION));
+            });
+        });
+    }
+
+    @Test
+    void evaluate_fallsBackToPrefixWhenAttributeInvalid() {
+        withRoleFixture((session, realm, client, user) -> {
+            requireClientRole(client, "manage-reports");
+            setRoleScoreRaw(client, "manage-reports", "NOT_A_SCORE");
+            grantClientRole(user, client, "manage-reports");
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.MEDIUM));
+                assertThat(risk.getReason().orElse(""), containsString("manage-reports"));
+            });
+        });
+    }
+
+    @Test
+    void evaluate_parsesLowercaseAttributeScore() {
+        withRoleFixture((session, realm, client, user) -> {
+            setRoleScoreRaw(client, "admin", "negative_low");
+            grantClientRole(user, client, "admin");
+
+            withAuthSession(session, realm, client, () -> {
+                Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
+                assertThat(risk.getScore(), is(Risk.Score.NEGATIVE_LOW));
+            });
+        });
+    }
+
+    private void withRoleFixture(RoleFixtureBody body) {
         runOnServer.run(session -> {
             RealmModel realm = session.realms().getRealmByName("adaptive");
             ClientModel client = requireTestClient(session, realm);
@@ -145,15 +209,7 @@ class ClientRoleRiskEvaluatorIT {
             var roleSnapshot = RoleAttributeSnapshot.capture(client);
             var userRoleSnapshot = UserRoleSnapshot.capture(user, client);
             try {
-                requireClientRole(client, "manage-reports");
-                setRoleScore(client, "manage-reports", Risk.Score.NONE);
-                grantClientRole(user, client, "manage-reports");
-
-                withAuthSession(session, realm, client, () -> {
-                    Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
-                    assertThat(risk.getScore(), is(Risk.Score.NONE));
-                    assertThat(risk.getReason().orElse(""), containsString("manage-reports"));
-                });
+                body.accept(session, realm, client, user);
             } finally {
                 userRoleSnapshot.restore(user, client);
                 roleSnapshot.restore(client);
@@ -161,29 +217,9 @@ class ClientRoleRiskEvaluatorIT {
         });
     }
 
-    @Test
-    void evaluate_usesPrefixScoreForUnconfiguredAssignedRole() {
-        runOnServer.run(session -> {
-            RealmModel realm = session.realms().getRealmByName("adaptive");
-            ClientModel client = requireTestClient(session, realm);
-            UserModel user = requireUser(session, realm);
-            var roleSnapshot = RoleAttributeSnapshot.capture(client);
-            var userRoleSnapshot = UserRoleSnapshot.capture(user, client);
-            try {
-                clearRoleRiskScores(client);
-                requireClientRole(client, "create-reports");
-                grantClientRole(user, client, "create-reports");
-
-                withAuthSession(session, realm, client, () -> {
-                    Risk risk = new ClientRoleRiskEvaluator(session).evaluate(realm, user);
-                    assertThat(risk.getScore(), is(Risk.Score.SMALL));
-                    assertThat(risk.getReason().orElse(""), containsString("create-reports"));
-                });
-            } finally {
-                userRoleSnapshot.restore(user, client);
-                roleSnapshot.restore(client);
-            }
-        });
+    @FunctionalInterface
+    private interface RoleFixtureBody extends Serializable {
+        void accept(KeycloakSession session, RealmModel realm, ClientModel client, UserModel user);
     }
 
     private static ClientModel requireTestClient(KeycloakSession session, RealmModel realm) {
@@ -236,8 +272,12 @@ class ClientRoleRiskEvaluatorIT {
     }
 
     private static void setRoleScore(ClientModel client, String roleName, Risk.Score score) {
+        setRoleScoreRaw(client, roleName, score.name());
+    }
+
+    private static void setRoleScoreRaw(ClientModel client, String roleName, String scoreRaw) {
         requireClientRole(client, roleName).setSingleAttribute(
-                ClientRoleRiskEvaluator.RISK_SCORE_ATTRIBUTE, score.name());
+                ClientRoleRiskEvaluator.RISK_SCORE_ATTRIBUTE, scoreRaw);
     }
 
     private static void clearRoleRiskScores(ClientModel client) {
