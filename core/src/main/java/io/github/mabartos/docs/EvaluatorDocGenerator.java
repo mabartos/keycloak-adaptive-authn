@@ -63,6 +63,7 @@ public final class EvaluatorDocGenerator {
             out.println("# Risk Evaluators");
             out.println();
             out.println("> Auto-generated — do not edit manually.");
+            out.println("> Regenerate: `mvn -pl core compile exec:java@generate-evaluators-doc`");
             out.println();
 
             for (EvaluationPhase phase : EvaluationPhase.values()) {
