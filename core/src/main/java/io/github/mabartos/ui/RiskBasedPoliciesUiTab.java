@@ -33,6 +33,7 @@ import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
+import org.keycloak.provider.ConfigurationValidationHelper;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.services.ui.extend.UiTabProvider;
@@ -223,7 +224,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         logger.tracef("validateConfiguration execution");
 
         validateEvaluatorTrustValues(model);
-        validateSubmittedAdditionalEvaluatorSettings(model);
+        validateAdditionalEvaluatorSettings(model);
 
         var persisted = resolvePersistedTabComponent(realm, model);
         hydrateModelFromRealmAttributes(realm, model, persisted);
@@ -235,10 +236,7 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         validateFallbackLevel(model.get(SIMPLE_FALLBACK_LEVEL_CONFIG), SimpleRiskLevels.getSimpleLevelNames(), "Simple fallback risk level");
         validateFallbackLevel(model.get(ADVANCED_FALLBACK_LEVEL_CONFIG), AdvancedRiskLevels.getAdvancedLevelNames(), "Advanced fallback risk level");
 
-        riskEvaluatorFactories.stream()
-                .flatMap(f -> f.getAdditionalAdminConfigProperties().stream())
-                .filter(prop -> ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType()))
-                .forEach(prop -> validateInteger(model.get(prop.getName()), prop.getLabel()));
+        validateAdditionalEvaluatorSettings(model);
     }
 
     private void validateEvaluatorTrustValues(ComponentModel model) {
@@ -259,16 +257,45 @@ public class RiskBasedPoliciesUiTab implements UiTabProvider, UiTabProviderFacto
         });
     }
 
-    private void validateSubmittedAdditionalEvaluatorSettings(ComponentModel model) {
+    private void validateAdditionalEvaluatorSettings(ComponentModel model) {
+        var helper = ConfigurationValidationHelper.check(model);
         riskEvaluatorFactories.stream()
                 .flatMap(factory -> factory.getAdditionalAdminConfigProperties().stream())
-                .filter(prop -> ProviderConfigProperty.INTEGER_TYPE.equals(prop.getType()))
-                .forEach(prop -> {
-                    var value = model.get(prop.getName());
-                    if (StringUtil.isNotBlank(value)) {
-                        validateInteger(value, prop.getLabel());
-                    }
-                });
+                .forEach(prop -> validateAdditionalEvaluatorSetting(helper, model, prop));
+    }
+
+    /**
+     * Type-driven checks for evaluator extra fields. Blank values are skipped so a property without
+     * a default does not fail save. INTEGER also requires {@code >= 0}: Keycloak {@code checkInt}
+     * only parses, and would accept a negative TTL.
+     */
+    private void validateAdditionalEvaluatorSetting(
+            ConfigurationValidationHelper helper, ComponentModel model, ProviderConfigProperty prop) {
+        var value = model.get(prop.getName());
+        if (StringUtil.isBlank(value)) {
+            return;
+        }
+        var type = prop.getType();
+        if (ProviderConfigProperty.INTEGER_TYPE.equals(type)) {
+            helper.checkInt(prop, false);
+            validateInteger(value, prop.getLabel());
+            return;
+        }
+        if (ProviderConfigProperty.BOOLEAN_TYPE.equals(type)) {
+            helper.checkBoolean(prop, false);
+            return;
+        }
+        if (ProviderConfigProperty.LIST_TYPE.equals(type) && prop.getOptions() != null) {
+            helper.checkList(prop, false);
+            return;
+        }
+        if (ProviderConfigProperty.NUMBER_TYPE.equals(type)) {
+            try {
+                Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                throw new ComponentValidationException(String.format("%s must be a number", prop.getLabel()));
+            }
+        }
     }
 
     private void populateMissingDefaults(ComponentModel model) {
